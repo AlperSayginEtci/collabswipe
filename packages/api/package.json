@@ -1,0 +1,23 @@
+{
+  "name": "@collabswipe/api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "lint": "eslint \"**/*.ts\""
+  },
+  "dependencies": {
+    "@collabswipe/auth": "workspace:*",
+    "@collabswipe/db": "workspace:*",
+    "@prisma/client": "^6.19.2",
+    "@trpc/client": "^10.45.0",
+    "@trpc/server": "^10.45.0",
+    "superjson": "^2.2.6",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5.4.5"
+  }
+}
