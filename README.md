@@ -14,7 +14,7 @@ Projeyi bilgisayarınıza indirip hızlıca kodlamaya başlamak için aşağıda
 - [pnpm](https://pnpm.io/installation) (Paket yöneticisi olarak kullanılıyor `npm install -g pnpm`)
 - [Docker & Docker Compose](https://www.docker.com/products/docker-desktop) (Sadece PostgreSQL veritabanını çalıştırmak için lazım)
 
----
+---v
 
 ### Adım 1: Projeyi Klonlayın ve Bağımlılıkları Yükleyin
 

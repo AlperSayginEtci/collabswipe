@@ -20,6 +20,24 @@ export const connectionRouter = createTRPCRouter({
       })
     ),
 
+  // Profili reddet (Bir daha keşfet kısmında çıkmasın diye veritabanında REJECTED olarak kaydet)
+  rejectProfile: publicProcedure
+    .input(
+      z.object({
+        requesterId: z.string(),
+        addresseeId: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.connection.create({
+        data: {
+          requesterId: input.requesterId,
+          addresseeId: input.addresseeId,
+          status: "REJECTED",
+        },
+      })
+    ),
+
   // İsteği yanıtla (kabul / reddet)
   respond: publicProcedure
     .input(

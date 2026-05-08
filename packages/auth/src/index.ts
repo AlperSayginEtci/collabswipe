@@ -11,6 +11,14 @@ export const auth = betterAuth({
   }),
 
   /**
+   * Güvenilir kaynaklar (Origins) — Vite uygulamamızın çalıştığı adresler
+   */
+  trustedOrigins: [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+  ],
+
+  /**
    * E-posta / Şifre ile giriş
    */
   emailAndPassword: {
