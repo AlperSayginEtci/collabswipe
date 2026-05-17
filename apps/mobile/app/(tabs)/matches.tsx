@@ -25,13 +25,15 @@ export default function MatchesScreen() {
     trpc.connection.getMyConnections.useQuery({ userId: userId || '' }, { enabled: !!userId });
 
   // 2. Fetch conversations
-  const { data: conversations, isLoading: loadingConversations } =
-    trpc.conversation.list.useQuery({ userId: userId || '' }, { enabled: !!userId });
+  const { data: conversationsData, isLoading: loadingConversations } =
+    trpc.chat.getConversations.useQuery({ userId: userId || '' }, { enabled: !!userId });
+
+  const conversations = conversationsData?.items || [];
 
   // Mutation to create a new conversation
   const createConversation = trpc.conversation.create.useMutation({
     onSuccess: (data) => {
-      utils.conversation.list.invalidate();
+      utils.chat.getConversations.invalidate();
       router.push({
         pathname: '/chat',
         params: { conversationId: data.id },
@@ -64,8 +66,7 @@ export default function MatchesScreen() {
   };
 
   const handleConversationClick = (conv: any) => {
-    const otherParticipant = conv.participants.find((p: any) => p.userId !== userId);
-    const otherUser = otherParticipant?.user;
+    const otherUser = conv.otherUser;
 
     router.push({
       pathname: '/chat',
@@ -80,9 +81,12 @@ export default function MatchesScreen() {
   const isLoading = loadingConnections || loadingConversations;
 
   // Extract other users from matches/connections
-  const matches = (connections || []).map((conn: any) => {
-    return conn.requesterId === userId ? conn.addressee : conn.requester;
-  });
+  const matches = Array.from(new Map(
+    (connections || []).map((conn: any) => {
+      const matchUser = conn.requesterId === userId ? conn.addressee : conn.requester;
+      return [matchUser.id, matchUser];
+    })
+  ).values());
 
   return (
     <SafeAreaView style={styles.container}>
@@ -133,9 +137,8 @@ export default function MatchesScreen() {
               </View>
             ) : (
               conversations?.map((item: any) => {
-                const otherParticipant = item.participants.find((p: any) => p.userId !== userId);
-                const otherUser = otherParticipant?.user;
-                const lastMessage = item.messages[0];
+                const otherUser = item.otherUser;
+                const lastMessage = item.lastMessage;
                 const avatarUrl = otherUser?.image || `https://api.dicebear.com/7.x/notionists/png?seed=${otherUser?.name || 'User'}`;
 
                 return (

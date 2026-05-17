@@ -4,14 +4,14 @@ import { httpBatchLink } from '@trpc/client';
 import { useState } from 'react';
 import superjson from 'superjson';
 import { Platform } from 'react-native';
-import { trpc } from '../lib/trpc';
+import { trpc, getTrpcClient } from '../lib/trpc';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { UserProvider } from '../context/UserContext';
 
-const getBaseUrl = () => {
-  // Use computer's local IP (192.168.0.22) which is universally accessible on the same Wi-Fi network
+export const getBaseUrl = () => {
+  // Use computer's local IP (192.168.1.21) which is universally accessible on the same Wi-Fi network
   // for both physical devices (Android/iOS) and emulators.
-  return 'http://192.168.0.22:3001/api/trpc';
+  return 'http://192.168.1.21:3001';
 };
 
 function RootLayoutContent() {
@@ -26,16 +26,7 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient());
-  const [trpcClient] = useState(() =>
-    trpc.createClient({
-      links: [
-        httpBatchLink({
-          url: getBaseUrl(),
-        }),
-      ],
-      transformer: superjson,
-    })
-  );
+  const [trpcClient] = useState(() => getTrpcClient());
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
