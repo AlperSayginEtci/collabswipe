@@ -395,8 +395,4 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  noMore: {
-    fontSize: 20,
-    color: '#999',
-  },
 });
