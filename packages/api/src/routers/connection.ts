@@ -2,6 +2,7 @@ import { z } from "zod"
 import { createTRPCRouter, publicProcedure } from "../trpc"
 
 export const connectionRouter = createTRPCRouter({
+  // Bağlantı isteği gönder
   sendRequest: publicProcedure
     .input(
       z.object({
@@ -9,54 +10,15 @@ export const connectionRouter = createTRPCRouter({
         addresseeId: z.string(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      // Check if the other person already sent a request to this user
-      const existingRequest = await ctx.prisma.connection.findUnique({
-        where: {
-          requesterId_addresseeId: {
-            requesterId: input.addresseeId,
-            addresseeId: input.requesterId,
-          },
-        },
-      });
-
-      if (existingRequest && existingRequest.status === "PENDING") {
-        // Auto-match! Accept the existing request
-        const updatedConnection = await ctx.prisma.connection.update({
-          where: {
-            requesterId_addresseeId: {
-              requesterId: input.addresseeId,
-              addresseeId: input.requesterId,
-            },
-          },
-          data: { status: "ACCEPTED" },
-        });
-
-        // Create a conversation for the new match
-        await ctx.prisma.conversation.create({
-          data: {
-            isGroup: false,
-            participants: {
-              create: [
-                { userId: input.requesterId },
-                { userId: input.addresseeId },
-              ],
-            },
-          },
-        });
-
-        return updatedConnection;
-      }
-
-      // Otherwise, just create a new pending request
-      return ctx.prisma.connection.create({
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.connection.create({
         data: {
           requesterId: input.requesterId,
           addresseeId: input.addresseeId,
           status: "PENDING",
         },
-      });
-    }),
+      })
+    ),
 
   // Profili reddet (Bir daha keşfet kısmında çıkmasın diye veritabanında REJECTED olarak kaydet)
   rejectProfile: publicProcedure
@@ -85,9 +47,8 @@ export const connectionRouter = createTRPCRouter({
         status: z.enum(["ACCEPTED", "REJECTED"]),
       })
     )
-    .mutation(async ({ ctx, input }) => {
-      // First update the connection status
-      const updatedConnection = await ctx.prisma.connection.update({
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.connection.update({
         where: {
           requesterId_addresseeId: {
             requesterId: input.requesterId,
@@ -95,39 +56,8 @@ export const connectionRouter = createTRPCRouter({
           },
         },
         data: { status: input.status },
-      });
-
-      // If accepted, check if a conversation already exists, if not, create one
-      if (input.status === "ACCEPTED") {
-        // Find existing conversation between these two
-        const existingConvs = await ctx.prisma.conversation.findMany({
-          where: {
-            isGroup: false,
-            AND: [
-              { participants: { some: { userId: input.requesterId } } },
-              { participants: { some: { userId: input.addresseeId } } },
-            ],
-          },
-        });
-
-        if (existingConvs.length === 0) {
-          // Create new conversation
-          await ctx.prisma.conversation.create({
-            data: {
-              isGroup: false,
-              participants: {
-                create: [
-                  { userId: input.requesterId },
-                  { userId: input.addresseeId },
-                ],
-              },
-            },
-          });
-        }
-      }
-
-      return updatedConnection;
-    }),
+      })
+    ),
 
   // Kullanıcının bağlantılarını listele
   getMyConnections: publicProcedure
