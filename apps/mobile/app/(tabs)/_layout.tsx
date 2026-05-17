@@ -36,6 +36,13 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          title: 'Home',
+          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="home-outline" size={26} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="discover"
+        options={{
           title: 'Discover',
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="cards" size={26} color={color} />,
         }}

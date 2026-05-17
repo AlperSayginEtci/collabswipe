@@ -1,236 +1,144 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, ActivityIndicator, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  Image,
+  Alert,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-  interpolate,
-  runOnJS,
-} from 'react-native-reanimated';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import { trpc } from '../../lib/trpc';
 import { useUser } from '../../context/UserContext';
 
-const { width, height } = Dimensions.get('window');
-const SWIPE_THRESHOLD = width * 0.3;
-
-const getBackgroundColor = (id: string) => {
-  const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const colors = ['#FFE5EC', '#E8F0FE', '#E6FFFA', '#FFF4E5', '#F3E5F5', '#EBF7EE'];
-  return colors[hash % colors.length];
-};
-
-function SwipeCard({ item, isFirst, onSwipeKey }: { item: any; isFirst: boolean; onSwipeKey: (key: string, direction: 'left' | 'right') => void }) {
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
-
-  const panGesture = Gesture.Pan()
-    .onChange((event) => {
-      translateX.value = event.translationX;
-      translateY.value = event.translationY;
-    })
-    .onEnd((event) => {
-      if (Math.abs(event.translationX) > SWIPE_THRESHOLD) {
-        const sign = Math.sign(event.translationX);
-        const direction = sign === 1 ? 'right' : 'left';
-        
-        translateX.value = withSpring(sign * width * 1.5, { velocity: event.velocityX });
-        translateY.value = withSpring(event.translationY + event.velocityY * 0.2);
-        
-        runOnJS(onSwipeKey)(item.id, direction);
-      } else {
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
-      }
-    });
-
-  const animatedCardStyle = useAnimatedStyle(() => {
-    const rotate = interpolate(translateX.value, [-width / 2, 0, width / 2], [-10, 0, 10], 'clamp');
-    return {
-      transform: [
-        { translateX: translateX.value },
-        { translateY: translateY.value },
-        { rotate: `${rotate}deg` },
-      ],
-    };
-  });
-
-  const animatedLikeStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(translateX.value, [0, width * 0.15], [0, 1], 'clamp');
-    return {
-      opacity,
-      transform: [{ rotate: '-12deg' }],
-    };
-  });
-
-  const animatedNopeStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(translateX.value, [-width * 0.15, 0], [1, 0], 'clamp');
-    return {
-      opacity,
-      transform: [{ rotate: '12deg' }],
-    };
-  });
-
-  const bgColor = getBackgroundColor(item.id);
-  const nameText = `${item.name} ${item.surname || ''}`.trim();
-  const bioText = item.profile?.bio || 'Bu kullanıcı henüz bir biyografi eklememiş.';
-  const locationText = item.profile?.location || 'Turkey';
-  const skills = item.profile?.skills?.map((s: any) => s.skill.skillName) ?? [];
-  const imageUrl = item.image || `https://api.dicebear.com/7.x/notionists/png?seed=${item.name}`;
-
-  if (!isFirst) {
-    return (
-      <View style={[styles.card, { backgroundColor: bgColor }]}>
-        <Image source={{ uri: imageUrl }} style={styles.cardImage} />
-        <View style={styles.cardInfo}>
-          <Text style={styles.name}>{nameText}</Text>
-          <Text style={styles.location}><MaterialCommunityIcons name="map-marker" size={14} /> {locationText}</Text>
-          <Text style={styles.bio} numberOfLines={3}>{bioText}</Text>
-          {skills.length > 0 && (
-            <View style={styles.skillsContainer}>
-              {skills.slice(0, 3).map((skill: string) => (
-                <View key={skill} style={styles.skillBadge}>
-                  <Text style={styles.skillBadgeText}>{skill}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-      </View>
-    );
-  }
-
-  return (
-    <GestureDetector gesture={panGesture}>
-      <Animated.View style={[styles.card, { backgroundColor: bgColor }, animatedCardStyle]}>
-        <Image source={{ uri: imageUrl }} style={styles.cardImage} />
-        
-        {/* BEĞEN Rozeti */}
-        <Animated.View style={[styles.badgeContainer, styles.likeBadge, animatedLikeStyle]}>
-          <Text style={styles.badgeTextLike}>BEĞEN</Text>
-        </Animated.View>
-
-        {/* GEÇ Rozeti */}
-        <Animated.View style={[styles.badgeContainer, styles.nopeBadge, animatedNopeStyle]}>
-          <Text style={styles.badgeTextNope}>GEÇ</Text>
-        </Animated.View>
-
-        <View style={styles.cardInfo}>
-          <Text style={styles.name}>{nameText}</Text>
-          <Text style={styles.location}><MaterialCommunityIcons name="map-marker" size={14} /> {locationText}</Text>
-          <Text style={styles.bio}>{bioText}</Text>
-          {skills.length > 0 && (
-            <View style={styles.skillsContainer}>
-              {skills.slice(0, 3).map((skill: string) => (
-                <View key={skill} style={styles.skillBadge}>
-                  <Text style={styles.skillBadgeText}>{skill}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-      </Animated.View>
-    </GestureDetector>
-  );
-}
-
-export default function DiscoverScreen() {
-  const { userId } = useUser();
-  const [swipedIds, setSwipedIds] = useState<string[]>([]);
+export default function HomeFeedScreen() {
+  const { userId, user } = useUser();
+  const [content, setContent] = useState('');
   const utils = trpc.useUtils();
 
-  const { data: profiles, isLoading } = trpc.user.getDiscoverable.useQuery({ userId: userId || '' }, { enabled: !!userId });
+  const { data: feedData, isLoading: isFeedLoading, refetch } = trpc.post.getFeed.useQuery({});
 
-  const sendRequest = trpc.connection.sendRequest.useMutation({
+  const createPost = trpc.post.create.useMutation({
     onSuccess: () => {
-      console.log('Connection request sent');
-      utils.user.getDiscoverable.invalidate();
+      setContent('');
+      utils.post.getFeed.invalidate();
     },
-    onError: (err) => Alert.alert('Hata', 'Bağlantı isteği gönderilemedi.')
+    onError: (err) => {
+      Alert.alert('Hata', 'Gönderi paylaşılamadı. Veritabanı bağlantısını kontrol edin.');
+      console.error(err);
+    },
   });
 
-  const rejectProfile = trpc.connection.rejectProfile.useMutation({
-    onSuccess: () => {
-      console.log('Profile rejected');
-      utils.user.getDiscoverable.invalidate();
-    },
-    onError: (err) => Alert.alert('Hata', 'Profil geçilemedi.')
-  });
-
-  const activeProfiles = (profiles || []).filter((p) => !swipedIds.includes(p.id));
-
-  const handleSwipe = (id: string, direction: 'left' | 'right') => {
-    if (!userId) return;
-    if (direction === 'right') {
-      sendRequest.mutate({ requesterId: userId, addresseeId: id });
-    } else {
-      rejectProfile.mutate({ requesterId: userId, addresseeId: id });
-    }
-    setSwipedIds((prev) => [...prev, id]);
+  const handlePost = () => {
+    if (!content.trim() || !userId) return;
+    createPost.mutate({ authorId: userId, content: content.trim() });
   };
 
-  const handleButtonReject = () => {
-    if (activeProfiles.length === 0) return;
-    handleSwipe(activeProfiles[0].id, 'left');
-  };
+  const renderComposer = () => (
+    <View style={styles.composerCard}>
+      <View style={styles.composerHeader}>
+        <Image
+          source={{ uri: user?.image || `https://api.dicebear.com/7.x/notionists/png?seed=${user?.name || 'user'}` }}
+          style={styles.composerAvatar}
+        />
+        <TextInput
+          style={styles.composerInput}
+          placeholder="Neler düşünüyorsun? Yeni bir proje paylaş veya soru sor."
+          placeholderTextColor="#999"
+          multiline
+          value={content}
+          onChangeText={setContent}
+          maxLength={500}
+        />
+      </View>
+      <View style={styles.composerFooter}>
+        <TouchableOpacity
+          style={[styles.postButton, (!content.trim() || createPost.isLoading) && styles.postButtonDisabled]}
+          onPress={handlePost}
+          disabled={!content.trim() || createPost.isLoading}
+        >
+          {createPost.isLoading ? (
+            <ActivityIndicator size="small" color="#FFF" />
+          ) : (
+            <>
+              <Text style={styles.postButtonText}>Paylaş</Text>
+              <MaterialCommunityIcons name="send" size={16} color="#FFF" />
+            </>
+          )}
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
-  const handleButtonAccept = () => {
-    if (activeProfiles.length === 0) return;
-    handleSwipe(activeProfiles[0].id, 'right');
-  };
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#4ECDC4" />
-          <Text style={styles.loadingText}>Yükleniyor...</Text>
+  const renderPost = ({ item }: { item: any }) => (
+    <View style={styles.postCard}>
+      <View style={styles.postHeader}>
+        <Image
+          source={{ uri: item.author?.image || `https://api.dicebear.com/7.x/notionists/png?seed=${item.author?.name || 'user'}` }}
+          style={styles.postAvatar}
+        />
+        <View style={styles.postAuthorInfo}>
+          <Text style={styles.postAuthorName}>
+            {item.author?.name || 'Mock'} {item.author?.surname || 'User'}
+          </Text>
+          <Text style={styles.postTime}>
+            {new Date(item.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+          </Text>
         </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Render cards in reverse order so that activeProfiles[0] is rendered last (on top of the stack)
-  const renderedProfiles = [...activeProfiles].reverse();
+      </View>
+      
+      <Text style={styles.postContent}>{item.content}</Text>
+      
+      <View style={styles.postActions}>
+        <TouchableOpacity style={styles.actionButton}>
+          <MaterialCommunityIcons name="heart-outline" size={20} color="#666" />
+          <Text style={styles.actionText}>Beğen ({item._count?.likes || 0})</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton}>
+          <MaterialCommunityIcons name="comment-outline" size={20} color="#666" />
+          <Text style={styles.actionText}>Yorum ({item._count?.comments || 0})</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton}>
+          <MaterialCommunityIcons name="repeat" size={20} color="#666" />
+          <Text style={styles.actionText}>Repost</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Collabswipe</Text>
+        <Text style={styles.headerTitle}>Ana Sayfa</Text>
       </View>
       
-      <View style={styles.cardContainer}>
-        {activeProfiles.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <MaterialCommunityIcons name="creation" size={48} color="#4ECDC4" />
-            <Text style={styles.noMore}>Harika İş! 🎉</Text>
-            <Text style={styles.noMoreSubtitle}>Etrafındaki tüm adayları inceledin.</Text>
-          </View>
-        ) : (
-          renderedProfiles.map((item, index) => {
-            const isFirst = index === renderedProfiles.length - 1;
-            return (
-              <SwipeCard
-                key={item.id}
-                item={item}
-                isFirst={isFirst}
-                onSwipeKey={handleSwipe}
-              />
-            );
-          })
-        )}
-      </View>
-
-      <View style={styles.actionsContainer}>
-        <TouchableOpacity style={styles.actionButton} onPress={handleButtonReject}>
-          <MaterialCommunityIcons name="close" size={32} color="#FF6B6B" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={handleButtonAccept} disabled={sendRequest.isLoading}>
-          <MaterialCommunityIcons name="heart" size={32} color="#4ECDC4" />
-        </TouchableOpacity>
-      </View>
+      <FlatList
+        data={feedData?.items || []}
+        keyExtractor={(item) => item.id}
+        renderItem={renderPost}
+        ListHeaderComponent={
+          <>
+            <View style={styles.feedHeaderInfo}>
+              <Text style={styles.feedTitle}>Akışınız</Text>
+              <Text style={styles.feedSubtitle}>Ağınızdaki en son güncellemeleri görün.</Text>
+            </View>
+            {renderComposer()}
+          </>
+        }
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
+        refreshing={isFeedLoading}
+        onRefresh={() => refetch()}
+        ListEmptyComponent={
+          !isFeedLoading ? (
+            <Text style={styles.emptyText}>Henüz gönderi yok. İlk paylaşan sen ol!</Text>
+          ) : null
+        }
+      />
     </SafeAreaView>
   );
 }
@@ -240,163 +148,156 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FAFAFA',
   },
-  badgeContainer: {
-    position: 'absolute',
-    top: 40,
-    zIndex: 100,
-    borderWidth: 4,
-    borderRadius: 10,
-    paddingHorizontal: 15,
-    paddingVertical: 5,
-  },
-  likeBadge: {
-    left: 40,
-    borderColor: '#4ECDC4',
-  },
-  nopeBadge: {
-    right: 40,
-    borderColor: '#FF6B6B',
-  },
-  badgeTextLike: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#4ECDC4',
-    letterSpacing: 2,
-  },
-  badgeTextNope: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: '#FF6B6B',
-    letterSpacing: 2,
-  },
   header: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    alignItems: 'center',
+    paddingVertical: 16,
+    backgroundColor: '#FFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEE',
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: '800',
-    color: '#FF6B6B',
-  },
-  cardContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    width: '100%',
-  },
-  card: {
-    width: width * 0.9,
-    height: height * 0.62,
-    borderRadius: 28,
-    position: 'absolute',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    justifyContent: 'flex-end',
-    padding: 16,
-    overflow: 'hidden',
-  },
-  cardImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '42%',
-    backgroundColor: 'rgba(0,0,0,0.03)',
-  },
-  cardInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    padding: 16,
-    borderRadius: 22,
-  },
-  name: {
-    fontSize: 24,
     fontWeight: '900',
     color: '#1A1A1A',
   },
-  location: {
-    fontSize: 13,
-    color: '#666',
-    fontWeight: '600',
-    marginTop: 2,
-    marginBottom: 6,
+  listContainer: {
+    padding: 16,
+    paddingBottom: 40,
   },
-  bio: {
+  feedHeaderInfo: {
+    marginBottom: 16,
+  },
+  feedTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#333',
+  },
+  feedSubtitle: {
     fontSize: 14,
-    color: '#444',
-    lineHeight: 18,
+    color: '#666',
+    marginTop: 4,
   },
-  skillsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 10,
-  },
-  skillBadge: {
+  composerCard: {
     backgroundColor: '#FFF',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
     borderWidth: 1,
     borderColor: '#EFEFEF',
   },
-  skillBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#555',
-    textTransform: 'uppercase',
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 10,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: '#888',
-    fontWeight: '600',
-  },
-  emptyContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-  },
-  noMore: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: '#1A1A1A',
-    marginTop: 10,
-  },
-  noMoreSubtitle: {
-    fontSize: 14,
-    color: '#888',
-    textAlign: 'center',
-  },
-  actionsContainer: {
+  composerHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    paddingVertical: 20,
+    alignItems: 'flex-start',
+  },
+  composerAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F0F0F0',
+    marginRight: 12,
+  },
+  composerInput: {
+    flex: 1,
+    minHeight: 60,
+    fontSize: 15,
+    color: '#333',
+    textAlignVertical: 'top',
+  },
+  composerFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F5F5F5',
+    paddingTop: 12,
+  },
+  postButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#4ECDC4',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+  postButtonDisabled: {
+    backgroundColor: '#CCC',
+  },
+  postButtonText: {
+    color: '#FFF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  postCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+  },
+  postHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  postAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#F5F5F5',
+    marginRight: 12,
+  },
+  postAuthorInfo: {
+    flex: 1,
+  },
+  postAuthorName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1A1A',
+  },
+  postTime: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
+  },
+  postContent: {
+    fontSize: 15,
+    color: '#333',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  postActions: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderTopColor: '#F5F5F5',
+    paddingTop: 12,
+    gap: 20,
   },
   actionButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#FFF',
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    gap: 6,
   },
-  noMore: {
-    fontSize: 20,
+  actionText: {
+    fontSize: 13,
+    color: '#666',
+    fontWeight: '500',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 40,
     color: '#999',
+    fontSize: 14,
   },
 });

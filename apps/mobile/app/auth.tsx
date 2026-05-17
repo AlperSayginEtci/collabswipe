@@ -99,7 +99,7 @@ export default function AuthScreen() {
     }
   };
 
-  const isLoading = loginMutation.isLoading || registerMutation.isLoading;
+  const isSubmitting = loginMutation.isLoading || registerMutation.isLoading;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -122,14 +122,14 @@ export default function AuthScreen() {
             <TouchableOpacity
               style={[styles.tabButton, isLoginTab && styles.activeTabButton]}
               onPress={() => setIsLoginTab(true)}
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
               <Text style={[styles.tabText, isLoginTab && styles.activeTabText]}>Giriş Yap</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.tabButton, !isLoginTab && styles.activeTabButton]}
               onPress={() => setIsLoginTab(false)}
-              disabled={isLoading}
+              disabled={isSubmitting}
             >
               <Text style={[styles.tabText, !isLoginTab && styles.activeTabText]}>Kayıt Ol</Text>
             </TouchableOpacity>
@@ -147,7 +147,7 @@ export default function AuthScreen() {
                     placeholderTextColor="#AAA"
                     value={name}
                     onChangeText={setName}
-                    editable={!isLoading}
+                    editable={!isSubmitting}
                   />
                 </View>
 
@@ -159,7 +159,7 @@ export default function AuthScreen() {
                     placeholderTextColor="#AAA"
                     value={surname}
                     onChangeText={setSurname}
-                    editable={!isLoading}
+                    editable={!isSubmitting}
                   />
                 </View>
 
@@ -169,7 +169,7 @@ export default function AuthScreen() {
                   <TouchableOpacity
                     style={[styles.roleButton, role === 'user' && styles.activeRoleButton]}
                     onPress={() => setRole('user')}
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                   >
                     <MaterialCommunityIcons name="xml" size={20} color={role === 'user' ? '#FFF' : '#FF6B6B'} />
                     <Text style={[styles.roleButtonText, role === 'user' && styles.activeRoleButtonText]}>Yazılımcı</Text>
@@ -178,7 +178,7 @@ export default function AuthScreen() {
                   <TouchableOpacity
                     style={[styles.roleButton, role === 'employer' && styles.activeRoleButton]}
                     onPress={() => setRole('employer')}
-                    disabled={isLoading}
+                    disabled={isSubmitting}
                   >
                     <MaterialCommunityIcons name="briefcase-outline" size={20} color={role === 'employer' ? '#FFF' : '#FF6B6B'} />
                     <Text style={[styles.roleButtonText, role === 'employer' && styles.activeRoleButtonText]}>İlan Veren</Text>
@@ -198,7 +198,7 @@ export default function AuthScreen() {
                 autoCorrect={false}
                 value={email}
                 onChangeText={setEmail}
-                editable={!isLoading}
+                editable={!isSubmitting}
               />
             </View>
 
@@ -213,12 +213,12 @@ export default function AuthScreen() {
                 autoCorrect={false}
                 value={password}
                 onChangeText={setPassword}
-                editable={!isLoading}
+                editable={!isSubmitting}
               />
             </View>
 
-            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={isLoading}>
-              {isLoading ? (
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? (
                 <ActivityIndicator size="small" color="#FFF" />
               ) : (
                 <Text style={styles.submitButtonText}>
