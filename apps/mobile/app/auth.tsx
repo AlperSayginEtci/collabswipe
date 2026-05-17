@@ -23,6 +23,18 @@ const { width } = Dimensions.get('window');
 export default function AuthScreen() {
   const { userId, isLoading, login } = useUser();
 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FAFAFA' }}>
+        <ActivityIndicator size="large" color="#FF6B6B" />
+      </View>
+    );
+  }
+
+  if (userId) {
+    return <Redirect href="/(tabs)" />;
+  }
+
   const [isLoginTab, setIsLoginTab] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -55,18 +67,6 @@ export default function AuthScreen() {
       Alert.alert('Kayıt Hatası', err.message || 'Bir hata oluştu.');
     },
   });
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FAFAFA' }}>
-        <ActivityIndicator size="large" color="#FF6B6B" />
-      </View>
-    );
-  }
-
-  if (userId) {
-    return <Redirect href="/(tabs)" />;
-  }
 
   const handleSubmit = () => {
     if (!email || !email.includes('@')) {
