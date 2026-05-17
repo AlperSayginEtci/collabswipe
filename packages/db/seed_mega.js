@@ -102,6 +102,56 @@ const CANDIDATES = [
     bio: "Quality Assurance Engineer. Experienced in creating complete automated testing suites using Selenium, Cypress, and Jest.",
     location: "Istanbul, Turkey",
     skills: ["Cypress", "CI/CD", "TypeScript", "React"]
+  },
+  {
+    id: "seeker-ali",
+    email: "ali@collabswipe.com",
+    name: "Ali",
+    surname: "Vefa",
+    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Ali",
+    bio: "Data Scientist focusing on predictive modeling and big data analytics. Loves working with Pandas and Scikit-Learn.",
+    location: "Ankara, Turkey",
+    skills: ["Python", "Data Science", "Machine Learning"]
+  },
+  {
+    id: "seeker-ayse",
+    email: "ayse@collabswipe.com",
+    name: "Ayşe",
+    surname: "Yılmaz",
+    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Ayse",
+    bio: "Creative Web Developer with an eye for stunning animations. Expert in Three.js and WebGL.",
+    location: "Izmir, Turkey",
+    skills: ["JavaScript", "Three.js", "WebGL", "CSS"]
+  },
+  {
+    id: "seeker-onur",
+    email: "onur@collabswipe.com",
+    name: "Onur",
+    surname: "Tekin",
+    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Onur",
+    bio: "Mobile Developer specializing in Flutter. Built over 10 cross-platform apps currently live on App Store and Play Store.",
+    location: "Antalya, Turkey",
+    skills: ["Flutter", "Dart", "Firebase"]
+  },
+  {
+    id: "seeker-deniz",
+    email: "deniz@collabswipe.com",
+    name: "Deniz",
+    surname: "Karakaya",
+    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Deniz",
+    bio: "Game Developer working with Unity and C#. Passionate about indie games and virtual reality experiences.",
+    location: "Eskişehir, Turkey",
+    skills: ["Unity", "C#", "Game Design"]
+  },
+  {
+    id: "seeker-emre",
+    email: "emre@collabswipe.com",
+    name: "Emre",
+    surname: "Çoban",
+    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Emre",
+    bio: "Blockchain Engineer with a focus on smart contracts and DeFi protocols. Solidity and Rust enthusiast.",
+    location: "Istanbul, Turkey",
+    skills: ["Solidity", "Rust", "Web3"]
   }
 ];
 
@@ -140,6 +190,27 @@ const EMPLOYERS = [
     name: "Slack",
     surname: "Technologies",
     image: "https://api.dicebear.com/7.x/initials/svg?seed=Slack"
+  },
+  {
+    id: "emp-google",
+    email: "google@collabswipe.com",
+    name: "Google",
+    surname: "LLC",
+    image: "https://api.dicebear.com/7.x/initials/svg?seed=Google"
+  },
+  {
+    id: "emp-meta",
+    email: "meta@collabswipe.com",
+    name: "Meta",
+    surname: "Platforms",
+    image: "https://api.dicebear.com/7.x/initials/svg?seed=Meta"
+  },
+  {
+    id: "emp-amazon",
+    email: "amazon@collabswipe.com",
+    name: "Amazon",
+    surname: "Web Services",
+    image: "https://api.dicebear.com/7.x/initials/svg?seed=Amazon"
   }
 ];
 
@@ -223,6 +294,46 @@ const JOBS = [
     description: "Build robust end-to-end automated testing suites for our web, mobile, and smart TV streaming clients. We use Cypress, Jest, and Playwright integrated into our pipeline to guarantee zero bugs on deployments.",
     type: "CORPORATE",
     reqSkill: "Cypress"
+  },
+  {
+    id: "mega-job-11",
+    employerId: "emp-google",
+    title: "Senior Data Scientist",
+    description: "Join our core Search ranking team. You will be responsible for improving query understanding using large language models and vast datasets. Experience with Python, TensorFlow, and BigQuery is a must.",
+    type: "CORPORATE",
+    reqSkill: "Python"
+  },
+  {
+    id: "mega-job-12",
+    employerId: "emp-meta",
+    title: "React Native Mobile Developer",
+    description: "Help build the next generation of social experiences. We are looking for engineers to optimize our React Native bridges and implement buttery-smooth 60fps animations for the Instagram app.",
+    type: "CORPORATE",
+    reqSkill: "React Native"
+  },
+  {
+    id: "mega-job-13",
+    employerId: "emp-amazon",
+    title: "Freelance AWS Cloud Architect",
+    description: "We need an independent consultant to help design serverless architectures for our enterprise clients. Strong knowledge of AWS Lambda, DynamoDB, API Gateway, and CloudFormation.",
+    type: "FREELANCE",
+    reqSkill: "AWS"
+  },
+  {
+    id: "mega-job-14",
+    employerId: "emp-google",
+    title: "Frontend Developer (Creative)",
+    description: "Create mind-blowing interactive web experiences for Google Doodles. Experience with Three.js, WebGL, and advanced CSS animations is required. Show us your creative portfolio!",
+    type: "FREELANCE",
+    reqSkill: "Three.js"
+  },
+  {
+    id: "mega-job-15",
+    employerId: "emp-meta",
+    title: "Smart Contract Security Auditor",
+    description: "Meta is exploring Web3 initiatives. We need a rigorous security auditor to find vulnerabilities in our Solidity smart contracts before they are deployed to the mainnet. High responsibility role.",
+    type: "FREELANCE",
+    reqSkill: "Solidity"
   }
 ];
 

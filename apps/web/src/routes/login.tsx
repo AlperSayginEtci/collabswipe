@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Mail, Lock, User as UserIcon, ArrowRight, Sparkles } from 'lucide-react';
 import { signIn, signUp, useSession } from '@collabswipe/auth/client';
+import toast from 'react-hot-toast';
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -57,7 +58,7 @@ function LoginPage() {
         if (res?.error) {
           setError(res.error.message || 'Kayıt olunamadı. Lütfen tekrar deneyin.');
         } else {
-          alert('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
+          toast.success('Kayıt başarılı! Şimdi giriş yapabilirsiniz.');
           setIsLogin(true);
         }
       }

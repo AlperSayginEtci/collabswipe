@@ -3,49 +3,60 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { trpc } from '../../lib/trpc';
+import { useUser } from '../../context/UserContext';
 
 export default function JobsScreen() {
-  const { data: jobsResponse, isLoading, error } = trpc.job.list.useQuery({});
+  const { user } = useUser();
+  const utils = trpc.useContext();
+  const { data: jobsResponse, isLoading, error } = trpc.job.list.useQuery({
+    userId: user?.id
+  });
   const applyJob = trpc.job.apply.useMutation({
-    onSuccess: () => Alert.alert('Success', 'Successfully applied for the job!'),
+    onSuccess: () => {
+      Alert.alert('Success', 'Successfully applied for the job!');
+      utils.job.list.invalidate();
+    },
     onError: (err) => Alert.alert('Error', 'Failed to apply. Is the backend running?')
   });
 
   const translateType = (type: string) => type === 'FREELANCE' ? 'Freelance' : 'Corporate';
 
-  const renderJobCard = ({ item }: { item: any }) => (
-    <View style={styles.card}>
-      <View style={styles.cardHeader}>
-        <View style={styles.iconContainer}>
-          <MaterialCommunityIcons name="briefcase-outline" size={24} color="#666" />
+  const renderJobCard = ({ item }: { item: any }) => {
+    const isCurrentlyApplying = applyJob.isLoading && applyJob.variables?.jobId === item.id;
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <View style={styles.iconContainer}>
+            <MaterialCommunityIcons name="briefcase-outline" size={24} color="#666" />
+          </View>
+          <View style={styles.headerText}>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.company}>{item.publisher?.name || 'Company'} {item.publisher?.surname || ''}</Text>
+          </View>
         </View>
-        <View style={styles.headerText}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.company}>{item.publisher?.name || 'Company'} {item.publisher?.surname || ''}</Text>
+        
+        <View style={styles.tagsContainer}>
+          <View style={styles.tag}><Text style={styles.tagText}>Remote</Text></View>
+          <View style={[styles.tag, styles.typeTag]}>
+            <Text style={styles.typeText}>{translateType(item.type)}</Text>
+          </View>
+          <View style={styles.tag}>
+            <Text style={styles.tagText}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+          </View>
         </View>
-      </View>
-      
-      <View style={styles.tagsContainer}>
-        <View style={styles.tag}><Text style={styles.tagText}>Remote</Text></View>
-        <View style={[styles.tag, styles.typeTag]}>
-          <Text style={styles.typeText}>{translateType(item.type)}</Text>
-        </View>
-        <View style={styles.tag}>
-          <Text style={styles.tagText}>{new Date(item.createdAt).toLocaleDateString()}</Text>
-        </View>
-      </View>
 
-      <TouchableOpacity 
-        style={[styles.applyButton, applyJob.isLoading && styles.applyButtonDisabled]} 
-        onPress={() => applyJob.mutate({ jobId: item.id, applicantId: 'mock-mobile-user' })}
-        disabled={applyJob.isLoading}
-      >
-        <Text style={styles.applyButtonText}>
-          {applyJob.isLoading ? 'Applying...' : 'Apply Now'}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
+        <TouchableOpacity 
+          style={[styles.applyButton, isCurrentlyApplying && styles.applyButtonDisabled]} 
+          onPress={() => applyJob.mutate({ jobId: item.id, applicantId: user?.id || 'mock-mobile-user' })}
+          disabled={isCurrentlyApplying}
+        >
+          <Text style={styles.applyButtonText}>
+            {isCurrentlyApplying ? 'Applying...' : 'Apply Now'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>

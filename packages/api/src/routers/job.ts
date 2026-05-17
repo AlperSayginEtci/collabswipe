@@ -23,16 +23,20 @@ export const jobRouter = createTRPCRouter({
       z.object({
         type: z.enum(["FREELANCE", "CORPORATE"]).optional(),
         status: z.enum(["OPEN", "CLOSED", "BANNED"]).optional(),
+        userId: z.string().optional(),
         cursor: z.string().optional(),
         limit: z.number().min(1).max(50).default(20),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { type, status, cursor, limit } = input
+      const { type, status, userId, cursor, limit } = input
       const items = await ctx.prisma.jobPosting.findMany({
         where: {
           ...(type && { type }),
           ...(status && { status }),
+          ...(userId && {
+            applications: { none: { applicantId: userId } }
+          })
         },
         orderBy: { createdAt: "desc" },
         take: limit + 1,
@@ -74,9 +78,15 @@ export const jobRouter = createTRPCRouter({
         coverLetter: z.string().optional(),
       })
     )
-    .mutation(({ ctx, input }) =>
-      ctx.prisma.jobApplication.create({ data: input })
-    ),
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.prisma.jobApplication.findFirst({
+        where: { jobId: input.jobId, applicantId: input.applicantId }
+      })
+      if (existing) {
+        throw new Error("You have already applied to this job.")
+      }
+      return ctx.prisma.jobApplication.create({ data: input })
+    }),
 
   // Başvuru durumunu güncelle (ilan sahibi için)
   updateApplicationStatus: publicProcedure
