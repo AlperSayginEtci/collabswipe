@@ -2,9 +2,11 @@ import { Tabs, Redirect } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { View, ActivityIndicator } from 'react-native';
 import { useUser } from '../../context/UserContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
   const { userId, isLoading } = useUser();
+  const insets = useSafeAreaInsets();
 
   if (isLoading) {
     return (
@@ -28,8 +30,8 @@ export default function TabLayout() {
           borderTopWidth: 1,
           borderTopColor: '#EEE',
           backgroundColor: '#FFF',
-          height: 60,
-          paddingBottom: 8,
+          height: 60 + Math.max(insets.bottom, 10),
+          paddingBottom: 8 + Math.max(insets.bottom, 10),
           paddingTop: 8,
         },
       }}>

@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Search, Building, Clock, MapPin, Inbox } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { useSession } from '@collabswipe/auth/client';
+import toast from 'react-hot-toast';
 
 export const Route = createFileRoute('/jobs')({
   component: JobsPage,
@@ -14,13 +15,19 @@ function JobsPage() {
   const [showFreelance, setShowFreelance] = useState(true);
   const [showCorporate, setShowCorporate] = useState(true);
 
-  const { data: jobsResponse, isLoading } = trpc.job.list.useQuery({});
+  const utils = trpc.useUtils();
+  const { data: jobsResponse, isLoading } = trpc.job.list.useQuery({
+    userId: session?.user?.id
+  });
   
   const applyJob = trpc.job.apply.useMutation({
-    onSuccess: () => alert('Successfully applied for the job!'),
+    onSuccess: () => {
+      toast.success('Successfully applied for the job!');
+      utils.job.list.invalidate();
+    },
     onError: (err) => {
       console.error(err);
-      alert('Failed to apply. Is the database running?');
+      toast.error('Failed to apply. Is the database running?');
     }
   });
 
@@ -135,7 +142,7 @@ function JobsPage() {
                         if (!session?.user?.id) return;
                         applyJob.mutate({ jobId: job.id, applicantId: session.user.id });
                       }}
-                      disabled={applyJob.isLoading}
+                      disabled={isCurrentlyApplying}
                       className="bg-foreground text-background font-bold px-5 py-2 rounded-lg hover:opacity-90 w-full md:w-auto disabled:opacity-50"
                     >
                       {isCurrentlyApplying ? 'Applying...' : 'Apply'}

@@ -3,6 +3,7 @@ import { Send } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
 import { useSession } from '@collabswipe/auth/client';
+import toast from 'react-hot-toast';
 
 export const Route = createFileRoute('/')({
   component: HomeFeed,
@@ -17,13 +18,13 @@ function HomeFeed() {
   
   const createPost = trpc.post.create.useMutation({
     onSuccess: () => {
-      alert('Post created successfully!');
+      toast.success('Post created successfully!');
       setContent('');
       utils.post.getFeed.invalidate();
     },
     onError: (err) => {
       console.error(err);
-      alert('Failed to create post. Is the database running?');
+      toast.error('Failed to create post. Is the database running?');
     }
   });
 

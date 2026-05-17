@@ -22,7 +22,7 @@ const getBackgroundColor = (id: string) => {
   return colors[hash % colors.length];
 };
 
-function SwipeCard({ item, isFirst, onSwipeKey }: { item: any; isFirst: boolean; onSwipeKey: (key: string, direction: 'left' | 'right') => void }) {
+function SwipeCard({ item, isFirst, isProfiles, onSwipeKey }: { item: any; isFirst: boolean; isProfiles: boolean; onSwipeKey: (key: string, direction: 'left' | 'right') => void }) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
 
@@ -74,63 +74,70 @@ function SwipeCard({ item, isFirst, onSwipeKey }: { item: any; isFirst: boolean;
   });
 
   const bgColor = getBackgroundColor(item.id);
-  const nameText = `${item.name} ${item.surname || ''}`.trim();
-  const bioText = item.profile?.bio || 'Bu kullanıcı henüz bir biyografi eklememiş.';
-  const locationText = item.profile?.location || 'Turkey';
-  const skills = item.profile?.skills?.map((s: any) => s.skill.skillName) ?? [];
-  const imageUrl = item.image || `https://api.dicebear.com/7.x/notionists/png?seed=${item.name}`;
+  
+  // Dynamic fields
+  const nameText = isProfiles ? `${item.name} ${item.surname || ''}`.trim() : item.title;
+  const subtitleText = isProfiles 
+    ? (item.email)
+    : `${item.publisher?.name || 'Company'} ${item.publisher?.surname || ''}`;
+    
+  const bioText = isProfiles 
+    ? (item.profile?.bio || 'Bu kullanıcı henüz bir biyografi eklememiş.')
+    : (item.description);
+    
+  const locationText = isProfiles 
+    ? (item.profile?.location || 'Türkiye')
+    : (item.type);
+    
+  const skills = isProfiles 
+    ? (item.profile?.skills?.map((s: any) => s.skill.skillName) ?? [])
+    : (item.skill?.skillName ? [item.skill.skillName] : []);
+    
+  const imageUrl = isProfiles 
+    ? (item.image || `https://api.dicebear.com/7.x/notionists/png?seed=${item.name}`)
+    : (item.publisher?.image || `https://api.dicebear.com/7.x/shapes/png?seed=${item.id}`);
+
+  const innerContent = (
+    <>
+      <Image source={{ uri: imageUrl }} style={styles.cardImage} />
+      
+      {isFirst && (
+        <>
+          <Animated.View style={[styles.badgeContainer, styles.likeBadge, animatedLikeStyle]}>
+            <Text style={styles.badgeTextLike}>{isProfiles ? 'BEĞEN' : 'BAŞVUR'}</Text>
+          </Animated.View>
+          <Animated.View style={[styles.badgeContainer, styles.nopeBadge, animatedNopeStyle]}>
+            <Text style={styles.badgeTextNope}>GEÇ</Text>
+          </Animated.View>
+        </>
+      )}
+
+      <View style={styles.cardInfo}>
+        <Text style={styles.name}>{nameText}</Text>
+        <Text style={styles.subtitle}>{subtitleText}</Text>
+        <Text style={styles.location}><MaterialCommunityIcons name={isProfiles ? "map-marker" : "briefcase"} size={14} /> {locationText}</Text>
+        <Text style={styles.bio} numberOfLines={3}>{bioText}</Text>
+        {skills.length > 0 && (
+          <View style={styles.skillsContainer}>
+            {skills.slice(0, 3).map((skill: string) => (
+              <View key={skill} style={styles.skillBadge}>
+                <Text style={styles.skillBadgeText}>{skill}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+    </>
+  );
 
   if (!isFirst) {
-    return (
-      <View style={[styles.card, { backgroundColor: bgColor }]}>
-        <Image source={{ uri: imageUrl }} style={styles.cardImage} />
-        <View style={styles.cardInfo}>
-          <Text style={styles.name}>{nameText}</Text>
-          <Text style={styles.location}><MaterialCommunityIcons name="map-marker" size={14} /> {locationText}</Text>
-          <Text style={styles.bio} numberOfLines={3}>{bioText}</Text>
-          {skills.length > 0 && (
-            <View style={styles.skillsContainer}>
-              {skills.slice(0, 3).map((skill: string) => (
-                <View key={skill} style={styles.skillBadge}>
-                  <Text style={styles.skillBadgeText}>{skill}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-      </View>
-    );
+    return <View style={[styles.card, { backgroundColor: bgColor }]}>{innerContent}</View>;
   }
 
   return (
     <GestureDetector gesture={panGesture}>
       <Animated.View style={[styles.card, { backgroundColor: bgColor }, animatedCardStyle]}>
-        <Image source={{ uri: imageUrl }} style={styles.cardImage} />
-        
-        {/* BEĞEN Rozeti */}
-        <Animated.View style={[styles.badgeContainer, styles.likeBadge, animatedLikeStyle]}>
-          <Text style={styles.badgeTextLike}>BEĞEN</Text>
-        </Animated.View>
-
-        {/* GEÇ Rozeti */}
-        <Animated.View style={[styles.badgeContainer, styles.nopeBadge, animatedNopeStyle]}>
-          <Text style={styles.badgeTextNope}>GEÇ</Text>
-        </Animated.View>
-
-        <View style={styles.cardInfo}>
-          <Text style={styles.name}>{nameText}</Text>
-          <Text style={styles.location}><MaterialCommunityIcons name="map-marker" size={14} /> {locationText}</Text>
-          <Text style={styles.bio}>{bioText}</Text>
-          {skills.length > 0 && (
-            <View style={styles.skillsContainer}>
-              {skills.slice(0, 3).map((skill: string) => (
-                <View key={skill} style={styles.skillBadge}>
-                  <Text style={styles.skillBadgeText}>{skill}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
+        {innerContent}
       </Animated.View>
     </GestureDetector>
   );
@@ -138,62 +145,76 @@ function SwipeCard({ item, isFirst, onSwipeKey }: { item: any; isFirst: boolean;
 
 export default function DiscoverScreen() {
   const { userId } = useUser();
-  const [swipedIds, setSwipedIds] = useState<string[]>([]);
   const utils = trpc.useUtils();
+  
+  const [activeTab, setActiveTab] = useState<'PROFILES' | 'JOBS'>('PROFILES');
+  const isProfiles = activeTab === 'PROFILES';
 
-  const { data: profiles, isLoading } = trpc.user.getDiscoverable.useQuery({ userId: userId || '' }, { enabled: !!userId });
+  const [swipedProfileIds, setSwipedProfileIds] = useState<string[]>([]);
+  const [swipedJobIds, setSwipedJobIds] = useState<string[]>([]);
+
+  const { data: profiles, isLoading: isProfilesLoading } = trpc.user.getDiscoverable.useQuery(
+    { userId: userId || '' }, 
+    { enabled: !!userId && activeTab === 'PROFILES' }
+  );
+  
+  const { data: jobsResponse, isLoading: isJobsLoading } = trpc.job.list.useQuery(
+    { userId: userId || '' }, 
+    { enabled: !!userId && activeTab === 'JOBS' }
+  );
 
   const sendRequest = trpc.connection.sendRequest.useMutation({
-    onSuccess: () => {
-      console.log('Connection request sent');
-      utils.user.getDiscoverable.invalidate();
-    },
-    onError: (err) => Alert.alert('Hata', 'Bağlantı isteği gönderilemedi.')
+    onSuccess: () => utils.user.getDiscoverable.invalidate(),
+    onError: () => Alert.alert('Hata', 'Bağlantı isteği gönderilemedi.')
   });
 
   const rejectProfile = trpc.connection.rejectProfile.useMutation({
+    onSuccess: () => utils.user.getDiscoverable.invalidate(),
+    onError: () => Alert.alert('Hata', 'Profil geçilemedi.')
+  });
+  
+  const applyJob = trpc.job.apply.useMutation({
     onSuccess: () => {
-      console.log('Profile rejected');
-      utils.user.getDiscoverable.invalidate();
+      Alert.alert('Başarılı', 'İlana başvuruldu!');
+      utils.job.list.invalidate();
     },
-    onError: (err) => Alert.alert('Hata', 'Profil geçilemedi.')
+    onError: (err) => Alert.alert('Hata', err.message || 'Başvuru yapılamadı.')
   });
 
-  const activeProfiles = (profiles || []).filter((p) => !swipedIds.includes(p.id));
+  const activeData = isProfiles 
+    ? (profiles || []).filter((p) => !swipedProfileIds.includes(p.id))
+    : (jobsResponse?.items || []).filter((j) => !swipedJobIds.includes(j.id));
 
   const handleSwipe = (id: string, direction: 'left' | 'right') => {
     if (!userId) return;
-    if (direction === 'right') {
-      sendRequest.mutate({ requesterId: userId, addresseeId: id });
+    
+    if (isProfiles) {
+      if (direction === 'right') {
+        sendRequest.mutate({ requesterId: userId, addresseeId: id });
+      } else {
+        rejectProfile.mutate({ requesterId: userId, addresseeId: id });
+      }
+      setSwipedProfileIds((prev) => [...prev, id]);
     } else {
-      rejectProfile.mutate({ requesterId: userId, addresseeId: id });
+      if (direction === 'right') {
+        applyJob.mutate({ jobId: id, applicantId: userId });
+      } else {
+        setSwipedJobIds((prev) => [...prev, id]);
+      }
     }
-    setSwipedIds((prev) => [...prev, id]);
   };
 
   const handleButtonReject = () => {
-    if (activeProfiles.length === 0) return;
-    handleSwipe(activeProfiles[0].id, 'left');
+    if (activeData.length === 0) return;
+    handleSwipe(activeData[0].id, 'left');
   };
 
   const handleButtonAccept = () => {
-    if (activeProfiles.length === 0) return;
-    handleSwipe(activeProfiles[0].id, 'right');
+    if (activeData.length === 0) return;
+    handleSwipe(activeData[0].id, 'right');
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#4ECDC4" />
-          <Text style={styles.loadingText}>Yükleniyor...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Render cards in reverse order so that activeProfiles[0] is rendered last (on top of the stack)
-  const renderedProfiles = [...activeProfiles].reverse();
+  const isLoading = isProfiles ? isProfilesLoading : isJobsLoading;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -201,36 +222,68 @@ export default function DiscoverScreen() {
         <Text style={styles.headerTitle}>Collabswipe</Text>
       </View>
       
-      <View style={styles.cardContainer}>
-        {activeProfiles.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <MaterialCommunityIcons name="creation" size={48} color="#4ECDC4" />
-            <Text style={styles.noMore}>Harika İş! 🎉</Text>
-            <Text style={styles.noMoreSubtitle}>Etrafındaki tüm adayları inceledin.</Text>
+      {/* Tab Toggle */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity 
+          style={[styles.tabButton, isProfiles && styles.tabButtonActive]}
+          onPress={() => setActiveTab('PROFILES')}
+        >
+          <MaterialCommunityIcons name="account-group" size={20} color={isProfiles ? '#FFF' : '#666'} />
+          <Text style={[styles.tabText, isProfiles && styles.tabTextActive]}>Profiller</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tabButton, !isProfiles && styles.tabButtonActive]}
+          onPress={() => setActiveTab('JOBS')}
+        >
+          <MaterialCommunityIcons name="briefcase" size={20} color={!isProfiles ? '#FFF' : '#666'} />
+          <Text style={[styles.tabText, !isProfiles && styles.tabTextActive]}>İlanlar</Text>
+        </TouchableOpacity>
+      </View>
+      
+      {isLoading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#4ECDC4" />
+          <Text style={styles.loadingText}>Yükleniyor...</Text>
+        </View>
+      ) : (
+        <>
+          <View style={styles.cardContainer}>
+            {activeData.length === 0 ? (
+              <View style={styles.emptyContainer}>
+                <MaterialCommunityIcons name="creation" size={48} color="#4ECDC4" />
+                <Text style={styles.noMore}>Harika İş! 🎉</Text>
+                <Text style={styles.noMoreSubtitle}>
+                  {isProfiles ? 'Etrafındaki tüm adayları inceledin.' : 'Tüm iş ilanlarına göz attın.'}
+                </Text>
+              </View>
+            ) : (
+              [...activeData].reverse().map((item, index, arr) => {
+                const isFirst = index === arr.length - 1;
+                return (
+                  <SwipeCard
+                    key={item.id}
+                    item={item}
+                    isFirst={isFirst}
+                    isProfiles={isProfiles}
+                    onSwipeKey={handleSwipe}
+                  />
+                );
+              })
+            )}
           </View>
-        ) : (
-          renderedProfiles.map((item, index) => {
-            const isFirst = index === renderedProfiles.length - 1;
-            return (
-              <SwipeCard
-                key={item.id}
-                item={item}
-                isFirst={isFirst}
-                onSwipeKey={handleSwipe}
-              />
-            );
-          })
-        )}
-      </View>
 
-      <View style={styles.actionsContainer}>
-        <TouchableOpacity style={styles.actionButton} onPress={handleButtonReject}>
-          <MaterialCommunityIcons name="close" size={32} color="#FF6B6B" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={handleButtonAccept} disabled={sendRequest.isLoading}>
-          <MaterialCommunityIcons name="heart" size={32} color="#4ECDC4" />
-        </TouchableOpacity>
-      </View>
+          {activeData.length > 0 && (
+            <View style={styles.actionsContainer}>
+              <TouchableOpacity style={styles.actionButton} onPress={handleButtonReject}>
+                <MaterialCommunityIcons name="close" size={32} color="#FF6B6B" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionButton} onPress={handleButtonAccept} disabled={sendRequest.isLoading || applyJob.isLoading}>
+                <MaterialCommunityIcons name="heart" size={32} color="#4ECDC4" />
+              </TouchableOpacity>
+            </View>
+          )}
+        </>
+      )}
     </SafeAreaView>
   );
 }
@@ -239,6 +292,45 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FAFAFA',
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 5,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#FF6B6B',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginBottom: 15,
+    backgroundColor: '#EEE',
+    borderRadius: 12,
+    padding: 4,
+  },
+  tabButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 8,
+    gap: 8,
+  },
+  tabButtonActive: {
+    backgroundColor: '#FF6B6B',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#666',
+  },
+  tabTextActive: {
+    color: '#FFF',
   },
   badgeContainer: {
     position: 'absolute',
@@ -269,16 +361,6 @@ const styles = StyleSheet.create({
     color: '#FF6B6B',
     letterSpacing: 2,
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#FF6B6B',
-  },
   cardContainer: {
     flex: 1,
     alignItems: 'center',
@@ -288,7 +370,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: width * 0.9,
-    height: height * 0.62,
+    height: height * 0.58,
     borderRadius: 28,
     position: 'absolute',
     elevation: 4,
@@ -309,7 +391,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.03)',
   },
   cardInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     padding: 16,
     borderRadius: 22,
   },
@@ -318,11 +400,16 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#1A1A1A',
   },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FF6B6B',
+    marginBottom: 4,
+  },
   location: {
     fontSize: 13,
     color: '#666',
     fontWeight: '600',
-    marginTop: 2,
     marginBottom: 6,
   },
   bio: {
@@ -380,7 +467,7 @@ const styles = StyleSheet.create({
   actionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
-    paddingVertical: 20,
+    paddingVertical: 15,
   },
   actionButton: {
     width: 64,
@@ -394,9 +481,5 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-  },
-  noMore: {
-    fontSize: 20,
-    color: '#999',
   },
 });

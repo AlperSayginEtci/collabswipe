@@ -2,6 +2,7 @@ import { createRootRoute, Link, Outlet, useLocation, useNavigate } from '@tansta
 import { Home, Compass, Briefcase, MessageSquare, User, Bell, LogOut } from 'lucide-react';
 import { useSession, signOut } from '@collabswipe/auth/client';
 import { useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -146,6 +147,7 @@ function RootLayout() {
           <span className="text-[10px] font-medium">Matches</span>
         </Link>
       </nav>
+      <Toaster position="bottom-right" />
     </div>
   );
 }
