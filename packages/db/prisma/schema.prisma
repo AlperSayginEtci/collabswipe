@@ -336,9 +336,11 @@ model Comment {
 // ==========================================
 
 model Conversation {
-  id        String   @id @default(cuid())
-  isGroup   Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id            String   @id @default(cuid())
+  isGroup       Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  lastMessageAt DateTime @default(now())
 
   participants Participant[]
   messages     Message[]
@@ -347,6 +349,7 @@ model Conversation {
 model Participant {
   conversationId String
   userId         String
+  lastReadAt     DateTime?
 
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
