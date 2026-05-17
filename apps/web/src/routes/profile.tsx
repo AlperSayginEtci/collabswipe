@@ -75,50 +75,57 @@ function ProfilePage() {
       {/* Profile Header */}
       <div className="bg-card rounded-2xl shadow-sm border border-border overflow-hidden">
         <div className="h-48 bg-gradient-to-r from-primary/80 to-primary w-full" />
-        <div className="px-6 sm:px-10 pb-8 relative">
-          <div className="w-32 h-32 rounded-full border-4 border-card bg-secondary overflow-hidden absolute -top-16 shadow-lg">
-             <img src={session.user?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${session.user?.name}`} alt="My Profile" className="w-full h-full object-cover" />
-          </div>
-          
-          <div className="mt-20 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-black text-foreground">{session.user?.name} {(session.user as any)?.surname}</h1>
-              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground font-medium">
+        <div className="px-6 sm:px-10 pb-8">
+          <div className="flex flex-col sm:flex-row gap-6 sm:items-end">
+            
+            {/* Avatar */}
+            <div className="-mt-12 sm:-mt-16 w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-card bg-secondary overflow-hidden shadow-lg shrink-0 z-10 relative">
+               <img src={session.user?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${session.user?.name}`} alt="My Profile" className="w-full h-full object-cover" />
+            </div>
+            
+            {/* User Info */}
+            <div className="flex-1 pt-2 sm:pt-4">
+              <h1 className="text-2xl sm:text-3xl font-black text-foreground">{session.user?.name} {(session.user as any)?.surname}</h1>
+              <div className="flex items-center gap-2 mt-1 sm:mt-2 text-sm text-muted-foreground font-medium">
                 <Mail className="w-4 h-4" /> {session.user?.email}
               </div>
-              <p className="text-muted-foreground mt-2 font-medium text-lg">
+              <div className="text-muted-foreground mt-2 font-medium text-base sm:text-lg">
                 {isEditing ? (
                   <input 
                     type="text" 
                     value={editLocation} 
                     onChange={e => setEditLocation(e.target.value)} 
                     placeholder="Location (e.g. Istanbul, Turkey)" 
-                    className="bg-background border border-border rounded px-2 py-1 text-sm mt-1 w-full max-w-xs"
+                    className="bg-background border border-border rounded px-3 py-1.5 text-sm w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-primary/50"
                   />
                 ) : (
                   profile?.location || 'Konum belirtilmemiş'
                 )}
-              </p>
+              </div>
             </div>
             
-            {isEditing ? (
-              <div className="flex gap-2">
-                <button onClick={() => setIsEditing(false)} className="bg-secondary text-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90">
-                  İptal
+            {/* Action Buttons */}
+            <div className="sm:pb-2 mt-4 sm:mt-0 flex gap-2 w-full sm:w-auto">
+              {isEditing ? (
+                <>
+                  <button onClick={() => setIsEditing(false)} className="flex-1 sm:flex-none bg-secondary text-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90">
+                    İptal
+                  </button>
+                  <button onClick={handleSave} disabled={updateProfile.isLoading} className="flex-1 sm:flex-none bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90">
+                    {updateProfile.isLoading ? 'Kaydediliyor...' : 'Kaydet'}
+                  </button>
+                </>
+              ) : (
+                <button onClick={() => {
+                  setEditBio(profile?.bio || '');
+                  setEditLocation(profile?.location || '');
+                  setIsEditing(true);
+                }} className="w-full sm:w-auto bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-bold hover:opacity-90 flex items-center justify-center gap-2 shadow-sm">
+                  <Edit2 className="w-4 h-4" /> Profili Düzenle
                 </button>
-                <button onClick={handleSave} disabled={updateProfile.isLoading} className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90">
-                  {updateProfile.isLoading ? 'Kaydediliyor...' : 'Kaydet'}
-                </button>
-              </div>
-            ) : (
-              <button onClick={() => {
-                setEditBio(profile?.bio || '');
-                setEditLocation(profile?.location || '');
-                setIsEditing(true);
-              }} className="bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90 flex items-center gap-2">
-                <Edit2 className="w-4 h-4" /> Profili Düzenle
-              </button>
-            )}
+              )}
+            </div>
+            
           </div>
         </div>
       </div>
