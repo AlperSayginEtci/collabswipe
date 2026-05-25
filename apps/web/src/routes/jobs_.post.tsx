@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { trpc } from '../lib/trpc';
 import toast from 'react-hot-toast';
 import { useSession } from '@collabswipe/auth/client';
-import { ArrowLeft, Briefcase, FileText, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Briefcase, FileText, CheckCircle2, X } from 'lucide-react';
 
 export const Route = createFileRoute('/jobs_/post')({
   component: PostJobPage,
@@ -16,6 +16,15 @@ function PostJobPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [type, setType] = useState<'FREELANCE' | 'CORPORATE'>('CORPORATE');
+  const [skills, setSkills] = useState<string[]>([]);
+  const [currentSkill, setCurrentSkill] = useState('');
+  
+  const { data: allSkills } = trpc.profile.getAllSkills.useQuery();
+  
+  const filteredSkills = allSkills?.filter(s => 
+    s.skillName.toLowerCase().includes(currentSkill.toLowerCase().trim()) && 
+    !skills.includes(s.skillName)
+  ).slice(0, 5) || [];
   
   const createJob = trpc.job.create.useMutation({
     onSuccess: () => {
@@ -37,7 +46,8 @@ function PostJobPage() {
     createJob.mutate({
       title,
       description,
-      type
+      type,
+      skills
     });
   };
 
@@ -127,6 +137,77 @@ function PostJobPage() {
               rows={8}
               className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50 resize-y"
             />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-bold text-foreground">Aranan Yetenekler (İsteğe Bağlı)</label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {skills.map((skill, idx) => (
+                <div key={idx} className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-sm font-bold">
+                  {skill}
+                  <button type="button" onClick={() => setSkills(skills.filter((_, i) => i !== idx))} className="hover:bg-primary/20 p-0.5 rounded-full">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="relative flex gap-2">
+              <input
+                type="text"
+                value={currentSkill}
+                onChange={(e) => setCurrentSkill(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (currentSkill.trim()) {
+                      const exactMatch = filteredSkills.find(s => s.skillName.toLowerCase() === currentSkill.toLowerCase().trim());
+                      const skillToAdd = exactMatch ? exactMatch.skillName : currentSkill.trim();
+                      if (!skills.includes(skillToAdd)) {
+                        setSkills([...skills, skillToAdd]);
+                        setCurrentSkill('');
+                      }
+                    }
+                  }
+                }}
+                placeholder="Örn: React, Node.js (Enter'a basarak ekleyin)"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50"
+              />
+              <button 
+                type="button" 
+                onClick={() => {
+                  if (currentSkill.trim() && !skills.includes(currentSkill.trim())) {
+                    setSkills([...skills, currentSkill.trim()]);
+                    setCurrentSkill('');
+                  }
+                }}
+                className="bg-secondary text-secondary-foreground px-4 rounded-xl font-bold hover:opacity-90 transition-opacity"
+              >
+                Ekle
+              </button>
+
+              {currentSkill && (
+                <div className="absolute top-full left-0 right-[88px] mt-2 bg-card border border-border rounded-xl shadow-lg z-20 overflow-hidden">
+                  {filteredSkills.map(s => (
+                    <button 
+                      key={s.skillId} 
+                      type="button"
+                      onClick={() => {
+                        setSkills([...skills, s.skillName]);
+                        setCurrentSkill('');
+                      }}
+                      className="w-full text-left px-4 py-3 text-sm hover:bg-secondary font-medium transition-colors border-b border-border/50 last:border-0"
+                    >
+                      {s.skillName}
+                    </button>
+                  ))}
+                  {filteredSkills.length === 0 && (
+                    <div className="w-full text-left px-4 py-3 text-sm text-muted-foreground">
+                      "{currentSkill}" listemizde yok, ancak enter'a basarak kendiniz ekleyebilirsiniz.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           
           <div className="pt-4">

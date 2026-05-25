@@ -211,7 +211,7 @@ model Skill {
   skillName String @unique
 
   userSkills   UserSkill[]
-  jobPostings  JobPosting[]
+  jobPostings  JobPosting[] @relation("JobRequirements")
   experiences  Experience[]
   educations   Education[]
   certificates Certificate[]
@@ -255,12 +255,11 @@ model JobPosting {
   description String
   type        JobType
   status      JobStatus    @default(OPEN)
-  reqId       String?      // Required skill
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   publisher   User             @relation(fields: [publisherId], references: [id], onDelete: Cascade)
-  skill       Skill?           @relation(fields: [reqId], references: [skillId], onDelete: SetNull)
+  requirements Skill[]         @relation("JobRequirements")
   applications JobApplication[]
 }
 

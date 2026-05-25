@@ -10,7 +10,7 @@ export const jobRouter = createTRPCRouter({
         title: z.string().min(2),
         description: z.string().min(10),
         type: z.enum(["FREELANCE", "CORPORATE"]),
-        reqId: z.string().optional(),
+        skills: z.array(z.string()).optional(),
       })
     )
     .mutation(({ ctx, input }) => {
@@ -22,8 +22,16 @@ export const jobRouter = createTRPCRouter({
       }
       return ctx.prisma.jobPosting.create({ 
         data: {
-          ...input,
+          title: input.title,
+          description: input.description,
+          type: input.type,
           publisherId: ctx.session.user.id,
+          requirements: input.skills?.length ? {
+            connectOrCreate: input.skills.map(s => ({
+              where: { skillName: s.toLowerCase().trim() },
+              create: { skillName: s.toLowerCase().trim() }
+            }))
+          } : undefined
         } 
       });
     }),
@@ -54,7 +62,7 @@ export const jobRouter = createTRPCRouter({
         cursor: cursor ? { id: cursor } : undefined,
         include: {
           publisher: { select: { id: true, name: true, surname: true, image: true } },
-          skill: { select: { skillName: true } },
+          requirements: { select: { skillName: true } },
           _count: { select: { applications: true } },
         },
       })
@@ -70,7 +78,7 @@ export const jobRouter = createTRPCRouter({
         where: { id: input.jobId },
         include: {
           publisher: { select: { id: true, name: true, surname: true, image: true } },
-          skill: { select: { skillName: true } },
+          requirements: { select: { skillName: true } },
           applications: {
             include: {
               applicant: { select: { id: true, name: true, surname: true, image: true } },
@@ -143,7 +151,7 @@ export const jobRouter = createTRPCRouter({
         orderBy: { createdAt: "desc" },
         include: {
           _count: { select: { applications: true } },
-          skill: { select: { skillName: true } },
+          requirements: { select: { skillName: true } },
         },
       })
     ),

@@ -40,7 +40,7 @@ function ProfilePage() {
   const validateImage = (file: File, type: 'avatar' | 'banner'): Promise<boolean> => {
     return new Promise((resolve) => {
       if (file.size > 5 * 1024 * 1024) {
-        alert("Hata: Dosya boyutu çok büyük. Lütfen en fazla 5MB boyutunda bir resim seçin.");
+        toast.error("Hata: Dosya boyutu çok büyük. Lütfen en fazla 5MB boyutunda bir resim seçin.");
         return resolve(false);
       }
       const img = new Image();
@@ -48,18 +48,18 @@ function ProfilePage() {
       img.onload = () => {
         URL.revokeObjectURL(objectUrl);
         if (type === 'avatar' && (img.width < 200 || img.height < 200)) {
-          alert("Uyarı: Profil fotoğrafı kalitesi çok düşük. En az 200x200 piksel boyutunda kare bir resim (Önerilen: 400x400) yüklemelisiniz.");
+          toast.error("Uyarı: Profil fotoğrafı kalitesi çok düşük. En az 200x200 piksel boyutunda kare bir resim (Önerilen: 400x400) yüklemelisiniz.");
           return resolve(false);
         }
         if (type === 'banner' && img.width < 800) {
-          alert("Uyarı: Arka plan (banner) resmi çok küçük. Genişliği en az 800 piksel olan yatay bir resim (Önerilen: 1500x500) yüklemelisiniz.");
+          toast.error("Uyarı: Arka plan (banner) resmi çok küçük. Genişliği en az 800 piksel olan yatay bir resim (Önerilen: 1500x500) yüklemelisiniz.");
           return resolve(false);
         }
         resolve(true);
       };
       img.onerror = () => {
         URL.revokeObjectURL(objectUrl);
-        alert("Hata: Geçersiz veya bozuk resim dosyası.");
+        toast.error("Hata: Geçersiz veya bozuk resim dosyası.");
         resolve(false);
       };
       img.src = objectUrl;
@@ -78,7 +78,7 @@ function ProfilePage() {
       return data.url || null;
     } catch (err) {
       console.error(err);
-      alert("Resim yüklenirken sunucu hatası oluştu.");
+      toast.error("Resim yüklenirken sunucu hatası oluştu.");
       return null;
     }
   };
@@ -153,7 +153,7 @@ function ProfilePage() {
           setEditBanner(data.banner || '');
           setEditName(session.user.name || '');
           setEditSurname((session.user as any).surname || '');
-          setEditUsername((session.user as any).username || '');
+          setEditUsername((session.user as any)?.username || `${(session.user?.name || '').toLowerCase().replace(/\s+/g, '')}${((session.user as any)?.surname || '').toLowerCase().replace(/\s+/g, '')}`);
           setEditImage(session.user.image || '');
         }
       }
@@ -172,7 +172,16 @@ function ProfilePage() {
       window.location.reload(); // Oturum bilgisini (Better Auth) tazelemek için
     },
     onError: (err) => {
-      alert("Profil güncellenirken hata oluştu: " + err.message);
+      try {
+        const parsed = JSON.parse(err.message);
+        if (Array.isArray(parsed) && parsed[0]?.message) {
+          toast.error(parsed[0].message);
+          return;
+        }
+      } catch (e) {
+        // Not JSON
+      }
+      toast.error("Profil güncellenirken hata oluştu: " + err.message);
     }
   });
 
@@ -196,7 +205,7 @@ function ProfilePage() {
       resetExpForm();
       utils.profile.getByUserId.invalidate({ userId: userId || '' });
     },
-    onError: (err) => alert("Hata: " + err.message)
+    onError: (err) => toast.error("Hata: " + err.message)
   });
 
   const updateExpMut = trpc.profile.updateExperience.useMutation({
@@ -205,7 +214,7 @@ function ProfilePage() {
       resetExpForm();
       utils.profile.getByUserId.invalidate({ userId: userId || '' });
     },
-    onError: (err) => alert("Hata: " + err.message)
+    onError: (err) => toast.error("Hata: " + err.message)
   });
 
   const removeExpMut = trpc.profile.removeExperience.useMutation({
@@ -218,7 +227,7 @@ function ProfilePage() {
       resetEduForm();
       utils.profile.getByUserId.invalidate({ userId: userId || '' });
     },
-    onError: (err) => alert("Hata: " + err.message)
+    onError: (err) => toast.error("Hata: " + err.message)
   });
 
   const updateEduMut = trpc.profile.updateEducation.useMutation({
@@ -227,7 +236,7 @@ function ProfilePage() {
       resetEduForm();
       utils.profile.getByUserId.invalidate({ userId: userId || '' });
     },
-    onError: (err) => alert("Hata: " + err.message)
+    onError: (err) => toast.error("Hata: " + err.message)
   });
 
   const removeEduMut = trpc.profile.removeEducation.useMutation({
@@ -240,7 +249,7 @@ function ProfilePage() {
       resetCertForm();
       utils.profile.getByUserId.invalidate({ userId: userId || '' });
     },
-    onError: (err) => alert("Hata: " + err.message)
+    onError: (err) => toast.error("Hata: " + err.message)
   });
 
   const updateCertMut = trpc.profile.updateCertificate.useMutation({
@@ -249,7 +258,7 @@ function ProfilePage() {
       resetCertForm();
       utils.profile.getByUserId.invalidate({ userId: userId || '' });
     },
-    onError: (err) => alert("Hata: " + err.message)
+    onError: (err) => toast.error("Hata: " + err.message)
   });
 
   const removeCertMut = trpc.profile.removeCertificate.useMutation({
@@ -283,7 +292,7 @@ function ProfilePage() {
 
     updateProfile.mutate({
       userId,
-      username: editUsername,
+      username: editUsername.trim() === '' ? undefined : editUsername.trim(),
       name: editName,
       surname: editSurname,
       image: editImage,
@@ -319,7 +328,7 @@ function ProfilePage() {
   const handleSaveExp = () => {
     if (!profile?.id) return;
     if (!expTitle || !expCorp || !expStartDate) {
-      alert("Lütfen Pozisyon, Şirket ve Başlangıç Tarihi alanlarını doldurun.");
+      toast.error("Lütfen Pozisyon, Şirket ve Başlangıç Tarihi alanlarını doldurun.");
       return;
     }
     const payload = {
@@ -354,7 +363,7 @@ function ProfilePage() {
   const handleSaveEdu = () => {
     if (!profile?.id) return;
     if (!eduInstName || !eduStartDate) {
-      alert("Lütfen Okul/Kurum ve Başlangıç Tarihi alanlarını doldurun.");
+      toast.error("Lütfen Okul/Kurum ve Başlangıç Tarihi alanlarını doldurun.");
       return;
     }
     const payload = {
@@ -387,7 +396,7 @@ function ProfilePage() {
   const handleSaveCert = () => {
     if (!profile?.id) return;
     if (!certTitle || !certOrg || !certStartDate) {
-      alert("Lütfen Sertifika Adı, Veren Kurum ve Veriliş Tarihi alanlarını doldurun.");
+      toast.error("Lütfen Sertifika Adı, Veren Kurum ve Veriliş Tarihi alanlarını doldurun.");
       return;
     }
     
@@ -482,7 +491,7 @@ function ProfilePage() {
               ) : (
                 <>
                   <h1 className="text-2xl sm:text-3xl font-black text-foreground">{session.user?.name} {(session.user as any)?.surname}</h1>
-                  <p className="text-primary font-bold text-sm mt-0.5">@{(session.user as any)?.username || `${name.toLowerCase()}${((session.user as any)?.surname || '').toLowerCase()}`}</p>
+                  <p className="text-primary font-bold text-sm mt-0.5">@{(session.user as any)?.username || `${(session.user?.name || '').toLowerCase().replace(/\\s+/g, '')}${((session.user as any)?.surname || '').toLowerCase().replace(/\\s+/g, '')}`}</p>
                 </>
               )}
               <div className="flex items-center gap-2 mt-2 sm:mt-3 text-sm text-muted-foreground font-medium">
@@ -522,7 +531,7 @@ function ProfilePage() {
                   setEditBanner(profile?.banner || '');
                   setEditName(session.user?.name || '');
                   setEditSurname((session.user as any)?.surname || '');
-                  setEditUsername((session.user as any)?.username || '');
+                  setEditUsername((session.user as any)?.username || `${(session.user?.name || '').toLowerCase().replace(/\s+/g, '')}${((session.user as any)?.surname || '').toLowerCase().replace(/\s+/g, '')}`);
                   setEditImage(session.user?.image || '');
                   setIsEditing(true);
                 }} className="w-full sm:w-auto bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-bold hover:opacity-90 flex items-center justify-center gap-2 shadow-sm">
@@ -884,7 +893,8 @@ function ProfilePage() {
           )}
           
           {/* CERTIFICATIONS */}
-          <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
+          {!isCompany && (
+            <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-foreground text-xl flex items-center gap-2">
                 <Award className="w-5 h-5 text-primary" /> Sertifikalar
@@ -973,7 +983,8 @@ function ProfilePage() {
                 <p className="text-muted-foreground text-sm italic">Henüz bir sertifika eklenmemiş.</p>
               )}
             </div>
-          </div>
+            </div>
+          )}
           
         </div>
       </div>
