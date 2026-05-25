@@ -1,7 +1,7 @@
 import { createRootRoute, Link, Outlet, useLocation, useNavigate } from '@tanstack/react-router';
-import { Home, Compass, Briefcase, MessageSquare, User, Bell, LogOut } from 'lucide-react';
+import { Home, Compass, Briefcase, MessageSquare, User as UserIcon, Bell, LogOut, ChevronDown } from 'lucide-react';
 import { useSession, signOut } from '@collabswipe/auth/client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 
 export const Route = createRootRoute({
@@ -12,12 +12,19 @@ function RootLayout() {
   const { data: session, isPending } = useSession();
   const location = useLocation();
   const navigate = useNavigate();
+  const [isDiscoverOpen, setIsDiscoverOpen] = useState(location.pathname === '/discover');
 
   useEffect(() => {
     if (!isPending && !session && location.pathname !== '/login') {
       navigate({ to: '/login' });
     }
   }, [session, isPending, location.pathname, navigate]);
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/discover')) {
+      setIsDiscoverOpen(true);
+    }
+  }, [location.pathname]);
 
   if (isPending) {
     return (
@@ -65,10 +72,45 @@ function RootLayout() {
             <Home className="w-5 h-5" />
             Home
           </Link>
-          <Link to="/discover" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
-            <Compass className="w-5 h-5" />
-            Discover
-          </Link>
+          
+          <div className="flex flex-col">
+            <div 
+              onClick={() => {
+                setIsDiscoverOpen(!isDiscoverOpen);
+                if (!isDiscoverOpen && location.pathname !== '/discover') {
+                  navigate({ to: '/discover', search: { tab: 'PROFILES' } });
+                }
+              }}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors cursor-pointer ${location.pathname.startsWith('/discover') ? 'bg-secondary text-foreground' : ''}`}
+            >
+              <div className="flex items-center gap-3">
+                <Compass className="w-5 h-5" />
+                Discover
+              </div>
+              <ChevronDown className={`w-4 h-4 transition-transform ${isDiscoverOpen ? 'rotate-180' : ''}`} />
+            </div>
+            
+            {isDiscoverOpen && (
+              <div className="ml-8 mt-1 space-y-1 flex flex-col">
+                <Link 
+                  to="/discover" 
+                  search={{ tab: 'PROFILES' }} 
+                  activeOptions={{ exact: true, includeSearch: true }}
+                  className="[&.active]:text-foreground [&.active]:font-bold text-sm text-muted-foreground hover:text-foreground py-2 flex items-center gap-2 transition-colors"
+                >
+                  <UserIcon className="w-4 h-4" /> İş Arkadaşları
+                </Link>
+                <Link 
+                  to="/discover" 
+                  search={{ tab: 'JOBS' }} 
+                  activeOptions={{ exact: true, includeSearch: true }}
+                  className="[&.active]:text-foreground [&.active]:font-bold text-sm text-muted-foreground hover:text-foreground py-2 flex items-center gap-2 transition-colors"
+                >
+                  <Briefcase className="w-4 h-4" /> İş İlanları
+                </Link>
+              </div>
+            )}
+          </div>
           <Link to="/jobs" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
             <Briefcase className="w-5 h-5" />
             Jobs
@@ -78,13 +120,13 @@ function RootLayout() {
             Matches
           </Link>
           <Link to="/profile" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
-            <User className="w-5 h-5" />
+            <UserIcon className="w-5 h-5" />
             Profile
           </Link>
         </nav>
         
         <div className="p-4 border-t border-border space-y-3">
-          <div className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors">
+          <Link to="/profile" className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors">
             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
               {initials}
             </div>
@@ -92,7 +134,7 @@ function RootLayout() {
               <p className="text-sm font-medium truncate">{name} {surname}</p>
               <p className="text-xs text-muted-foreground truncate">{username}</p>
             </div>
-          </div>
+          </Link>
           <button 
             onClick={() => signOut({ callbackURL: '/login' })}
             className="flex items-center justify-center gap-2 w-full bg-destructive/10 hover:bg-destructive/20 text-destructive text-sm font-bold py-2.5 rounded-xl transition-colors"
@@ -121,8 +163,8 @@ function RootLayout() {
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          <div className="max-w-6xl mx-auto">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col">
+          <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col">
             <Outlet />
           </div>
         </div>
