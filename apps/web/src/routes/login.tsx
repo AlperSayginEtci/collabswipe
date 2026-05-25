@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { Mail, Lock, User as UserIcon, ArrowRight, Sparkles } from 'lucide-react';
+import { Mail, Lock, User as UserIcon, ArrowRight, Sparkles, Building2, Briefcase } from 'lucide-react';
 import { signIn, signUp, useSession } from '@collabswipe/auth/client';
 import toast from 'react-hot-toast';
 
@@ -22,6 +22,8 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
+  const [sector, setSector] = useState('');
+  const [isCompany, setIsCompany] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -43,8 +45,18 @@ function LoginPage() {
           navigate({ to: '/' });
         }
       } else {
-        if (!name.trim() || !surname.trim()) {
+        if (!isCompany && (!name.trim() || !surname.trim())) {
           setError('Lütfen adınızı ve soyadınızı girin.');
+          setLoading(false);
+          return;
+        }
+        if (isCompany && !name.trim()) {
+          setError('Lütfen şirket adınızı girin.');
+          setLoading(false);
+          return;
+        }
+        if (isCompany && !sector.trim()) {
+          setError('Lütfen şirket sektörünü girin.');
           setLoading(false);
           return;
         }
@@ -52,7 +64,9 @@ function LoginPage() {
           email,
           password,
           name,
-          surname,
+          surname: isCompany ? '' : surname,
+          role: isCompany ? 'company' : 'user',
+          sector: isCompany ? sector : undefined,
           callbackURL: '/',
         });
         if (res?.error) {
@@ -124,6 +138,29 @@ function LoginPage() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
+            <div className="flex bg-background p-1 rounded-xl mb-4 border border-border">
+              <button
+                type="button"
+                onClick={() => { setIsCompany(false); setName(''); setSurname(''); setSector(''); setError(''); }}
+                className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all duration-300 relative z-10 ${
+                  !isCompany ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Bireysel Hesap
+              </button>
+              <button
+                type="button"
+                onClick={() => { setIsCompany(true); setName(''); setSurname(''); setSector(''); setError(''); }}
+                className={`flex-1 py-2 rounded-lg font-bold text-xs transition-all duration-300 relative z-10 ${
+                  isCompany ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Şirket Hesabı
+              </button>
+            </div>
+          )}
+
+          {!isLogin && !isCompany && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Ad</label>
@@ -154,6 +191,40 @@ function LoginPage() {
                 </div>
               </div>
             </div>
+          )}
+
+          {!isLogin && isCompany && (
+            <>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Şirket Adı</label>
+                <div className="relative">
+                  <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    required={!isLogin && isCompany}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Şirketinizin Adı"
+                    className="w-full bg-background/50 border border-border rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Sektör</label>
+                <div className="relative">
+                  <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    required={!isLogin && isCompany}
+                    value={sector}
+                    onChange={(e) => setSector(e.target.value)}
+                    placeholder="Örn: Yazılım, Finans, E-ticaret"
+                    className="w-full bg-background/50 border border-border rounded-2xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/50"
+                  />
+                </div>
+              </div>
+            </>
           )}
 
           <div className="space-y-2">

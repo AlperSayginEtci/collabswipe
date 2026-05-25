@@ -17,6 +17,7 @@ const formatDate = (dateString: string | Date) => {
 function ProfilePage() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const isCompany = (session?.user as any)?.role === 'company';
   const utils = trpc.useUtils();
 
   const today = new Date().toISOString().split('T')[0];
@@ -160,6 +161,9 @@ function ProfilePage() {
   );
 
   const { data: allSkills } = trpc.profile.getAllSkills.useQuery();
+  const { data: myJobs } = trpc.job.getMyPostings.useQuery(undefined, {
+    enabled: isCompany,
+  });
 
   const updateProfile = trpc.profile.update.useMutation({
     onSuccess: () => {
@@ -535,7 +539,7 @@ function ProfilePage() {
         {/* Left Column: Details */}
         <div className="md:col-span-1 space-y-6">
           <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
-            <h3 className="font-bold text-foreground mb-4">Hakkımda</h3>
+            <h3 className="font-bold text-foreground mb-4">{isCompany ? 'Şirket Hakkında' : 'Hakkımda'}</h3>
             {isEditing ? (
               <textarea 
                 value={editBio} 
@@ -550,8 +554,9 @@ function ProfilePage() {
             )}
           </div>
 
-          <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
-            <h3 className="font-bold text-foreground mb-4">Yetenekler</h3>
+          {!isCompany ? (
+            <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
+              <h3 className="font-bold text-foreground mb-4">Yetenekler</h3>
             <div className="flex flex-wrap gap-2 mb-4">
               {profile?.skills && profile.skills.length > 0 ? (
                 profile.skills.map((s: any) => (
@@ -607,6 +612,18 @@ function ProfilePage() {
               </div>
             )}
           </div>
+          ) : (
+            <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
+              <h3 className="font-bold text-foreground mb-4">Şirket Bilgileri</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-foreground text-sm font-medium">
+                  <Briefcase className="w-4 h-4 text-primary" /> 
+                  <span className="text-muted-foreground">Sektör:</span> 
+                  {(session?.user as any)?.sector || 'Belirtilmemiş'}
+                </div>
+              </div>
+            </div>
+          )}
           
           <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
             <h3 className="font-bold text-foreground mb-4">Linkler</h3>
@@ -656,7 +673,9 @@ function ProfilePage() {
 
         {/* Right Column: Experience & Edu */}
         <div className="md:col-span-2 space-y-6">
-          {/* EXPERIENCES */}
+          {!isCompany ? (
+            <>
+              {/* EXPERIENCES */}
           <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-foreground text-xl flex items-center gap-2">
@@ -827,6 +846,42 @@ function ProfilePage() {
               )}
             </div>
           </div>
+            </>
+          ) : (
+            <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-bold text-foreground text-xl flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-primary" /> Aktif İş İlanları
+                </h3>
+              </div>
+              <div className="space-y-4">
+                {myJobs && myJobs.length > 0 ? (
+                  myJobs.map((job) => (
+                    <div key={job.id} className="p-4 border border-border rounded-xl hover:border-primary/50 transition-colors bg-background/50">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-bold text-foreground text-lg">{job.title}</h4>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                            <span className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded text-xs font-bold">{job.type === 'CORPORATE' ? 'Tam Zamanlı' : 'Freelance'}</span>
+                            <span>•</span>
+                            <span>{job._count.applications} Başvuru</span>
+                            {job.status === 'CLOSED' && (
+                              <>
+                                <span>•</span>
+                                <span className="text-destructive font-bold bg-destructive/10 px-2 py-0.5 rounded text-xs">Kapalı</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-sm italic">Henüz bir iş ilanı yayınlanmamış.</p>
+                )}
+              </div>
+            </div>
+          )}
           
           {/* CERTIFICATIONS */}
           <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
