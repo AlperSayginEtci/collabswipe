@@ -6,6 +6,11 @@ import { useSession } from '@collabswipe/auth/client';
 import toast from 'react-hot-toast';
 
 export const Route = createFileRoute('/discover')({
+  validateSearch: (search: Record<string, unknown>): { tab?: 'PROFILES' | 'JOBS' } => {
+    return {
+      tab: (search.tab === 'PROFILES' || search.tab === 'JOBS') ? search.tab : 'PROFILES',
+    };
+  },
   component: DiscoverPage,
 });
 
@@ -14,8 +19,14 @@ function DiscoverPage() {
   const userId = session?.user?.id;
   const utils = trpc.useUtils();
 
-  // Tabs
-  const [activeTab, setActiveTab] = useState<'PROFILES' | 'JOBS'>('PROFILES');
+  // Tabs from search params
+  const { tab } = Route.useSearch();
+  const activeTab = tab || 'PROFILES';
+  const navigate = Route.useNavigate();
+
+  const setActiveTab = (newTab: 'PROFILES' | 'JOBS') => {
+    navigate({ search: { tab: newTab } });
+  };
 
   // Drag states
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
@@ -97,7 +108,7 @@ function DiscoverPage() {
   const isLoading = isProfiles ? isProfilesLoading : isJobsLoading;
   const isBusy = sendRequest.isLoading || rejectProfile.isLoading || applyJob.isLoading;
 
-  const itemsToRender = activeItems.slice(0, 3).reverse();
+  const itemsToRender = activeItems.slice(0, 2).reverse();
 
   // Sürükleme Event Handlers
   const handleDragStart = (clientX: number, clientY: number) => {
@@ -172,25 +183,25 @@ function DiscoverPage() {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-[85vh] select-none py-4">
+    <div className="flex flex-col md:flex-row items-center md:items-stretch justify-center flex-1 h-full select-none overflow-hidden pb-4 md:pb-8 md:gap-12 lg:gap-24 w-full max-w-6xl mx-auto px-4 md:px-8">
       
-      {/* Tab Toggle */}
-      <div className="w-full max-w-sm flex bg-secondary/50 p-1 rounded-2xl mb-8 border border-border">
+      {/* Tab Toggle (Mobile only) */}
+      <div className="w-full max-w-sm flex bg-secondary/50 p-1 rounded-2xl mb-8 border border-border md:hidden">
         <button
           onClick={() => setActiveTab('PROFILES')}
-          className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
-            activeTab === 'PROFILES' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+          className={`flex-1 py-3 md:py-4 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center md:justify-start md:px-6 gap-3 ${
+            activeTab === 'PROFILES' ? 'bg-background text-foreground shadow-md scale-[1.02]' : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
           }`}
         >
-          <User className="w-4 h-4" /> İş Arkadaşları
+          <User className="w-5 h-5" /> İş Arkadaşları
         </button>
         <button
           onClick={() => setActiveTab('JOBS')}
-          className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
-            activeTab === 'JOBS' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+          className={`flex-1 py-3 md:py-4 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center md:justify-start md:px-6 gap-3 mt-0 md:mt-2 ${
+            activeTab === 'JOBS' ? 'bg-background text-foreground shadow-md scale-[1.02]' : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
           }`}
         >
-          <Briefcase className="w-4 h-4" /> İş İlanları
+          <Briefcase className="w-5 h-5" /> İş İlanları
         </button>
       </div>
 
@@ -212,7 +223,7 @@ function DiscoverPage() {
           </p>
         </div>
       ) : (
-        <div className="w-full max-w-sm relative flex-1 flex flex-col justify-center h-[600px]">
+        <div className="w-full max-w-[400px] relative flex-1 flex flex-col justify-center min-h-[450px] max-h-[850px] md:my-4">
           
           {/* Stacked Cards */}
           {itemsToRender.map((currentItem, index) => {
@@ -247,11 +258,11 @@ function DiscoverPage() {
                   zIndex: 20
                 } : {
                   transform: `translate3d(0, ${stackIndex * 16}px, 0) scale(${1 - stackIndex * 0.05})`,
-                  opacity: 1 - stackIndex * 0.3,
+                  opacity: 1,
                   transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.255)',
                   zIndex: 20 - stackIndex
                 }}
-                className={`bg-card w-full h-[600px] rounded-[2rem] shadow-2xl border border-border overflow-hidden absolute top-0 left-0 flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'}`}
+                className={`bg-card w-full h-full rounded-[2rem] shadow-2xl border border-border overflow-hidden absolute top-0 left-0 flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'}`}
               >
                 {/* Like/Nope Overlays */}
                 {isTop && swipeDirection === 'right' && (
