@@ -57,7 +57,7 @@ function RootLayout() {
   const name = session?.user?.name || 'User';
   const surname = (session?.user as any)?.surname || '';
   const initials = (name[0] + (surname[0] || '')).toUpperCase();
-  const username = `@${name.toLowerCase()}${surname ? surname.toLowerCase() : ''}`;
+  const username = (session?.user as any)?.username ? `@${(session?.user as any).username}` : `@${name.toLowerCase()}${surname ? surname.toLowerCase() : ''}`;
 
   return (
     <div className="flex min-h-screen bg-background text-foreground font-sans">
@@ -127,9 +127,13 @@ function RootLayout() {
         
         <div className="p-4 border-t border-border space-y-3">
           <Link to="/profile" className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">
-              {initials}
-            </div>
+            {session?.user?.image ? (
+              <img src={session.user.image} alt={name} className="w-10 h-10 rounded-full object-cover shrink-0 border border-border" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold shrink-0">
+                {initials}
+              </div>
+            )}
             <div className="flex-1 overflow-hidden">
               <p className="text-sm font-medium truncate">{name} {surname}</p>
               <p className="text-xs text-muted-foreground truncate">{username}</p>

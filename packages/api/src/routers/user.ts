@@ -11,6 +11,7 @@ export const userRouter = createTRPCRouter({
         where: { id: input.id },
         select: {
           id: true,
+          username: true,
           name: true,
           surname: true,
           email: true,
@@ -21,7 +22,7 @@ export const userRouter = createTRPCRouter({
             select: {
               bio: true,
               location: true,
-              website: true,
+              links: true,
               banner: true,
             },
           },
@@ -43,6 +44,7 @@ export const userRouter = createTRPCRouter({
         },
         select: {
           id: true,
+          username: true,
           name: true,
           surname: true,
           image: true,
@@ -78,6 +80,7 @@ export const userRouter = createTRPCRouter({
         },
         select: {
           id: true,
+          username: true,
           name: true,
           surname: true,
           image: true,
@@ -151,12 +154,15 @@ export const userRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
+        const generatedUsername = `${input.name.toLowerCase().replace(/[^a-z0-9]/g, '')}${input.surname.toLowerCase().replace(/[^a-z0-9]/g, '')}${Math.floor(Math.random() * 10000)}`;
+        
         const response = await auth.api.signUpEmail({
           body: {
             email: input.email,
             password: input.password,
             name: input.name,
             surname: input.surname,
+            username: generatedUsername,
           },
         });
 

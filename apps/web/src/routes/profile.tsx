@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { Mail, Briefcase, GraduationCap, LinkIcon, Edit2, Plus, X, Globe, Camera } from 'lucide-react';
+import { Mail, Briefcase, GraduationCap, LinkIcon, Edit2, Plus, X, Globe, Camera, Award, ExternalLink } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useSession, authClient } from '@collabswipe/auth/client';
 import { trpc } from '@/lib/trpc';
@@ -23,12 +23,12 @@ function ProfilePage() {
 
   const [isEditing, setIsEditing] = useState(false);
   
-  // Basic Info States
   const [editName, setEditName] = useState('');
   const [editSurname, setEditSurname] = useState('');
+  const [editUsername, setEditUsername] = useState('');
   const [editBio, setEditBio] = useState('');
   const [editLocation, setEditLocation] = useState('');
-  const [editWebsite, setEditWebsite] = useState('');
+  const [editLinks, setEditLinks] = useState<string[]>([]);
   const [editImage, setEditImage] = useState('');
   const [editBanner, setEditBanner] = useState('');
   
@@ -129,6 +129,16 @@ function ProfilePage() {
   const [eduProgram, setEduProgram] = useState('');
   const [eduDesc, setEduDesc] = useState('');
 
+  // Certification Form States
+  const [showAddCert, setShowAddCert] = useState(false);
+  const [editingCertId, setEditingCertId] = useState<string | null>(null);
+  const [certTitle, setCertTitle] = useState('');
+  const [certOrg, setCertOrg] = useState('');
+  const [certStartDate, setCertStartDate] = useState('');
+  const [certEndDate, setCertEndDate] = useState('');
+  const [certCompetencyId, setCertCompetencyId] = useState('');
+  const [certCompetencyURL, setCertCompetencyURL] = useState('');
+
   // Fetch true profile data
   const { data: profile, isLoading } = trpc.profile.getByUserId.useQuery(
     { userId: userId || '' },
@@ -138,10 +148,11 @@ function ProfilePage() {
         if (data && !isEditing && session?.user) {
           setEditBio(data.bio || '');
           setEditLocation(data.location || '');
-          setEditWebsite(data.website || '');
+          setEditLinks(data.links || []);
           setEditBanner(data.banner || '');
           setEditName(session.user.name || '');
           setEditSurname((session.user as any).surname || '');
+          setEditUsername((session.user as any).username || '');
           setEditImage(session.user.image || '');
         }
       }
@@ -155,6 +166,9 @@ function ProfilePage() {
       utils.profile.getByUserId.invalidate({ userId: userId || '' });
       setIsEditing(false);
       window.location.reload(); // Oturum bilgisini (Better Auth) tazelemek için
+    },
+    onError: (err) => {
+      alert("Profil güncellenirken hata oluştu: " + err.message);
     }
   });
 
@@ -216,6 +230,28 @@ function ProfilePage() {
     onSuccess: () => utils.profile.getByUserId.invalidate({ userId: userId || '' })
   });
 
+  const addCertMut = trpc.profile.addCertificate.useMutation({
+    onSuccess: () => {
+      setShowAddCert(false);
+      resetCertForm();
+      utils.profile.getByUserId.invalidate({ userId: userId || '' });
+    },
+    onError: (err) => alert("Hata: " + err.message)
+  });
+
+  const updateCertMut = trpc.profile.updateCertificate.useMutation({
+    onSuccess: () => {
+      setShowAddCert(false);
+      resetCertForm();
+      utils.profile.getByUserId.invalidate({ userId: userId || '' });
+    },
+    onError: (err) => alert("Hata: " + err.message)
+  });
+
+  const removeCertMut = trpc.profile.removeCertificate.useMutation({
+    onSuccess: () => utils.profile.getByUserId.invalidate({ userId: userId || '' })
+  });
+
   if (isLoading || !session) {
     return <div className="p-10 text-center text-muted-foreground font-semibold">Profil Yükleniyor...</div>;
   }
@@ -224,21 +260,32 @@ function ProfilePage() {
     if (!userId) return;
     
     // Auth sistemindeki oturumu güncelleyelim (Böylece JWT / Cookie içindeki resim de güncellenir)
-    if (editName !== session?.user?.name || editImage !== session?.user?.image) {
+    if (editName !== session?.user?.name || editImage !== session?.user?.image || editUsername !== (session?.user as any)?.username) {
       await authClient.updateUser({
         name: editName,
         image: editImage,
-      });
+        username: editUsername,
+      } as any);
     }
+
+    // Otomatik URL formatlama (http/https yoksa ekle)
+    const formattedLinks = editLinks.map(link => {
+      const trimmed = link.trim();
+      if (trimmed && !trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+        return `https://${trimmed}`;
+      }
+      return trimmed;
+    });
 
     updateProfile.mutate({
       userId,
+      username: editUsername,
       name: editName,
       surname: editSurname,
       image: editImage,
       bio: editBio,
       location: editLocation,
-      website: editWebsite,
+      links: formattedLinks,
       banner: editBanner,
     });
   };
@@ -258,6 +305,11 @@ function ProfilePage() {
   const resetEduForm = () => {
     setEditingEduId(null);
     setEduInstName(''); setEduDegree(''); setEduStartDate(''); setEduEndDate(''); setEduProgram(''); setEduDesc('');
+  };
+
+  const resetCertForm = () => {
+    setEditingCertId(null);
+    setCertTitle(''); setCertOrg(''); setCertStartDate(''); setCertEndDate(''); setCertCompetencyId(''); setCertCompetencyURL('');
   };
 
   const handleSaveExp = () => {
@@ -328,6 +380,47 @@ function ProfilePage() {
     setEduDesc(edu.instDesc || '');
   };
 
+  const handleSaveCert = () => {
+    if (!profile?.id) return;
+    if (!certTitle || !certOrg || !certStartDate) {
+      alert("Lütfen Sertifika Adı, Veren Kurum ve Veriliş Tarihi alanlarını doldurun.");
+      return;
+    }
+    
+    // Check if URL is valid if provided
+    let urlToSave = certCompetencyURL.trim();
+    if (urlToSave && !urlToSave.startsWith('http://') && !urlToSave.startsWith('https://')) {
+      urlToSave = `https://${urlToSave}`;
+    }
+
+    const payload = {
+      profileId: profile.id,
+      title: certTitle,
+      org: certOrg,
+      startDate: new Date(certStartDate),
+      endDate: certEndDate ? new Date(certEndDate) : undefined,
+      competencyId: certCompetencyId,
+      competencyURL: urlToSave,
+    };
+    
+    if (editingCertId) {
+      updateCertMut.mutate({ cerId: editingCertId, ...payload });
+    } else {
+      addCertMut.mutate(payload);
+    }
+  };
+
+  const handleEditCert = (cert: any) => {
+    setEditingCertId(cert.cerId);
+    setShowAddCert(true);
+    setCertTitle(cert.title);
+    setCertOrg(cert.org);
+    setCertStartDate(new Date(cert.startDate).toISOString().split('T')[0]);
+    setCertEndDate(cert.endDate ? new Date(cert.endDate).toISOString().split('T')[0] : '');
+    setCertCompetencyId(cert.competencyId || '');
+    setCertCompetencyURL(cert.competencyURL || '');
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 pb-20 md:pb-0">
       {/* Profile Header */}
@@ -370,14 +463,25 @@ function ProfilePage() {
             {/* User Info */}
             <div className="flex-1 pt-2 sm:pt-4">
               {isEditing ? (
-                <div className="flex gap-2 mb-2">
-                  <input type="text" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Ad" className="bg-background border border-border rounded px-3 py-1.5 font-black text-xl w-32" />
-                  <input type="text" value={editSurname} onChange={e => setEditSurname(e.target.value)} placeholder="Soyad" className="bg-background border border-border rounded px-3 py-1.5 font-black text-xl w-32" />
-                </div>
+                <>
+                  <div className="flex gap-2 mb-2">
+                    <input type="text" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Ad" className="bg-background border border-border rounded px-3 py-1.5 font-black text-xl w-32" />
+                    <input type="text" value={editSurname} onChange={e => setEditSurname(e.target.value)} placeholder="Soyad" className="bg-background border border-border rounded px-3 py-1.5 font-black text-xl w-32" />
+                  </div>
+                  <div className="mb-2">
+                    <div className="flex items-center text-muted-foreground bg-background border border-border rounded px-3 w-48 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+                      <span className="text-sm font-medium pr-1 select-none">@</span>
+                      <input type="text" value={editUsername} onChange={e => setEditUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))} placeholder="kullanici_adi" className="bg-transparent py-1 text-sm font-bold w-full outline-none" />
+                    </div>
+                  </div>
+                </>
               ) : (
-                <h1 className="text-2xl sm:text-3xl font-black text-foreground">{session.user?.name} {(session.user as any)?.surname}</h1>
+                <>
+                  <h1 className="text-2xl sm:text-3xl font-black text-foreground">{session.user?.name} {(session.user as any)?.surname}</h1>
+                  <p className="text-primary font-bold text-sm mt-0.5">@{(session.user as any)?.username || `${name.toLowerCase()}${((session.user as any)?.surname || '').toLowerCase()}`}</p>
+                </>
               )}
-              <div className="flex items-center gap-2 mt-1 sm:mt-2 text-sm text-muted-foreground font-medium">
+              <div className="flex items-center gap-2 mt-2 sm:mt-3 text-sm text-muted-foreground font-medium">
                 <Mail className="w-4 h-4" /> {session.user?.email}
               </div>
               <div className="text-muted-foreground mt-2 font-medium text-base sm:text-lg">
@@ -399,7 +503,7 @@ function ProfilePage() {
             <div className="sm:pb-2 mt-4 sm:mt-0 flex gap-2 w-full sm:w-auto">
               {isEditing ? (
                 <>
-                  <button onClick={() => { setIsEditing(false); resetExpForm(); resetEduForm(); setShowAddExp(false); setShowAddEdu(false); }} className="flex-1 sm:flex-none bg-secondary text-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90">
+                  <button onClick={() => { setIsEditing(false); resetExpForm(); resetEduForm(); resetCertForm(); setShowAddExp(false); setShowAddEdu(false); setShowAddCert(false); }} className="flex-1 sm:flex-none bg-secondary text-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90">
                     İptal
                   </button>
                   <button onClick={handleSave} disabled={updateProfile.isLoading} className="flex-1 sm:flex-none bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90">
@@ -410,10 +514,11 @@ function ProfilePage() {
                 <button onClick={() => {
                   setEditBio(profile?.bio || '');
                   setEditLocation(profile?.location || '');
-                  setEditWebsite(profile?.website || '');
+                  setEditLinks(profile?.links || []);
                   setEditBanner(profile?.banner || '');
                   setEditName(session.user?.name || '');
                   setEditSurname((session.user as any)?.surname || '');
+                  setEditUsername((session.user as any)?.username || '');
                   setEditImage(session.user?.image || '');
                   setIsEditing(true);
                 }} className="w-full sm:w-auto bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-bold hover:opacity-90 flex items-center justify-center gap-2 shadow-sm">
@@ -510,21 +615,39 @@ function ProfilePage() {
                 <Mail className="w-4 h-4" /> {session.user?.email}
               </div>
               {isEditing ? (
-                 <div className="flex items-center gap-2 text-primary text-sm font-medium">
-                    <Globe className="w-4 h-4" />
-                    <input 
-                      type="url" 
-                      value={editWebsite} 
-                      onChange={e => setEditWebsite(e.target.value)} 
-                      placeholder="https://website.com" 
-                      className="bg-background border border-border rounded px-2 py-1 flex-1 min-w-0 text-foreground font-normal"
-                    />
+                 <div className="space-y-2">
+                   {editLinks.map((link, idx) => (
+                     <div key={idx} className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-primary shrink-0" />
+                        <input 
+                          type="url" 
+                          value={link} 
+                          onChange={e => {
+                            const newLinks = [...editLinks];
+                            newLinks[idx] = e.target.value;
+                            setEditLinks(newLinks);
+                          }} 
+                          placeholder="https://website.com" 
+                          className="bg-background border border-border rounded px-2 py-1 flex-1 min-w-0 text-foreground font-normal text-sm"
+                        />
+                        <button onClick={() => setEditLinks(editLinks.filter((_, i) => i !== idx))} className="text-destructive hover:bg-destructive/10 p-1 rounded">
+                          <X className="w-4 h-4" />
+                        </button>
+                     </div>
+                   ))}
+                   <button onClick={() => setEditLinks([...editLinks, ''])} className="text-xs text-primary font-bold flex items-center gap-1 mt-2 hover:underline">
+                     <Plus className="w-3 h-3" /> Link Ekle
+                   </button>
                  </div>
               ) : (
-                profile?.website && (
-                  <a href={profile.website} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-primary hover:underline text-sm font-medium break-all">
-                    <Globe className="w-4 h-4 shrink-0" /> {profile.website}
-                  </a>
+                profile?.links && profile.links.length > 0 && (
+                  <div className="space-y-2">
+                    {profile.links.map((link: string, idx: number) => (
+                      <a key={idx} href={link} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-primary hover:underline text-sm font-medium break-all">
+                        <Globe className="w-4 h-4 shrink-0" /> {link}
+                      </a>
+                    ))}
+                  </div>
                 )
               )}
             </div>
@@ -701,6 +824,98 @@ function ProfilePage() {
                 ))
               ) : (
                 <p className="text-muted-foreground text-sm italic">Henüz bir eğitim eklenmemiş.</p>
+              )}
+            </div>
+          </div>
+          
+          {/* CERTIFICATIONS */}
+          <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="font-bold text-foreground text-xl flex items-center gap-2">
+                <Award className="w-5 h-5 text-primary" /> Sertifikalar
+              </h3>
+              {isEditing && (
+                <button onClick={() => {
+                  if (showAddCert) {
+                    setShowAddCert(false);
+                    resetCertForm();
+                  } else {
+                    setShowAddCert(true);
+                  }
+                }} className="text-primary hover:bg-secondary p-1.5 rounded-lg transition-colors">
+                  {showAddCert ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                </button>
+              )}
+            </div>
+
+            {/* Add Cert Form */}
+            {isEditing && showAddCert && (
+              <div className="mb-6 p-4 border border-primary/30 bg-primary/5 rounded-xl space-y-3 shadow-inner">
+                <input type="text" placeholder="Sertifika / Başarı Adı" value={certTitle} onChange={e => setCertTitle(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
+                <input type="text" placeholder="Veren Kurum (örn. Google, Udemy)" value={certOrg} onChange={e => setCertOrg(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
+                <div className="flex gap-3">
+                   <div className="flex-1">
+                     <label className="text-xs text-muted-foreground">Veriliş Tarihi</label>
+                     <input type="date" max={today} value={certStartDate} onChange={e => setCertStartDate(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
+                   </div>
+                   <div className="flex-1">
+                     <label className="text-xs text-muted-foreground">Geçerlilik (Süresiz ise boş bırakın)</label>
+                     <input type="date" value={certEndDate} onChange={e => setCertEndDate(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
+                   </div>
+                </div>
+                <div className="flex gap-3">
+                  <input type="text" placeholder="Sertifika ID (İsteğe Bağlı)" value={certCompetencyId} onChange={e => setCertCompetencyId(e.target.value)} className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm" />
+                  <input type="text" placeholder="Doğrulama Linki (URL)" value={certCompetencyURL} onChange={e => setCertCompetencyURL(e.target.value)} className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm" />
+                </div>
+                <button 
+                  onClick={handleSaveCert} 
+                  disabled={addCertMut.isLoading || updateCertMut.isLoading || !certTitle || !certOrg || !certStartDate} 
+                  className="w-full bg-primary text-primary-foreground py-2 rounded font-bold hover:opacity-90 disabled:opacity-50"
+                >
+                  {editingCertId ? 'Değişiklikleri Kaydet' : 'Sertifika Ekle'}
+                </button>
+              </div>
+            )}
+
+            <div className="space-y-6">
+              {profile?.certificates && profile.certificates.length > 0 ? (
+                profile.certificates.map((cert: any) => (
+                  <div key={cert.cerId} className={`relative pl-6 border-l-2 border-border group ${editingCertId === cert.cerId ? 'opacity-50' : ''}`}>
+                    <div className="absolute w-3 h-3 bg-primary rounded-full -left-[7.5px] top-1.5 ring-4 ring-background" />
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-bold text-foreground text-lg">{cert.title}</h4>
+                        <p className="text-primary font-medium">{cert.org}</p>
+                        <p className="text-sm text-muted-foreground mt-1 mb-2">
+                          Veriliş: {formatDate(cert.startDate)} 
+                          {cert.endDate ? ` • Geçerlilik: ${formatDate(cert.endDate)}` : ' • Süresiz'}
+                        </p>
+                        {(cert.competencyId || cert.competencyURL) && (
+                          <div className="mt-2 text-sm flex flex-col gap-1">
+                            {cert.competencyId && <span className="text-muted-foreground">ID: {cert.competencyId}</span>}
+                            {cert.competencyURL && (
+                              <a href={cert.competencyURL} target="_blank" rel="noreferrer" className="text-primary hover:underline font-medium inline-flex items-center gap-1">
+                                Doğrulama Bağlantısı <ExternalLink className="w-3 h-3" />
+                              </a>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {isEditing && (
+                        <div className="flex gap-1 opacity-50 hover:opacity-100 transition-opacity">
+                          <button onClick={() => handleEditCert(cert)} className="text-primary hover:bg-primary/10 p-1.5 rounded">
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => removeCertMut.mutate({ cerId: cert.cerId })} className="text-destructive hover:bg-destructive/10 p-1.5 rounded">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted-foreground text-sm italic">Henüz bir sertifika eklenmemiş.</p>
               )}
             </div>
           </div>

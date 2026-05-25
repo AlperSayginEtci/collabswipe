@@ -11,7 +11,7 @@ export const profileRouter = createTRPCRouter({
         include: {
           experiences: { orderBy: { startDate: 'desc' } },
           educations: { orderBy: { startDate: 'desc' } },
-          certificates: true,
+          certificates: { orderBy: { startDate: 'desc' } },
           skills: { include: { skill: true } },
           languages: { include: { language: true } },
         },
@@ -23,34 +23,45 @@ export const profileRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
+        username: z.string().min(3).regex(/^[a-z0-9_]+$/, 'Sadece küçük harf, rakam ve alt çizgi kullanılabilir.').optional(),
         name: z.string().optional(),
         surname: z.string().optional(),
         image: z.string().optional(),
         profileName: z.string().optional(),
         bio: z.string().optional(),
-        website: z.string().url().or(z.string().length(0)).optional(),
+        links: z.array(z.string().url().or(z.string().length(0))).optional(),
         location: z.string().optional(),
         banner: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId, name, surname, image, ...data } = input
+      const { userId, username, name, surname, image, ...data } = input
       
-      if (name !== undefined || surname !== undefined || image !== undefined) {
+      if (username) {
+        const existing = await ctx.prisma.user.findFirst({
+          where: { username, id: { not: userId } }
+        });
+        if (existing) {
+          throw new Error("Bu kullanıcı adı daha önce alınmış.");
+        }
+      }
+
+      if (name !== undefined || surname !== undefined || image !== undefined || username !== undefined) {
         await ctx.prisma.user.update({
           where: { id: userId },
           data: {
             ...(name !== undefined && { name }),
             ...(surname !== undefined && { surname }),
             ...(image !== undefined && { image }),
+            ...(username !== undefined && { username }),
           },
         });
       }
 
-      // Convert empty string website to undefined/null for upsert or handle it based on prisma schema (schema has String?)
+      // Prepare clean data
       const cleanData = {
         ...data,
-        website: data.website === "" ? null : data.website,
+        links: data.links ? data.links.filter(l => l.trim().length > 0) : undefined,
       };
 
       return ctx.prisma.profile.upsert({
@@ -161,6 +172,54 @@ export const profileRouter = createTRPCRouter({
     .input(z.object({ eduId: z.string() }))
     .mutation(({ ctx, input }) =>
       ctx.prisma.education.delete({ where: { eduId: input.eduId } })
+    ),
+
+  // Sertifika ekle
+  addCertificate: publicProcedure
+    .input(
+      z.object({
+        profileId: z.string(),
+        title: z.string(),
+        org: z.string(),
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date().optional(),
+        competencyId: z.string().optional(),
+        competencyURL: z.string().url().or(z.string().length(0)).optional(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      const { competencyURL, ...rest } = input;
+      const cleanUrl = competencyURL && competencyURL.trim() !== '' ? competencyURL : undefined;
+      return ctx.prisma.certificate.create({ data: { ...rest, competencyURL: cleanUrl } });
+    }),
+
+  // Sertifika güncelle
+  updateCertificate: publicProcedure
+    .input(
+      z.object({
+        cerId: z.string(),
+        title: z.string(),
+        org: z.string(),
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date().optional(),
+        competencyId: z.string().optional(),
+        competencyURL: z.string().url().or(z.string().length(0)).optional(),
+      })
+    )
+    .mutation(({ ctx, input }) => {
+      const { cerId, competencyURL, ...data } = input;
+      const cleanUrl = competencyURL && competencyURL.trim() !== '' ? competencyURL : undefined;
+      return ctx.prisma.certificate.update({
+        where: { cerId },
+        data: { ...data, competencyURL: cleanUrl },
+      });
+    }),
+
+  // Sertifika sil
+  removeCertificate: publicProcedure
+    .input(z.object({ cerId: z.string() }))
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.certificate.delete({ where: { cerId: input.cerId } })
     ),
 
   // Skill ekle (sadece var olan standart yetenekler eklenebilir)

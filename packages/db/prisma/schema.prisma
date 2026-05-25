@@ -15,6 +15,7 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   surname       String?
+  username      String?   @unique
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
@@ -93,7 +94,7 @@ model Profile {
   userId      String   @unique
   profileName String?
   bio         String?
-  website     String?
+  links       String[] @default([])
   location    String?
   banner      String?  // Image URL
 
