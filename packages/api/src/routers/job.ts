@@ -1,21 +1,32 @@
 import { z } from "zod"
-import { createTRPCRouter, publicProcedure } from "../trpc"
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc"
+import { TRPCError } from "@trpc/server"
 
 export const jobRouter = createTRPCRouter({
   // İş ilanı oluştur
-  create: publicProcedure
+  create: protectedProcedure
     .input(
       z.object({
-        publisherId: z.string(),
         title: z.string().min(2),
         description: z.string().min(10),
         type: z.enum(["FREELANCE", "CORPORATE"]),
         reqId: z.string().optional(),
       })
     )
-    .mutation(({ ctx, input }) =>
-      ctx.prisma.jobPosting.create({ data: input })
-    ),
+    .mutation(({ ctx, input }) => {
+      if (ctx.session.user.role !== "company") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Sadece şirket hesapları iş ilanı verebilir.",
+        });
+      }
+      return ctx.prisma.jobPosting.create({ 
+        data: {
+          ...input,
+          publisherId: ctx.session.user.id,
+        } 
+      });
+    }),
 
   // İlanları listele (filtrelenebilir)
   list: publicProcedure
@@ -121,6 +132,19 @@ export const jobRouter = createTRPCRouter({
           },
         },
         orderBy: { createdAt: "desc" },
+      })
+    ),
+
+  // Şirketimin verdiği ilanlar
+  getMyPostings: protectedProcedure
+    .query(({ ctx }) =>
+      ctx.prisma.jobPosting.findMany({
+        where: { publisherId: ctx.session.user.id },
+        orderBy: { createdAt: "desc" },
+        include: {
+          _count: { select: { applications: true } },
+          skill: { select: { skillName: true } },
+        },
       })
     ),
 

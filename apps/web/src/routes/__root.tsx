@@ -1,5 +1,5 @@
 import { createRootRoute, Link, Outlet, useLocation, useNavigate } from '@tanstack/react-router';
-import { Home, Compass, Briefcase, MessageSquare, User as UserIcon, Bell, LogOut, ChevronDown } from 'lucide-react';
+import { Home, Compass, Briefcase, MessageSquare, User as UserIcon, Bell, LogOut, ChevronDown, PlusCircle } from 'lucide-react';
 import { useSession, signOut } from '@collabswipe/auth/client';
 import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
@@ -123,6 +123,12 @@ function RootLayout() {
             <UserIcon className="w-5 h-5" />
             Profile
           </Link>
+          {(session?.user as any)?.role === 'company' && (
+            <Link to="/jobs/post" className="[&.active]:bg-primary/20 [&.active]:text-primary flex items-center gap-3 px-4 py-3 mt-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-bold transition-colors border border-primary/20">
+              <PlusCircle className="w-5 h-5" />
+              İlan Ver
+            </Link>
+          )}
         </nav>
         
         <div className="p-4 border-t border-border space-y-3">
@@ -188,6 +194,16 @@ function RootLayout() {
           <MessageSquare className="w-6 h-6" />
           <span className="text-[10px] font-medium">Matches</span>
         </Link>
+        <Link to="/profile" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground md:hidden">
+          <UserIcon className="w-6 h-6" />
+          <span className="text-[10px] font-medium">Profile</span>
+        </Link>
+        {(session?.user as any)?.role === 'company' && (
+          <Link to="/jobs/post" className="[&.active]:text-primary flex flex-col items-center gap-1 text-primary">
+            <PlusCircle className="w-6 h-6" />
+            <span className="text-[10px] font-medium">İlan Ver</span>
+          </Link>
+        )}
       </nav>
       <Toaster position="bottom-right" />
     </div>

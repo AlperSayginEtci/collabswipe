@@ -119,3 +119,4 @@ process.on('SIGTERM', () => {
   handler.broadcastReconnectNotification();
   wss.close();
 });
+// Trigger restart

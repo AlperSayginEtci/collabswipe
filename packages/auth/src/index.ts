@@ -53,7 +53,12 @@ export const auth = betterAuth({
         type: "string",
         required: false,
         defaultValue: "user",
-        input: false,
+        input: true,
+      },
+      sector: {
+        type: "string",
+        required: false,
+        input: true,
       },
       banned: {
         type: "boolean",
