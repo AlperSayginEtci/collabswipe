@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Search, Building, Clock, MapPin, Inbox } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { useSession } from '@collabswipe/auth/client';
 import toast from 'react-hot-toast';
 
-export const Route = createFileRoute('/jobs')({
+export const Route = createFileRoute('/jobs/')({
   component: JobsPage,
 });
 
 function JobsPage() {
+  const navigate = useNavigate();
   const { data: session } = useSession();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFreelance, setShowFreelance] = useState(true);
@@ -118,7 +119,11 @@ function JobsPage() {
                 const isCurrentlyApplying = applyJob.isLoading && applyJob.variables?.jobId === job.id;
                 
                 return (
-                  <div key={job.id} className="bg-card border border-border rounded-xl p-5 shadow-sm hover:border-primary/50 hover:shadow-md transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div 
+                    key={job.id} 
+                    onClick={() => navigate({ to: '/jobs/$jobId', params: { jobId: job.id } })}
+                    className="bg-card border border-border rounded-xl p-5 shadow-sm hover:border-primary/50 hover:shadow-md transition-all cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  >
                     <div className="flex items-start gap-4">
                       <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center shrink-0">
                         <Building className="w-6 h-6 text-muted-foreground" />
