@@ -10,17 +10,24 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as NetworkRouteImport } from './routes/network'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JobsIndexRouteImport } from './routes/jobs.index'
+import { Route as PostsPostIdRouteImport } from './routes/posts.$postId'
 import { Route as JobsPostRouteImport } from './routes/jobs_.post'
 import { Route as JobsJobIdRouteImport } from './routes/jobs_.$jobId'
 
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NetworkRoute = NetworkRouteImport.update({
+  id: '/network',
+  path: '/network',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MatchesRoute = MatchesRouteImport.update({
@@ -48,6 +55,11 @@ const JobsIndexRoute = JobsIndexRouteImport.update({
   path: '/jobs/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PostsPostIdRoute = PostsPostIdRouteImport.update({
+  id: '/posts/$postId',
+  path: '/posts/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JobsPostRoute = JobsPostRouteImport.update({
   id: '/jobs_/post',
   path: '/jobs/post',
@@ -64,9 +76,11 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
+  '/network': typeof NetworkRoute
   '/profile': typeof ProfileRoute
   '/jobs/$jobId': typeof JobsJobIdRoute
   '/jobs/post': typeof JobsPostRoute
+  '/posts/$postId': typeof PostsPostIdRoute
   '/jobs/': typeof JobsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -74,9 +88,11 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
+  '/network': typeof NetworkRoute
   '/profile': typeof ProfileRoute
   '/jobs/$jobId': typeof JobsJobIdRoute
   '/jobs/post': typeof JobsPostRoute
+  '/posts/$postId': typeof PostsPostIdRoute
   '/jobs': typeof JobsIndexRoute
 }
 export interface FileRoutesById {
@@ -85,9 +101,11 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
+  '/network': typeof NetworkRoute
   '/profile': typeof ProfileRoute
   '/jobs_/$jobId': typeof JobsJobIdRoute
   '/jobs_/post': typeof JobsPostRoute
+  '/posts/$postId': typeof PostsPostIdRoute
   '/jobs/': typeof JobsIndexRoute
 }
 export interface FileRouteTypes {
@@ -97,9 +115,11 @@ export interface FileRouteTypes {
     | '/discover'
     | '/login'
     | '/matches'
+    | '/network'
     | '/profile'
     | '/jobs/$jobId'
     | '/jobs/post'
+    | '/posts/$postId'
     | '/jobs/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -107,9 +127,11 @@ export interface FileRouteTypes {
     | '/discover'
     | '/login'
     | '/matches'
+    | '/network'
     | '/profile'
     | '/jobs/$jobId'
     | '/jobs/post'
+    | '/posts/$postId'
     | '/jobs'
   id:
     | '__root__'
@@ -117,9 +139,11 @@ export interface FileRouteTypes {
     | '/discover'
     | '/login'
     | '/matches'
+    | '/network'
     | '/profile'
     | '/jobs_/$jobId'
     | '/jobs_/post'
+    | '/posts/$postId'
     | '/jobs/'
   fileRoutesById: FileRoutesById
 }
@@ -128,9 +152,11 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   LoginRoute: typeof LoginRoute
   MatchesRoute: typeof MatchesRoute
+  NetworkRoute: typeof NetworkRoute
   ProfileRoute: typeof ProfileRoute
   JobsJobIdRoute: typeof JobsJobIdRoute
   JobsPostRoute: typeof JobsPostRoute
+  PostsPostIdRoute: typeof PostsPostIdRoute
   JobsIndexRoute: typeof JobsIndexRoute
 }
 
@@ -141,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/network': {
+      id: '/network'
+      path: '/network'
+      fullPath: '/network'
+      preLoaderRoute: typeof NetworkRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/matches': {
@@ -178,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JobsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/posts/$postId': {
+      id: '/posts/$postId'
+      path: '/posts/$postId'
+      fullPath: '/posts/$postId'
+      preLoaderRoute: typeof PostsPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/jobs_/post': {
       id: '/jobs_/post'
       path: '/jobs/post'
@@ -200,9 +240,11 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   LoginRoute: LoginRoute,
   MatchesRoute: MatchesRoute,
+  NetworkRoute: NetworkRoute,
   ProfileRoute: ProfileRoute,
   JobsJobIdRoute: JobsJobIdRoute,
   JobsPostRoute: JobsPostRoute,
+  PostsPostIdRoute: PostsPostIdRoute,
   JobsIndexRoute: JobsIndexRoute,
 }
 export const routeTree = rootRouteImport
