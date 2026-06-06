@@ -99,6 +99,7 @@ model Profile {
   links       String[] @default([])
   location    String?
   banner      String?  // Image URL
+  isPrivate   Boolean  @default(false) // If true, followers must be approved
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
@@ -130,6 +131,7 @@ enum ConnectionStatus {
 model Follows {
   followerId  String
   followingId String
+  isAccepted  Boolean  @default(true) // False means it's a pending request
   createdAt   DateTime @default(now())
 
   follower    User @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)

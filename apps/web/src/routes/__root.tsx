@@ -60,9 +60,9 @@ function RootLayout() {
   const username = (session?.user as any)?.username ? `@${(session?.user as any).username}` : `@${name.toLowerCase()}${surname ? surname.toLowerCase() : ''}`;
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground font-sans">
-      {/* Sidebar Layout */}
-      <aside className="w-64 border-r border-border bg-card hidden md:flex flex-col">
+    <div className="flex h-screen bg-background text-foreground font-sans">
+      {/* Sidebar — fixed height, does not scroll with content */}
+      <aside className="w-64 border-r border-border bg-card hidden md:flex flex-col h-full flex-shrink-0">
         <div className="p-6">
           <h1 className="text-2xl font-black text-primary tracking-tighter">CollabSwipe</h1>
         </div>
@@ -156,9 +156,9 @@ function RootLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
+      <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {/* Mobile Header */}
-        <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card">
+        <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card flex-shrink-0">
           <h1 className="text-xl font-black text-primary">CollabSwipe</h1>
           <button className="text-muted-foreground" onClick={() => signOut({ callbackURL: '/login' })}>
             <LogOut className="w-6 h-6 text-destructive" />
@@ -166,15 +166,15 @@ function RootLayout() {
         </header>
 
         {/* Desktop Topbar */}
-        <div className="hidden md:flex items-center justify-end p-4 border-b border-border bg-background/95 backdrop-blur z-10 sticky top-0">
+        <div className="hidden md:flex items-center justify-end p-4 border-b border-border bg-background/95 backdrop-blur z-10 flex-shrink-0">
           <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-full transition-colors">
             <Bell className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col">
-          <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col">
+        {/* Scrollable Content — this is the ONLY scroll container */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+          <div className="max-w-6xl mx-auto w-full">
             <Outlet />
           </div>
         </div>
