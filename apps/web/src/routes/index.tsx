@@ -237,6 +237,8 @@ function HomeFeed() {
   const [mediaFileBase64, setMediaFileBase64] = useState('');
   // Object URL for previewing selected media before upload
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState('');
+  const safeMediaPreviewUrl =
+    /^(blob:|data:image\/|data:video\/|https?:\/\/)/i.test(mediaPreviewUrl) ? mediaPreviewUrl : '';
   const [sortBy, setSortBy] = useState<'recent' | 'top'>('recent');
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [repostTarget, setRepostTarget] = useState<any | null>(null);
@@ -1136,10 +1138,10 @@ function HomeFeed() {
               />
 
               {/* Media Preview (if selected via drag-and-drop or file input) */}
-              {!repostTarget && mediaPreviewUrl && (
+              {!repostTarget && safeMediaPreviewUrl && (
                 <div className="space-y-2">
                   <div className="rounded-xl overflow-hidden border border-border/40 max-h-40 bg-muted/10 relative group">
-                    <img src={mediaPreviewUrl} alt="preview" className="w-full h-full object-cover" />
+                    <img src={safeMediaPreviewUrl} alt="preview" className="w-full h-full object-cover" />
                     <button 
                       onClick={() => {
                         setMediaPreviewUrl('');
