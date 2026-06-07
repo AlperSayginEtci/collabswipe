@@ -97,6 +97,7 @@ model Profile {
   bio         String?
   links       String[] @default([])
   location    String?
+  age         Int?
   banner      String?  // Image URL
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
