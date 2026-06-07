@@ -1,11 +1,17 @@
 import { useState } from 'react';
+import { Link } from '@tanstack/react-router';
 import { createFileRoute } from '@tanstack/react-router';
-import { Mail, Briefcase, GraduationCap, LinkIcon, Edit2, Plus, X, Globe, Camera, Award, ExternalLink } from 'lucide-react';
+import { Mail, Briefcase, GraduationCap, LinkIcon, Edit2, Plus, X, Globe, Camera, Award, ExternalLink, UserPlus, UserCheck, Users, Check, Clock as ClockIcon } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useSession, authClient } from '@collabswipe/auth/client';
 import { trpc } from '@/lib/trpc';
 
 export const Route = createFileRoute('/profile')({
+  validateSearch: (search: Record<string, unknown>): { userId?: string } => {
+    return {
+      userId: search.userId as string | undefined,
+    };
+  },
   component: ProfilePage,
 });
 
@@ -15,9 +21,12 @@ const formatDate = (dateString: string | Date) => {
 };
 
 function ProfilePage() {
+  const search = Route.useSearch();
   const { data: session } = useSession();
-  const userId = session?.user?.id;
-  const isCompany = (session?.user as any)?.role === 'company';
+  
+  const loggedInUserId = session?.user?.id;
+  const userId = search.userId || loggedInUserId;
+  const isOwnProfile = !search.userId || search.userId === loggedInUserId;
   const utils = trpc.useUtils();
 
   const today = new Date().toISOString().split('T')[0];
@@ -32,6 +41,7 @@ function ProfilePage() {
   const [editLinks, setEditLinks] = useState<string[]>([]);
   const [editImage, setEditImage] = useState('');
   const [editBanner, setEditBanner] = useState('');
+  const [editIsPrivate, setEditIsPrivate] = useState(false);
   
   // Skills
   const [skillSearch, setSkillSearch] = useState('');
@@ -155,14 +165,32 @@ function ProfilePage() {
           setEditSurname((session.user as any).surname || '');
           setEditUsername((session.user as any)?.username || `${(session.user?.name || '').toLowerCase().replace(/\s+/g, '')}${((session.user as any)?.surname || '').toLowerCase().replace(/\s+/g, '')}`);
           setEditImage(session.user.image || '');
+          setEditIsPrivate(data.isPrivate || false);
         }
       }
     }
   );
 
+  const isCompany = isOwnProfile ? (session?.user as any)?.role === 'company' : (profile?.user as any)?.role === 'company';
+
   const { data: allSkills } = trpc.profile.getAllSkills.useQuery();
   const { data: myJobs } = trpc.job.getMyPostings.useQuery(undefined, {
-    enabled: isCompany,
+    enabled: !!isCompany,
+  });
+
+  const { data: connectionData } = trpc.connection.status.useQuery(
+    { loggedInUserId: loggedInUserId || '', targetUserId: userId || '' },
+    { enabled: !isOwnProfile && !!loggedInUserId && !!userId }
+  );
+
+  const followMutation = trpc.connection.follow.useMutation({
+    onSuccess: () => utils.connection.status.invalidate()
+  });
+  const unfollowMutation = trpc.connection.unfollow.useMutation({
+    onSuccess: () => utils.connection.status.invalidate()
+  });
+  const connectMutation = trpc.connection.sendRequest.useMutation({
+    onSuccess: () => utils.connection.status.invalidate()
   });
 
   const updateProfile = trpc.profile.update.useMutation({
@@ -300,6 +328,7 @@ function ProfilePage() {
       location: editLocation,
       links: formattedLinks,
       banner: editBanner,
+      isPrivate: editIsPrivate,
     });
   };
 
@@ -461,7 +490,7 @@ function ProfilePage() {
                {...(isEditing ? getAvatarRootProps() : {})}
                className={`-mt-12 sm:-mt-16 w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-card bg-secondary overflow-hidden shadow-lg shrink-0 z-10 relative group ${isEditing ? 'cursor-pointer' : ''} ${isAvatarDragActive ? 'border-primary border-dashed' : ''}`}
             >
-               <img src={(isEditing ? editImage : session.user?.image) || `https://api.dicebear.com/7.x/notionists/svg?seed=${session.user?.name}`} alt="My Profile" className="w-full h-full object-cover" />
+               <img src={(isEditing ? editImage : (isOwnProfile ? session?.user?.image : profile?.user?.image)) || `https://api.dicebear.com/7.x/notionists/svg?seed=${isOwnProfile ? session?.user?.name : profile?.user?.name}`} alt="User Profile" className="w-full h-full object-cover" />
                {isEditing && <input {...getAvatarInputProps()} />}
                {isEditing && (
                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
@@ -487,16 +516,34 @@ function ProfilePage() {
                       <input type="text" value={editUsername} onChange={e => setEditUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))} placeholder="kullanici_adi" className="bg-transparent py-1 text-sm font-bold w-full outline-none" />
                     </div>
                   </div>
+                  <div className="mb-2 flex items-center gap-2 mt-3">
+                    <input 
+                      type="checkbox" 
+                      id="privateProfile" 
+                      checked={editIsPrivate} 
+                      onChange={(e) => setEditIsPrivate(e.target.checked)}
+                      className="w-4 h-4 text-primary rounded border-border focus:ring-primary"
+                    />
+                    <label htmlFor="privateProfile" className="text-sm font-medium text-foreground cursor-pointer flex items-center gap-1.5">
+                      Gizli Hesap Yap <span className="text-xs text-muted-foreground font-normal">(Takip istekleri onaya düşer)</span>
+                    </label>
+                  </div>
                 </>
               ) : (
                 <>
-                  <h1 className="text-2xl sm:text-3xl font-black text-foreground">{session.user?.name} {(session.user as any)?.surname}</h1>
-                  <p className="text-primary font-bold text-sm mt-0.5">@{(session.user as any)?.username || `${(session.user?.name || '').toLowerCase().replace(/\\s+/g, '')}${((session.user as any)?.surname || '').toLowerCase().replace(/\\s+/g, '')}`}</p>
+                  <h1 className="text-2xl sm:text-3xl font-black text-foreground">
+                    {isOwnProfile ? session?.user?.name : profile?.user?.name} {isOwnProfile ? (session?.user as any)?.surname : profile?.user?.surname}
+                  </h1>
+                  <p className="text-primary font-bold text-sm mt-0.5">
+                    @{isOwnProfile ? ((session?.user as any)?.username || `${(session?.user?.name || '').toLowerCase().replace(/\s+/g, '')}${((session?.user as any)?.surname || '').toLowerCase().replace(/\s+/g, '')}`) : profile?.user?.username}
+                  </p>
                 </>
               )}
-              <div className="flex items-center gap-2 mt-2 sm:mt-3 text-sm text-muted-foreground font-medium">
-                <Mail className="w-4 h-4" /> {session.user?.email}
-              </div>
+              {isOwnProfile && (
+                <div className="flex items-center gap-2 mt-2 sm:mt-3 text-sm text-muted-foreground font-medium">
+                  <Mail className="w-4 h-4" /> {session?.user?.email}
+                </div>
+              )}
               <div className="text-muted-foreground mt-2 font-medium text-base sm:text-lg">
                 {isEditing ? (
                   <input 
@@ -510,35 +557,81 @@ function ProfilePage() {
                   profile?.location || 'Konum belirtilmemiş'
                 )}
               </div>
+              
+              <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground font-semibold flex-wrap">
+                <Link to="/network" search={{ userId: userId || loggedInUserId, tab: 'followers' }} className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer"><Users className="w-4 h-4 text-primary" /> {(profile?.user as any)?._count?.followers || 0} Takipçi</Link>
+                <Link to="/network" search={{ userId: userId || loggedInUserId, tab: 'following' }} className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer">{(profile?.user as any)?._count?.following || 0} Takip Edilen</Link>
+                <Link to="/network" search={{ userId: userId || loggedInUserId, tab: 'connections' }} className="flex items-center gap-1.5 hover:text-primary transition-colors cursor-pointer"><UserCheck className="w-4 h-4 text-primary" /> Bağlantılarım</Link>
+              </div>
             </div>
             
             {/* Action Buttons */}
-            <div className="sm:pb-2 mt-4 sm:mt-0 flex gap-2 w-full sm:w-auto">
-              {isEditing ? (
-                <>
-                  <button onClick={() => { setIsEditing(false); resetExpForm(); resetEduForm(); resetCertForm(); setShowAddExp(false); setShowAddEdu(false); setShowAddCert(false); }} className="flex-1 sm:flex-none bg-secondary text-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90">
-                    İptal
+            {isOwnProfile && (
+              <div className="sm:pb-2 mt-4 sm:mt-0 flex gap-2 w-full sm:w-auto">
+                {isEditing ? (
+                  <>
+                    <button onClick={() => { setIsEditing(false); resetExpForm(); resetEduForm(); resetCertForm(); setShowAddExp(false); setShowAddEdu(false); setShowAddCert(false); }} className="flex-1 sm:flex-none bg-secondary text-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90">
+                      İptal
+                    </button>
+                    <button onClick={handleSave} disabled={updateProfile.isLoading} className="flex-1 sm:flex-none bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90">
+                      {updateProfile.isLoading ? 'Kaydediliyor...' : 'Kaydet'}
+                    </button>
+                  </>
+                ) : (
+                  <button onClick={() => {
+                    setEditBio(profile?.bio || '');
+                    setEditLocation(profile?.location || '');
+                    setEditLinks(profile?.links || []);
+                    setEditBanner(profile?.banner || '');
+                    setEditName(session?.user?.name || '');
+                    setEditSurname((session?.user as any)?.surname || '');
+                    setEditUsername((session?.user as any)?.username || `${(session?.user?.name || '').toLowerCase().replace(/\s+/g, '')}${((session?.user as any)?.surname || '').toLowerCase().replace(/\s+/g, '')}`);
+                    setEditImage(session?.user?.image || '');
+                    setIsEditing(true);
+                  }} className="w-full sm:w-auto bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-bold hover:opacity-90 flex items-center justify-center gap-2 shadow-sm">
+                    <Edit2 className="w-4 h-4" /> Profili Düzenle
                   </button>
-                  <button onClick={handleSave} disabled={updateProfile.isLoading} className="flex-1 sm:flex-none bg-primary text-primary-foreground px-6 py-2 rounded-lg font-bold hover:opacity-90">
-                    {updateProfile.isLoading ? 'Kaydediliyor...' : 'Kaydet'}
-                  </button>
-                </>
-              ) : (
-                <button onClick={() => {
-                  setEditBio(profile?.bio || '');
-                  setEditLocation(profile?.location || '');
-                  setEditLinks(profile?.links || []);
-                  setEditBanner(profile?.banner || '');
-                  setEditName(session.user?.name || '');
-                  setEditSurname((session.user as any)?.surname || '');
-                  setEditUsername((session.user as any)?.username || `${(session.user?.name || '').toLowerCase().replace(/\s+/g, '')}${((session.user as any)?.surname || '').toLowerCase().replace(/\s+/g, '')}`);
-                  setEditImage(session.user?.image || '');
-                  setIsEditing(true);
-                }} className="w-full sm:w-auto bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-bold hover:opacity-90 flex items-center justify-center gap-2 shadow-sm">
-                  <Edit2 className="w-4 h-4" /> Profili Düzenle
+                )}
+              </div>
+            )}
+
+            {/* Target Profile Action Buttons */}
+            {!isOwnProfile && loggedInUserId && userId && (
+              <div className="sm:pb-2 mt-4 sm:mt-0 flex gap-2 w-full sm:w-auto">
+                <button 
+                  onClick={() => {
+                    if (connectionData?.isFollowing || connectionData?.isFollowPending) unfollowMutation.mutate({ followerId: loggedInUserId, followingId: userId });
+                    else followMutation.mutate({ followerId: loggedInUserId, followingId: userId });
+                  }}
+                  disabled={followMutation.isLoading || unfollowMutation.isLoading}
+                  className={`flex-1 sm:flex-none px-6 py-2 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm transition-all duration-200 ${connectionData?.isFollowing ? 'bg-secondary text-secondary-foreground hover:bg-destructive hover:text-destructive-foreground' : connectionData?.isFollowPending ? 'bg-orange-500/10 text-orange-600 hover:bg-orange-500/20' : 'bg-primary text-primary-foreground hover:opacity-90'}`}
+                >
+                  {connectionData?.isFollowing ? (
+                    <><Check className="w-4 h-4" /> Takip Ediliyor</>
+                  ) : connectionData?.isFollowPending ? (
+                    <><ClockIcon className="w-4 h-4" /> İstek Gönderildi</>
+                  ) : (
+                    <><Plus className="w-4 h-4" /> Takip Et</>
+                  )}
                 </button>
-              )}
-            </div>
+                
+                <button 
+                  onClick={() => {
+                    if (!connectionData?.connectionStatus) connectMutation.mutate({ requesterId: loggedInUserId, addresseeId: userId });
+                  }}
+                  disabled={!!connectionData?.connectionStatus || connectMutation.isLoading}
+                  className={`flex-1 sm:flex-none px-6 py-2 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm transition-all duration-200 ${connectionData?.connectionStatus === 'ACCEPTED' ? 'bg-teal-500/10 text-teal-600' : connectionData?.connectionStatus === 'PENDING' ? 'bg-orange-500/10 text-orange-600' : 'bg-card border border-border text-foreground hover:bg-muted'}`}
+                >
+                  {connectionData?.connectionStatus === 'ACCEPTED' ? (
+                    <><UserCheck className="w-4 h-4" /> Bağlantı</>
+                  ) : connectionData?.connectionStatus === 'PENDING' ? (
+                    <><ClockIcon className="w-4 h-4" /> İstek Gönderildi</>
+                  ) : (
+                    <><UserPlus className="w-4 h-4" /> Bağlantı Kur</>
+                  )}
+                </button>
+              </div>
+            )}
             
           </div>
         </div>
@@ -628,7 +721,7 @@ function ProfilePage() {
                 <div className="flex items-center gap-2 text-foreground text-sm font-medium">
                   <Briefcase className="w-4 h-4 text-primary" /> 
                   <span className="text-muted-foreground">Sektör:</span> 
-                  {(session?.user as any)?.sector || 'Belirtilmemiş'}
+                  {(isOwnProfile ? (session?.user as any)?.sector : (profile?.user as any)?.sector) || 'Belirtilmemiş'}
                 </div>
               </div>
             </div>
@@ -988,6 +1081,7 @@ function ProfilePage() {
           
         </div>
       </div>
+
     </div>
   );
 }

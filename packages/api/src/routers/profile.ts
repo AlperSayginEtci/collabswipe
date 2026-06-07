@@ -5,8 +5,8 @@ export const profileRouter = createTRPCRouter({
   // Profil getir (tam detay)
   getByUserId: publicProcedure
     .input(z.object({ userId: z.string() }))
-    .query(({ ctx, input }) =>
-      ctx.prisma.profile.findUnique({
+    .query(async ({ ctx, input }) => {
+      const profile = await ctx.prisma.profile.findUnique({
         where: { userId: input.userId },
         include: {
           experiences: { orderBy: { startDate: 'desc' } },
@@ -14,9 +14,48 @@ export const profileRouter = createTRPCRouter({
           certificates: { orderBy: { startDate: 'desc' } },
           skills: { include: { skill: true } },
           languages: { include: { language: true } },
+          user: { 
+            select: { 
+              name: true, surname: true, username: true, image: true, role: true, sector: true,
+              _count: { select: { followers: { where: { isAccepted: true } }, following: { where: { isAccepted: true } } } }
+            } 
+          },
         },
-      })
-    ),
+      });
+
+      if (!profile) {
+        const user = await ctx.prisma.user.findUnique({ 
+          where: { id: input.userId },
+          include: { _count: { select: { followers: { where: { isAccepted: true } }, following: { where: { isAccepted: true } } } } }
+        });
+        if (!user) return null;
+        return {
+          id: 'new',
+          userId: user.id,
+          bio: '',
+          location: '',
+          banner: '',
+          links: [],
+          experiences: [],
+          educations: [],
+          certificates: [],
+          skills: [],
+          languages: [],
+          isPrivate: false,
+          user: {
+            name: user.name,
+            surname: (user as any).surname,
+            username: user.username,
+            image: user.image,
+            role: (user as any).role,
+            sector: (user as any).sector,
+            _count: (user as any)._count,
+          }
+        };
+      }
+      
+      return profile;
+    }),
 
   // Profili güncelle
   update: publicProcedure
@@ -32,6 +71,7 @@ export const profileRouter = createTRPCRouter({
         links: z.array(z.string().url().or(z.string().length(0))).optional(),
         location: z.string().optional(),
         banner: z.string().optional(),
+        isPrivate: z.boolean().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {

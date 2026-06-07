@@ -162,11 +162,19 @@ export const connectionRouter = createTRPCRouter({
   // Takip et
   follow: publicProcedure
     .input(z.object({ followerId: z.string(), followingId: z.string() }))
-    .mutation(({ ctx, input }) =>
-      ctx.prisma.follows.create({
-        data: { followerId: input.followerId, followingId: input.followingId },
-      })
-    ),
+    .mutation(async ({ ctx, input }) => {
+      const targetProfile = await ctx.prisma.profile.findUnique({
+        where: { userId: input.followingId },
+        select: { isPrivate: true }
+      });
+      return ctx.prisma.follows.create({
+        data: { 
+          followerId: input.followerId, 
+          followingId: input.followingId,
+          isAccepted: targetProfile?.isPrivate ? false : true
+        },
+      });
+    }),
 
   // Takibi bırak
   unfollow: publicProcedure
@@ -187,21 +195,102 @@ export const connectionRouter = createTRPCRouter({
     .input(z.object({ userId: z.string() }))
     .query(({ ctx, input }) =>
       ctx.prisma.follows.findMany({
-        where: { followingId: input.userId },
+        where: { followingId: input.userId, isAccepted: true },
         include: {
-          follower: { select: { id: true, name: true, surname: true, image: true } },
+          follower: { select: { id: true, name: true, surname: true, image: true, username: true } },
         },
       })
     ),
 
-  getFollowing: publicProcedure
+    getFollowing: publicProcedure
     .input(z.object({ userId: z.string() }))
     .query(({ ctx, input }) =>
       ctx.prisma.follows.findMany({
-        where: { followerId: input.userId },
+        where: { followerId: input.userId, isAccepted: true },
         include: {
-          following: { select: { id: true, name: true, surname: true, image: true } },
+          following: { select: { id: true, name: true, surname: true, image: true, username: true } },
         },
       })
     ),
+
+  // Bekleyen takip istekleri (Gelen)
+  getFollowRequests: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(({ ctx, input }) =>
+      ctx.prisma.follows.findMany({
+        where: { followingId: input.userId, isAccepted: false },
+        include: {
+          follower: { select: { id: true, name: true, surname: true, image: true, username: true } },
+        },
+      })
+    ),
+
+  acceptFollowRequest: publicProcedure
+    .input(z.object({ followerId: z.string(), followingId: z.string() }))
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.follows.update({
+        where: {
+          followerId_followingId: {
+            followerId: input.followerId,
+            followingId: input.followingId,
+          },
+        },
+        data: { isAccepted: true }
+      })
+    ),
+
+  rejectFollowRequest: publicProcedure
+    .input(z.object({ followerId: z.string(), followingId: z.string() }))
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.follows.delete({
+        where: {
+          followerId_followingId: {
+            followerId: input.followerId,
+            followingId: input.followingId,
+          },
+        },
+      })
+    ),
+
+  getSuggestions: publicProcedure
+    .input(z.object({ currentUserId: z.string().optional() }))
+    .query(async ({ ctx, input }) => {
+      // Basic suggestion logic: return 5 newest users excluding current
+      const users = await ctx.prisma.user.findMany({
+        where: input.currentUserId ? { 
+          id: { not: input.currentUserId },
+          followers: { none: { followerId: input.currentUserId } },
+          receivedConnections: { none: { requesterId: input.currentUserId } },
+          sentConnections: { none: { addresseeId: input.currentUserId } }
+        } : undefined,
+        take: 5,
+        orderBy: { createdAt: "desc" },
+        select: { id: true, name: true, surname: true, image: true, role: true, sector: true, profile: { select: { bio: true } } }
+      });
+      return users;
+    }),
+
+  status: publicProcedure
+    .input(z.object({ loggedInUserId: z.string(), targetUserId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const follow = await ctx.prisma.follows.findUnique({
+        where: { followerId_followingId: { followerId: input.loggedInUserId, followingId: input.targetUserId } }
+      });
+      
+      const connection = await ctx.prisma.connection.findFirst({
+        where: {
+          OR: [
+            { requesterId: input.loggedInUserId, addresseeId: input.targetUserId },
+            { requesterId: input.targetUserId, addresseeId: input.loggedInUserId }
+          ]
+        }
+      });
+
+      return {
+        isFollowing: follow?.isAccepted === true,
+        isFollowPending: follow?.isAccepted === false,
+        connectionStatus: connection?.status || null,
+        isRequester: connection?.requesterId === input.loggedInUserId
+      };
+    }),
 })

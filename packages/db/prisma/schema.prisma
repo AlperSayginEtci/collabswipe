@@ -42,6 +42,7 @@ model User {
   posts              Post[]
   likedPosts         Like[]
   comments           Comment[]
+  commentLikes       CommentLike[]
   conversations      Participant[]
   messages           Message[]
   announcements      Announcement[]
@@ -99,6 +100,7 @@ model Profile {
   location    String?
   age         Int?
   banner      String?  // Image URL
+  isPrivate   Boolean  @default(false) // If true, followers must be approved
 
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
@@ -130,6 +132,7 @@ enum ConnectionStatus {
 model Follows {
   followerId  String
   followingId String
+  isAccepted  Boolean  @default(true) // False means it's a pending request
   createdAt   DateTime @default(now())
 
   follower    User @relation("Followers", fields: [followerId], references: [id], onDelete: Cascade)
@@ -316,6 +319,7 @@ model Post {
 model Like {
   postId String
   userId String
+  type   String @default("LIKE")
 
   post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -324,13 +328,29 @@ model Like {
 }
 
 model Comment {
-  id       String @id @default(cuid())
-  postId   String
-  authorId String
-  content  String
+  id              String   @id @default(cuid())
+  postId          String
+  authorId        String
+  content         String
+  createdAt       DateTime @default(now())
+  parentCommentId String?
 
-  post     Post @relation(fields: [postId], references: [id], onDelete: Cascade)
-  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post          Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author        User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parentComment Comment?      @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies       Comment[]     @relation("CommentReplies")
+  likes         CommentLike[]
+}
+
+model CommentLike {
+  commentId String
+  userId    String
+  type      String @default("LIKE")
+
+  comment   Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([commentId, userId])
 }
 
 // ==========================================

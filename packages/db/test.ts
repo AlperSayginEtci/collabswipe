@@ -2,8 +2,17 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  const users = await prisma.user.findMany({ select: { id:true, email:true, role:true, surname:true, sector:true }, orderBy: { createdAt: 'desc' }, take: 5 });
-  console.log(users);
+  const posts = await prisma.post.findMany({
+    include: {
+      comments: {
+        include: {
+          author: { select: { id: true, name: true, surname: true } }
+        }
+      },
+      _count: true
+    }
+  });
+  console.dir(posts, { depth: null });
 }
 
 main().finally(() => prisma.$disconnect());
