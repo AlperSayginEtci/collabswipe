@@ -43,31 +43,82 @@ export const jobRouter = createTRPCRouter({
         type: z.enum(["FREELANCE", "CORPORATE"]).optional(),
         status: z.enum(["OPEN", "CLOSED", "BANNED"]).optional(),
         userId: z.string().optional(),
+        skills: z.array(z.string()).optional(),
         cursor: z.string().optional(),
         limit: z.number().min(1).max(50).default(20),
       })
     )
     .query(async ({ ctx, input }) => {
-      const { type, status, userId, cursor, limit } = input
-      const items = await ctx.prisma.jobPosting.findMany({
+      const { type, status, userId, cursor, limit } = input;
+      
+      let userSkills = new Set<string>();
+      if (userId) {
+        const profile = await ctx.prisma.profile.findUnique({
+          where: { userId },
+          include: { skills: { select: { skill: { select: { skillName: true } } } } }
+        });
+        if (profile?.skills) {
+          profile.skills.forEach(s => {
+            if (s.skill?.skillName) userSkills.add(s.skill.skillName.toLowerCase());
+          });
+        }
+      }
+
+      const allJobs = await ctx.prisma.jobPosting.findMany({
         where: {
           ...(type && { type }),
           ...(status && { status }),
           ...(userId && {
             applications: { none: { applicantId: userId } }
+          }),
+          ...(input.skills && input.skills.length > 0 && {
+            requirements: {
+              some: {
+                skillName: {
+                  in: input.skills.map(s => s.toLowerCase())
+                }
+              }
+            }
           })
         },
         orderBy: { createdAt: "desc" },
-        take: limit + 1,
-        cursor: cursor ? { id: cursor } : undefined,
         include: {
           publisher: { select: { id: true, name: true, surname: true, image: true } },
           requirements: { select: { skillName: true } },
           _count: { select: { applications: true } },
         },
-      })
-      const nextCursor = items.length > limit ? items.pop()!.id : undefined
-      return { items, nextCursor }
+      });
+
+      // Calculate match score
+      const jobsWithScores = allJobs.map(job => {
+        let matchScore = 0;
+        if (userSkills.size > 0 && job.requirements) {
+          matchScore = job.requirements.filter(req => req.skillName && userSkills.has(req.skillName.toLowerCase())).length;
+        }
+        return { ...job, matchScore };
+      });
+
+      // Sort: Match Score (desc) -> Created At (desc)
+      jobsWithScores.sort((a, b) => {
+        if (b.matchScore !== a.matchScore) {
+          return b.matchScore - a.matchScore;
+        }
+        return b.createdAt.getTime() - a.createdAt.getTime();
+      });
+
+      // Apply in-memory cursor pagination
+      let startIndex = 0;
+      if (cursor) {
+        const cursorIndex = jobsWithScores.findIndex(j => j.id === cursor);
+        if (cursorIndex !== -1) {
+          startIndex = cursorIndex + 1;
+        }
+      }
+
+      const paginatedItems = jobsWithScores.slice(startIndex, startIndex + limit + 1);
+      const nextCursor = paginatedItems.length > limit ? paginatedItems.pop()!.id : undefined;
+
+      return { items: paginatedItems, nextCursor };
     }),
 
   // İlanı ID ile getir
@@ -153,6 +204,40 @@ export const jobRouter = createTRPCRouter({
           _count: { select: { applications: true } },
           requirements: { select: { skillName: true } },
         },
+      })
+    ),
+
+  // Şirketime gelen tüm başvurular
+  getCompanyApplications: protectedProcedure
+    .query(({ ctx }) =>
+      ctx.prisma.jobApplication.findMany({
+        where: {
+          job: { publisherId: ctx.session.user.id },
+        },
+        include: {
+          job: { select: { id: true, title: true, type: true, status: true } },
+          applicant: { 
+            select: { 
+              id: true, 
+              name: true, 
+              surname: true, 
+              image: true,
+              profile: {
+                select: {
+                  id: true,
+                  bio: true,
+                  location: true,
+                  skills: {
+                    select: {
+                      skill: { select: { skillName: true } }
+                    }
+                  }
+                }
+              }
+            } 
+          },
+        },
+        orderBy: { createdAt: "desc" },
       })
     ),
 

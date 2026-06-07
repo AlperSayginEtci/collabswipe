@@ -55,8 +55,16 @@ export const userRouter = createTRPCRouter({
 
   // Kaydırma (Swipe) için keşfedilebilir kullanıcıları getir
   getDiscoverable: publicProcedure
-    .input(z.object({ userId: z.string() }))
+    .input(z.object({ 
+      userId: z.string(),
+      location: z.string().optional(),
+      includeRemote: z.boolean().optional(),
+      skills: z.array(z.string()).optional(),
+      ageMin: z.number().optional(),
+      ageMax: z.number().optional(),
+    }))
     .query(async ({ ctx, input }) => {
+      const { userId, location, includeRemote, skills, ageMin, ageMax } = input;
       // Mevcut kullanıcının zaten etkileşime girdiği (ACCEPTED, PENDING, REJECTED) tüm bağlantıları bul
       const existingConnections = await ctx.prisma.connection.findMany({
         where: {
@@ -75,8 +83,32 @@ export const userRouter = createTRPCRouter({
       return ctx.prisma.user.findMany({
         where: {
           id: { notIn: excludedIds },
-          // Sadece employer olmayanları veya herkesi getirebiliriz, şimdilik employer hariç herkes
           email: { not: "employer@collabswipe.com" },
+          ...(location || includeRemote || skills || ageMin !== undefined || ageMax !== undefined ? {
+            profile: {
+              ...(location && !includeRemote && { location: { contains: location, mode: "insensitive" } }),
+              ...(location && includeRemote && {
+                OR: [
+                  { location: { contains: location, mode: "insensitive" } },
+                  { location: { contains: "Uzaktan", mode: "insensitive" } }
+                ]
+              }),
+              ...(!location && includeRemote && { location: { contains: "Uzaktan", mode: "insensitive" } }),
+              ...(ageMin !== undefined && { age: { gte: ageMin } }),
+              ...(ageMax !== undefined && { age: { lte: ageMax } }),
+              ...(skills && skills.length > 0 && {
+                skills: {
+                  some: {
+                    skill: {
+                      skillName: {
+                        in: skills.map(s => s.toLowerCase())
+                      }
+                    }
+                  }
+                }
+              })
+            }
+          } : {})
         },
         select: {
           id: true,

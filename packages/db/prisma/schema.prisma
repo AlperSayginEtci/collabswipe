@@ -98,6 +98,7 @@ model Profile {
   bio         String?
   links       String[] @default([])
   location    String?
+  age         Int?
   banner      String?  // Image URL
   isPrivate   Boolean  @default(false) // If true, followers must be approved
 
