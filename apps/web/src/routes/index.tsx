@@ -29,6 +29,17 @@ function formatRelativeTime(date: Date | string) {
   return `${diffDays} gün önce`;
 }
 
+function toSafeImageUrl(url: string) {
+  if (!url) return '';
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === 'blob:' || parsed.protocol === 'data:' || parsed.protocol === 'https:' || parsed.protocol === 'http:') {
+      return parsed.toString();
+    }
+  } catch {}
+  return '';
+}
+
 // ─── Reaction helpers ────────────────────────────────────────────────────────
 const REACTION_EMOJIS: Record<string, string> = {
   LIKE: '👍', LOVE: '❤️', CELEBRATE: '👏', INSIGHTFUL: '💡', CURIOUS: '🤔',
@@ -237,8 +248,7 @@ function HomeFeed() {
   const [mediaFileBase64, setMediaFileBase64] = useState('');
   // Object URL for previewing selected media before upload
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState('');
-  const safeMediaPreviewUrl =
-    /^(blob:|data:image\/|data:video\/|https?:\/\/)/i.test(mediaPreviewUrl) ? mediaPreviewUrl : '';
+  const safeMediaPreviewUrl = toSafeImageUrl(mediaPreviewUrl);
   const [sortBy, setSortBy] = useState<'recent' | 'top'>('recent');
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [repostTarget, setRepostTarget] = useState<any | null>(null);
