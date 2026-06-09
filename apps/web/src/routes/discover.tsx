@@ -466,7 +466,7 @@ function DiscoverPage() {
           </p>
         </div>
       ) : (
-        <div className="w-full max-w-[400px] relative flex-1 flex flex-col justify-center min-h-[450px] max-h-[850px] md:my-4">
+        <div className="w-full max-w-[380px] h-[650px] max-h-[80vh] relative flex flex-col justify-center md:my-4 mx-auto">
 
           {/* Stacked Cards */}
           {itemsToRender.map((currentItem, index) => {
@@ -505,22 +505,10 @@ function DiscoverPage() {
                   transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.255)',
                   zIndex: 20 - stackIndex
                 }}
-                className={`bg-card w-full h-full rounded-[2rem] shadow-2xl border border-border overflow-hidden absolute top-0 left-0 flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'}`}
+                className={`bg-card w-full h-full rounded-[2.5rem] shadow-2xl overflow-hidden absolute top-0 left-0 flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'}`}
               >
-                {/* Like/Nope Overlays */}
-                {isTop && swipeDirection === 'right' && (
-                  <div className="absolute top-8 left-8 z-30 border-4 border-green-500 text-green-500 font-black text-2xl px-4 py-1.5 rounded-xl uppercase tracking-widest transform -rotate-12 select-none animate-pulse">
-                    {isProfiles ? 'BEĞEN' : 'BAŞVUR'}
-                  </div>
-                )}
-                {isTop && swipeDirection === 'left' && (
-                  <div className="absolute top-8 right-8 z-30 border-4 border-red-500 text-red-500 font-black text-2xl px-4 py-1.5 rounded-xl uppercase tracking-widest transform rotate-12 select-none animate-pulse">
-                    GEÇ
-                  </div>
-                )}
-
-                {/* Banner/Image Area */}
-                <div className={`h-2/5 relative pointer-events-none ${isProfiles ? 'bg-gradient-to-tr from-primary to-primary/50' : 'bg-gradient-to-tr from-blue-600 to-indigo-900'}`}>
+                {/* Full-bleed Image Background */}
+                <div className={`absolute inset-0 z-0 ${isProfiles ? 'bg-zinc-900' : 'bg-blue-950'}`}>
                   <img
                     src={
                       isProfiles
@@ -528,39 +516,53 @@ function DiscoverPage() {
                         : (currentItem.publisher?.image || `https://api.dicebear.com/7.x/shapes/svg?seed=${currentItem.id}`)
                     }
                     alt="Banner"
-                    className="absolute inset-0 w-full h-full object-cover opacity-85"
+                    className="w-full h-full object-cover"
                   />
-
-                  {/* Location or Type Badge */}
-                  <div className="absolute top-4 right-4 bg-background/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold border border-border text-foreground flex items-center gap-1">
-                    {isProfiles ? (
-                      <>
-                        <MapPin className="w-3.5 h-3.5 text-primary" /> {currentItem.profile?.location || 'Türkiye'}
-                      </>
-                    ) : (
-                      <>
-                        <Briefcase className="w-3.5 h-3.5 text-primary" /> {currentItem.type}
-                      </>
-                    )}
-                  </div>
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/90 z-10" />
                 </div>
 
-                <div className="flex-1 p-6 flex flex-col justify-between pointer-events-none">
-                  <div>
-                    <h2 className="text-3xl font-black text-foreground mb-1">
+                {/* Like/Nope Overlays */}
+                {isTop && swipeDirection === 'right' && (
+                  <div className="absolute top-12 left-8 z-30 border-4 border-green-500 text-green-500 font-black text-3xl px-6 py-2 rounded-xl uppercase tracking-widest transform -rotate-12 select-none">
+                    {isProfiles ? 'BEĞEN' : 'BAŞVUR'}
+                  </div>
+                )}
+                {isTop && swipeDirection === 'left' && (
+                  <div className="absolute top-12 right-8 z-30 border-4 border-red-500 text-red-500 font-black text-3xl px-6 py-2 rounded-xl uppercase tracking-widest transform rotate-12 select-none">
+                    GEÇ
+                  </div>
+                )}
+
+                {/* Location or Type Badge */}
+                <div className="absolute top-6 right-6 z-20 bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold text-white flex items-center gap-1.5 border border-white/20">
+                  {isProfiles ? (
+                    <>
+                      <MapPin className="w-4 h-4 text-primary" /> {currentItem.profile?.location || 'Türkiye'}
+                    </>
+                  ) : (
+                    <>
+                      <Briefcase className="w-4 h-4 text-primary" /> {currentItem.type}
+                    </>
+                  )}
+                </div>
+
+                {/* Content Area at Bottom */}
+                <div className="relative z-20 flex-1 p-6 flex flex-col justify-end pointer-events-none pb-28">
+                  <div className="text-white">
+                    <h2 className="text-4xl font-black mb-1 drop-shadow-md">
                       {isProfiles
                         ? `${currentItem.name} ${currentItem.surname}`
                         : currentItem.title}
                     </h2>
 
-                    {/* Secondary Title */}
-                    <h3 className="text-primary font-bold text-sm mb-3">
+                    <h3 className="text-primary font-bold text-base mb-3 drop-shadow-sm">
                       {isProfiles
                         ? currentItem.email
                         : `${currentItem.publisher?.name || 'Şirket'} ${currentItem.publisher?.surname || ''}`}
                     </h3>
 
-                    <p className="text-foreground leading-relaxed text-sm">
+                    <p className="text-white/90 leading-relaxed text-sm drop-shadow-sm line-clamp-3">
                       {isProfiles
                         ? (currentItem.profile?.bio || 'Bu kullanıcı henüz bir biyografi eklememiş.')
                         : (currentItem.description)}
@@ -568,22 +570,22 @@ function DiscoverPage() {
                   </div>
 
                   {/* Skills / Tags */}
-                  <div className="flex flex-wrap gap-2 mt-4 mb-16">
+                  <div className="flex flex-wrap gap-2 mt-4">
                     {isProfiles ? (
                       currentItem.profile?.skills?.map((s: any) => (
-                        <span key={s.skill.skillName} className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <span key={s.skill.skillName} className="bg-white/20 backdrop-blur-md text-white border border-white/30 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
                           <Code className="w-3.5 h-3.5" /> {s.skill.skillName}
                         </span>
                       ))
                     ) : (
                       <>
                         {(currentItem as any).matchScore > 0 && (
-                          <span className="bg-yellow-500/20 text-yellow-600 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
-                            <Sparkles className="w-3.5 h-3.5" /> Recommended Match
+                          <span className="bg-yellow-500/80 backdrop-blur-md text-white border border-yellow-400 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-lg">
+                            <Sparkles className="w-3.5 h-3.5" /> Önerilen
                           </span>
                         )}
                         {currentItem.requirements?.map((req: any, index: number) => (
-                          <span key={index} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+                          <span key={index} className="bg-white/20 backdrop-blur-md text-white border border-white/30 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
                             <Code className="w-3.5 h-3.5" /> {req.skillName}
                           </span>
                         ))}
@@ -592,14 +594,14 @@ function DiscoverPage() {
                   </div>
                 </div>
 
-                {/* Action Buttons (Only visible on top card) */}
+                {/* Action Buttons */}
                 <div className={`absolute bottom-6 left-0 w-full flex justify-center gap-6 px-8 z-40 transition-opacity duration-300 ${isTop ? 'opacity-100' : 'opacity-0'}`}>
                   <button
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
                     onClick={() => handleButtonReject(currentItem.id)}
                     disabled={isBusy}
-                    className="w-16 h-16 rounded-full bg-background border border-border shadow-lg flex items-center justify-center text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all duration-300 hover:scale-110 disabled:opacity-50 pointer-events-auto"
+                    className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-xl flex items-center justify-center text-white hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all duration-300 hover:scale-110 disabled:opacity-50 pointer-events-auto"
                   >
                     <X className="w-8 h-8" />
                   </button>
@@ -608,7 +610,7 @@ function DiscoverPage() {
                     onTouchStart={(e) => e.stopPropagation()}
                     onClick={() => handleButtonAccept(currentItem.id)}
                     disabled={isBusy}
-                    className="w-16 h-16 rounded-full bg-background border border-border shadow-lg flex items-center justify-center text-green-500 hover:bg-green-500 hover:text-white transition-all duration-300 hover:scale-110 disabled:opacity-50 pointer-events-auto"
+                    className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-xl flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all duration-300 hover:scale-110 disabled:opacity-50 pointer-events-auto"
                   >
                     <Heart className="w-8 h-8 fill-current" />
                   </button>

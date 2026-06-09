@@ -579,17 +579,7 @@ function HomeFeed() {
           </div>
         </div>
 
-        {/* Shortcuts */}
-        <div className="hidden lg:block bg-card/70 backdrop-blur-md border border-border/55 rounded-2xl p-4 shadow-lg shadow-shadow/5 space-y-4">
-          <div>
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Hızlı Erişim</h4>
-            <div className="flex flex-col gap-2 text-sm text-foreground/80">
-              <a href="#" className="hover:text-primary hover:underline transition-colors flex items-center gap-2">👥 Gruplar</a>
-              <a href="#" className="hover:text-primary hover:underline transition-colors flex items-center gap-2">📅 Etkinlikler</a>
-              <a href="#" className="hover:text-primary hover:underline transition-colors flex items-center gap-2">🏷️ Takip Edilen Etiketler</a>
-            </div>
-          </div>
-        </div>
+
       </aside>
 
       {/* MIDDLE SECTION: COMPOSER & FEED */}
@@ -927,13 +917,7 @@ function HomeFeed() {
                     {/* Repost Dropdown Trigger */}
                     <div className="flex-1 relative flex justify-center">
                       <button 
-                        onClick={() => {
-                          if (window.confirm('Bu gönderiyi doğrudan hızlıca paylaşmak ister misiniz? (Kendi yorumunuzu eklemek için İptal\'e tıklayın)')) {
-                            handleRepostInstantly(post.id);
-                          } else {
-                            handleOpenRepostWithQuote(post);
-                          }
-                        }}
+                        onClick={() => handleOpenRepostWithQuote(post)}
                         className="w-full py-2.5 rounded-xl hover:bg-muted/80 flex items-center justify-center gap-2 hover:text-foreground transition-colors"
                       >
                         <Repeat2 className="w-4 h-4" />
@@ -1083,10 +1067,8 @@ function HomeFeed() {
         {/* Info Card */}
         <div className="bg-card/70 backdrop-blur-md border border-border/55 rounded-2xl p-4 shadow-lg shadow-shadow/5 text-[11px] text-muted-foreground leading-normal space-y-2 text-center lg:text-left">
           <div className="flex flex-wrap gap-x-2 gap-y-1 justify-center lg:justify-start">
-            <a href="#" className="hover:underline">Hakkında</a>
-            <a href="#" className="hover:underline">Erişilebilirlik</a>
-            <a href="#" className="hover:underline">Gizlilik ve Koşullar</a>
-            <a href="#" className="hover:underline">Reklam Tercihleri</a>
+            <Link to="/about" className="hover:text-primary hover:underline transition-colors">Hakkında</Link>
+            <a href="#" className="hover:text-primary hover:underline transition-colors">Gizlilik ve Koşullar</a>
           </div>
           <div className="text-center pt-2 border-t border-border/30">
             <p className="font-semibold text-foreground/80">CollabSwipe © 2026</p>
