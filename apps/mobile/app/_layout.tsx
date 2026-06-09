@@ -9,9 +9,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { UserProvider } from '../context/UserContext';
 
 export const getBaseUrl = () => {
-  // Use computer's local IP (192.168.0.22) which is universally accessible on the same Wi-Fi network
-  // This is required for physical devices to connect to the local dev server
-  return 'http://192.168.0.22:3001';
+  // Use computer's local IP (192.168.1.21) which is universally accessible on the same Wi-Fi network
+  // for both physical devices (Android/iOS) and emulators.
+  return 'http://192.168.1.21:3001';
 };
 
 function RootLayoutContent() {
@@ -20,6 +20,7 @@ function RootLayoutContent() {
       <Stack.Screen name="auth" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="chat" options={{ headerShown: false, presentation: 'modal' }} />
+      <Stack.Screen name="network" options={{ headerShown: false, presentation: 'modal' }} />
     </Stack>
   );
 }
