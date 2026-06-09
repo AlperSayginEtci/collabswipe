@@ -10,23 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as PostsPostIdRouteImport } from './routes/posts.$postId'
 import { Route as PostJobRouteImport } from './routes/post-job'
 import { Route as NetworkRouteImport } from './routes/network'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LikesRouteImport } from './routes/likes'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PostsPostIdRouteImport } from './routes/posts.$postId'
 
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PostsPostIdRoute = PostsPostIdRouteImport.update({
-  id: '/posts/$postId',
-  path: '/posts/$postId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PostJobRoute = PostJobRouteImport.update({
@@ -59,92 +55,109 @@ const DiscoverRoute = DiscoverRouteImport.update({
   path: '/discover',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PostsPostIdRoute = PostsPostIdRouteImport.update({
+  id: '/posts/$postId',
+  path: '/posts/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/discover': typeof DiscoverRoute
   '/likes': typeof LikesRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
   '/network': typeof NetworkRoute
   '/post-job': typeof PostJobRoute
-  '/posts/$postId': typeof PostsPostIdRoute
   '/profile': typeof ProfileRoute
+  '/posts/$postId': typeof PostsPostIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/discover': typeof DiscoverRoute
   '/likes': typeof LikesRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
   '/network': typeof NetworkRoute
   '/post-job': typeof PostJobRoute
-  '/posts/$postId': typeof PostsPostIdRoute
   '/profile': typeof ProfileRoute
+  '/posts/$postId': typeof PostsPostIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/discover': typeof DiscoverRoute
   '/likes': typeof LikesRoute
   '/login': typeof LoginRoute
   '/matches': typeof MatchesRoute
   '/network': typeof NetworkRoute
   '/post-job': typeof PostJobRoute
-  '/posts/$postId': typeof PostsPostIdRoute
   '/profile': typeof ProfileRoute
+  '/posts/$postId': typeof PostsPostIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/discover'
     | '/likes'
     | '/login'
     | '/matches'
     | '/network'
     | '/post-job'
-    | '/posts/$postId'
     | '/profile'
+    | '/posts/$postId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/discover'
     | '/likes'
     | '/login'
     | '/matches'
     | '/network'
     | '/post-job'
-    | '/posts/$postId'
     | '/profile'
+    | '/posts/$postId'
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/discover'
     | '/likes'
     | '/login'
     | '/matches'
     | '/network'
     | '/post-job'
-    | '/posts/$postId'
     | '/profile'
+    | '/posts/$postId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   DiscoverRoute: typeof DiscoverRoute
   LikesRoute: typeof LikesRoute
   LoginRoute: typeof LoginRoute
   MatchesRoute: typeof MatchesRoute
   NetworkRoute: typeof NetworkRoute
   PostJobRoute: typeof PostJobRoute
-  PostsPostIdRoute: typeof PostsPostIdRoute
   ProfileRoute: typeof ProfileRoute
+  PostsPostIdRoute: typeof PostsPostIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -154,13 +167,6 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/posts/$postId': {
-      id: '/posts/$postId'
-      path: '/posts/$postId'
-      fullPath: '/posts/$postId'
-      preLoaderRoute: typeof PostsPostIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/post-job': {
@@ -205,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DiscoverRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -212,19 +225,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/posts/$postId': {
+      id: '/posts/$postId'
+      path: '/posts/$postId'
+      fullPath: '/posts/$postId'
+      preLoaderRoute: typeof PostsPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   DiscoverRoute: DiscoverRoute,
   LikesRoute: LikesRoute,
   LoginRoute: LoginRoute,
   MatchesRoute: MatchesRoute,
   NetworkRoute: NetworkRoute,
   PostJobRoute: PostJobRoute,
-  PostsPostIdRoute: PostsPostIdRoute,
   ProfileRoute: ProfileRoute,
+  PostsPostIdRoute: PostsPostIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
