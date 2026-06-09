@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { useSession } from '@collabswipe/auth/client';
 import { ArrowLeft, Briefcase, FileText, CheckCircle2, X } from 'lucide-react';
 
-export const Route = createFileRoute('/jobs_/post')({
+export const Route = createFileRoute('/post-job')({
   component: PostJobPage,
 });
 
@@ -29,7 +29,7 @@ function PostJobPage() {
   const createJob = trpc.job.create.useMutation({
     onSuccess: () => {
       toast.success('İş ilanı başarıyla yayınlandı!');
-      navigate({ to: '/jobs' });
+      navigate({ to: '/discover', search: { tab: 'JOBS' } });
     },
     onError: (error) => {
       toast.error(error.message || 'İlan yayınlanırken bir hata oluştu.');
@@ -66,7 +66,8 @@ function PostJobPage() {
   return (
     <div className="max-w-3xl mx-auto w-full pb-20 md:pb-0">
       <Link 
-        to="/jobs" 
+        to="/discover" 
+        search={{ tab: 'JOBS' }}
         className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
       >
         <ArrowLeft className="w-5 h-5" />

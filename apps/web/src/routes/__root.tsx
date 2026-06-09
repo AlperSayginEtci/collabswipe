@@ -1,5 +1,5 @@
 import { createRootRoute, Link, Outlet, useLocation, useNavigate } from '@tanstack/react-router';
-import { Home, Compass, Briefcase, MessageSquare, User as UserIcon, Bell, LogOut, ChevronDown, PlusCircle } from 'lucide-react';
+import { Home, Compass, Briefcase, MessageSquare, User as UserIcon, Bell, LogOut, ChevronDown, PlusCircle, Heart, Inbox } from 'lucide-react';
 import { useSession, signOut } from '@collabswipe/auth/client';
 import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
@@ -111,9 +111,9 @@ function RootLayout() {
               </div>
             )}
           </div>
-          <Link to="/jobs" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
-            <Briefcase className="w-5 h-5" />
-            Jobs
+          <Link to="/likes" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
+            {((session?.user as any)?.role === 'company') ? <Inbox className="w-5 h-5" /> : <Heart className="w-5 h-5" />}
+            {((session?.user as any)?.role === 'company') ? 'Başvuranlar' : 'Beğeniler'}
           </Link>
           <Link to="/matches" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
             <MessageSquare className="w-5 h-5" />
@@ -124,7 +124,7 @@ function RootLayout() {
             Profile
           </Link>
           {(session?.user as any)?.role === 'company' && (
-            <Link to="/jobs/post" className="[&.active]:bg-primary/20 [&.active]:text-primary flex items-center gap-3 px-4 py-3 mt-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-bold transition-colors border border-primary/20">
+            <Link to="/post-job" className="[&.active]:bg-primary/20 [&.active]:text-primary flex items-center gap-3 px-4 py-3 mt-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-bold transition-colors border border-primary/20">
               <PlusCircle className="w-5 h-5" />
               İlan Ver
             </Link>
@@ -190,9 +190,9 @@ function RootLayout() {
           <Compass className="w-6 h-6" />
           <span className="text-[10px] font-medium">Discover</span>
         </Link>
-        <Link to="/jobs" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground">
-          <Briefcase className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Jobs</span>
+        <Link to="/likes" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground">
+          {((session?.user as any)?.role === 'company') ? <Inbox className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
+          <span className="text-[10px] font-medium">{((session?.user as any)?.role === 'company') ? 'Başvuranlar' : 'Beğeniler'}</span>
         </Link>
         <Link to="/matches" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground">
           <MessageSquare className="w-6 h-6" />
@@ -203,7 +203,7 @@ function RootLayout() {
           <span className="text-[10px] font-medium">Profile</span>
         </Link>
         {(session?.user as any)?.role === 'company' && (
-          <Link to="/jobs/post" className="[&.active]:text-primary flex flex-col items-center gap-1 text-primary">
+          <Link to="/post-job" className="[&.active]:text-primary flex flex-col items-center gap-1 text-primary">
             <PlusCircle className="w-6 h-6" />
             <span className="text-[10px] font-medium">İlan Ver</span>
           </Link>

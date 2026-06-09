@@ -18,7 +18,7 @@ const port = process.env.PORT || 3001;
 
 // Better Auth requires proper CORS with credentials: true to share cookies with Vite app
 app.use(cors({ 
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173'], 
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://192.168.0.22:5173', 'http://192.168.0.22:3000', 'http://192.168.0.22:8081', 'exp://192.168.0.22:8081'], 
   credentials: true 
 }));
 app.use(express.json());
@@ -50,7 +50,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
     return res.status(400).json({ error: 'No file uploaded' });
   }
   // Return the public URL for the file
-  const fileUrl = `http://localhost:${port}/uploads/${req.file.filename}`;
+  const fileUrl = `http://192.168.0.22:${port}/uploads/${req.file.filename}`;
   res.json({ url: fileUrl });
 });
 
