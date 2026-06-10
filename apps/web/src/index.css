@@ -108,3 +108,29 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .no-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .no-scrollbar::-webkit-scrollbar-thumb {
+    background: transparent;
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+  .no-scrollbar.is-scrolling::-webkit-scrollbar-thumb {
+    background: rgba(150, 150, 150, 0.4);
+  }
+  .no-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 0.3s ease;
+  }
+  .no-scrollbar.is-scrolling {
+    scrollbar-color: rgba(150, 150, 150, 0.4) transparent;
+  }
+}

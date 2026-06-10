@@ -131,6 +131,18 @@ export const userRouter = createTRPCRouter({
                   },
                 },
               },
+              experiences: {
+                orderBy: { startDate: "desc" },
+                select: { expId: true, title: true, corp: true, desc: true, startDate: true, endDate: true }
+              },
+              educations: {
+                orderBy: { startDate: "desc" },
+                select: { eduId: true, instName: true, instProgram: true, instDegree: true, startDate: true, endDate: true }
+              },
+              certificates: {
+                orderBy: { startDate: "desc" },
+                select: { cerId: true, title: true, org: true, startDate: true, competencyURL: true }
+              }
             },
           },
         },

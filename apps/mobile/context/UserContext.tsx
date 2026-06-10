@@ -7,6 +7,8 @@ type User = {
   surname: string | null;
   email: string;
   role: string;
+  username?: string | null;
+  image?: string | null;
   profile?: {
     bio: string | null;
     location: string | null;

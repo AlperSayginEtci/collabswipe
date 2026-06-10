@@ -267,6 +267,7 @@ function HomeFeed() {
 
   // Comment/reply emoji picker hover state
   const [commentHoverTimeout, setCommentHoverTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
   
   // Optimistic UI for following
   const [optimisticFollows, setOptimisticFollows] = useState<Set<string>>(new Set());
@@ -540,46 +541,6 @@ function HomeFeed() {
       
       {/* LEFT SIDEBAR: PROFILE SUMMARY */}
       <aside className="lg:col-span-3 flex flex-col gap-4">
-        {/* Profile Card */}
-        <div className="bg-card/70 backdrop-blur-md border border-border/55 rounded-2xl overflow-hidden shadow-lg shadow-shadow/5 group hover:border-border transition-all duration-300">
-          {/* Banner */}
-          <div className="h-16 w-full bg-gradient-to-r from-teal-400/90 via-emerald-400/95 to-indigo-500/90 relative" />
-          
-          {/* Avatar Area */}
-          <div className="px-4 pb-4 pt-0 relative flex flex-col items-center -mt-8">
-            <div className="w-16 h-16 rounded-2xl border-4 border-card bg-secondary overflow-hidden shadow-md group-hover:scale-105 transition-transform duration-300">
-              {session?.user?.image ? (
-                <img src={session.user.image} alt={name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl">
-                  {initials}
-                </div>
-              )}
-            </div>
-            
-            <div className="text-center mt-3 w-full">
-              <h3 className="font-bold text-lg text-foreground hover:underline cursor-pointer truncate">
-                {name} {surname}
-              </h3>
-              <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-normal px-2">
-                {headline}
-              </p>
-            </div>
-          </div>
-
-          <div className="border-t border-border/50 py-3 px-4 flex flex-col gap-2 bg-muted/20 text-xs">
-            <div className="flex justify-between items-center text-muted-foreground">
-              <span>Bağlantılar</span>
-              <span className="font-semibold text-primary">{connections?.length || 0}</span>
-            </div>
-            <div className="flex justify-between items-center text-muted-foreground">
-              <span>Profil Görüntüleme</span>
-              <span className="font-semibold text-primary">47</span>
-            </div>
-          </div>
-        </div>
-
-
       </aside>
 
       {/* MIDDLE SECTION: COMPOSER & FEED */}

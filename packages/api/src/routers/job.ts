@@ -158,6 +158,23 @@ export const jobRouter = createTRPCRouter({
       return ctx.prisma.jobApplication.create({ data: input })
     }),
 
+  undoApply: publicProcedure
+    .input(
+      z.object({
+        jobId: z.string(),
+        applicantId: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.jobApplication.deleteMany({
+        where: {
+          jobId: input.jobId,
+          applicantId: input.applicantId,
+          status: "PENDING",
+        },
+      })
+    ),
+
   // Başvuru durumunu güncelle (ilan sahibi için)
   updateApplicationStatus: publicProcedure
     .input(

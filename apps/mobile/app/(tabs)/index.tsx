@@ -19,24 +19,6 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { trpc } from '../../lib/trpc';
 import { useUser } from '../../context/UserContext';
 
-// Helper to pick a file and convert to base64 for Dropbox upload
-const handlePickMedia = async () => {
-  try {
-    const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true });
-    if (result.type === 'success') {
-      const fileUri = result.uri;
-      const base64 = await FileSystem.readAsStringAsync(fileUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      setMediaFileBase64(base64);
-      setMediaPreviewUrl(fileUri);
-    }
-  } catch (e) {
-    console.error('Media pick error', e);
-    Alert.alert('Hata', 'Medya seçilemedi.');
-  }
-};
-
 export default function HomeFeedScreen() {
   const { userId, user } = useUser();
   const [content, setContent] = useState('');
@@ -45,8 +27,26 @@ export default function HomeFeedScreen() {
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState('');
   const [showMediaInput, setShowMediaInput] = useState(false);
   const [activeCommentsPostId, setActiveCommentsPostId] = useState<string | null>(null);
+  const [activeReactionPostId, setActiveReactionPostId] = useState<string | null>(null);
   const [commentText, setCommentText] = useState('');
   const utils = trpc.useUtils();
+
+  const handlePickMedia = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const fileUri = result.assets[0].uri;
+        const base64 = await FileSystem.readAsStringAsync(fileUri, {
+          encoding: 'base64',
+        });
+        setMediaFileBase64(base64);
+        setMediaPreviewUrl(fileUri);
+      }
+    } catch (e) {
+      console.error('Media pick error', e);
+      Alert.alert('Hata', 'Medya seçilemedi.');
+    }
+  };
 
   // Queries
   const { data: feedData, isLoading: isFeedLoading, refetch } = trpc.post.getFeed.useQuery({
@@ -121,7 +121,8 @@ export default function HomeFeedScreen() {
 
   // Action handlers
   const handlePost = () => {
-    if (!content.trim() && !mediaFileBase64 && !userId) return;
+    if (!userId) return;
+    if (!content.trim() && !mediaFileBase64) return;
     createPost.mutate({ 
       authorId: userId, 
       content: content.trim(),
@@ -134,8 +135,14 @@ export default function HomeFeedScreen() {
     if (isLiked) {
       unlikePost.mutate({ postId, userId });
     } else {
-      likePost.mutate({ postId, userId });
+      likePost.mutate({ postId, userId, type: 'LIKE' });
     }
+  };
+
+  const handleReact = (postId: string, reactionType: string) => {
+    if (!userId) return;
+    likePost.mutate({ postId, userId, type: reactionType });
+    setActiveReactionPostId(null);
   };
 
   const handleAddComment = (postId: string) => {
@@ -339,17 +346,34 @@ export default function HomeFeedScreen() {
 
         {/* Post Action Buttons */}
         <View style={styles.postActions}>
-          <TouchableOpacity 
-            style={[styles.actionButton, isLiked && styles.actionButtonActive]}
-            onPress={() => handleLikeToggle(item.id, isLiked)}
-          >
-            <MaterialCommunityIcons 
-              name={isLiked ? "thumb-up" : "thumb-up-outline"} 
-              size={18} 
-              color={isLiked ? "#4ECDC4" : "#666"} 
-            />
-            <Text style={[styles.actionText, isLiked && styles.actionTextActive]}>Beğen</Text>
-          </TouchableOpacity>
+          {activeReactionPostId === item.id ? (
+            <View style={styles.reactionSelector}>
+              {[
+                { type: 'LIKE', emoji: '👍' },
+                { type: 'LOVE', emoji: '❤️' },
+                { type: 'CELEBRATE', emoji: '👏' },
+                { type: 'INSIGHTFUL', emoji: '💡' },
+                { type: 'CURIOUS', emoji: '🤔' }
+              ].map(({ type, emoji }) => (
+                <TouchableOpacity key={type} onPress={() => handleReact(item.id, type)} style={styles.reactionEmojiBtn}>
+                  <Text style={styles.reactionEmoji}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ) : (
+            <TouchableOpacity 
+              style={[styles.actionButton, isLiked && styles.actionButtonActive]}
+              onPress={() => handleLikeToggle(item.id, isLiked)}
+              onLongPress={() => setActiveReactionPostId(item.id)}
+            >
+              <MaterialCommunityIcons 
+                name={isLiked ? "thumb-up" : "thumb-up-outline"} 
+                size={18} 
+                color={isLiked ? "#4ECDC4" : "#666"} 
+              />
+              <Text style={[styles.actionText, isLiked && styles.actionTextActive]}>Beğen</Text>
+            </TouchableOpacity>
+          )}
           
           <TouchableOpacity 
             style={[styles.actionButton, showComments && styles.actionButtonActive]}
@@ -736,6 +760,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 4,
+    minHeight: 40,
   },
   actionButton: {
     flexDirection: 'row',
@@ -747,6 +772,29 @@ const styles = StyleSheet.create({
   },
   actionButtonActive: {
     backgroundColor: '#F0FDFA',
+  },
+  reactionSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    gap: 8,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    position: 'absolute',
+    left: 0,
+    zIndex: 10,
+  },
+  reactionEmojiBtn: {
+    padding: 4,
+  },
+  reactionEmoji: {
+    fontSize: 22,
   },
   actionText: {
     fontSize: 13,
