@@ -5,7 +5,7 @@ import { useUser } from '../../context/UserContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
-  const { userId, isLoading } = useUser();
+  const { userId, user, isLoading } = useUser();
   const insets = useSafeAreaInsets();
 
   if (isLoading) {
@@ -50,10 +50,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="jobs"
+        name="likes"
         options={{
-          title: 'Jobs',
-          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="briefcase-search" size={26} color={color} />,
+          title: user?.role === 'company' ? 'Başvuranlar' : 'Beğeniler',
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons 
+              name={user?.role === 'company' ? 'inbox' : 'heart'} 
+              size={26} 
+              color={color} 
+            />
+          ),
         }}
       />
       <Tabs.Screen

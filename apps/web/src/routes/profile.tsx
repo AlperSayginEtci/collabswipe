@@ -5,6 +5,8 @@ import { Mail, Briefcase, GraduationCap, LinkIcon, Edit2, Plus, X, Globe, Camera
 import { useDropzone } from 'react-dropzone';
 import { useSession, authClient } from '@collabswipe/auth/client';
 import { trpc } from '@/lib/trpc';
+import { Country, State } from 'country-state-city';
+
 
 export const Route = createFileRoute('/profile')({
   validateSearch: (search: Record<string, unknown>): { userId?: string } => {
@@ -38,6 +40,8 @@ function ProfilePage() {
   const [editUsername, setEditUsername] = useState('');
   const [editBio, setEditBio] = useState('');
   const [editLocation, setEditLocation] = useState('');
+  const [editCountryCode, setEditCountryCode] = useState('');
+  const [editCityName, setEditCityName] = useState('');
   const [editLinks, setEditLinks] = useState<string[]>([]);
   const [editImage, setEditImage] = useState('');
   const [editBanner, setEditBanner] = useState('');
@@ -318,6 +322,13 @@ function ProfilePage() {
       return trimmed;
     });
 
+    let finalLoc = editLocation;
+    if (editCountryCode) {
+      const cName = Country.getCountryByCode(editCountryCode)?.name || '';
+      if (editCityName && cName) finalLoc = `${editCityName}, ${cName}`;
+      else if (cName) finalLoc = cName;
+    }
+
     updateProfile.mutate({
       userId,
       username: editUsername.trim() === '' ? undefined : editUsername.trim(),
@@ -325,7 +336,7 @@ function ProfilePage() {
       surname: editSurname,
       image: editImage,
       bio: editBio,
-      location: editLocation,
+      location: finalLoc,
       links: formattedLinks,
       banner: editBanner,
       isPrivate: editIsPrivate,
@@ -546,13 +557,33 @@ function ProfilePage() {
               )}
               <div className="text-muted-foreground mt-2 font-medium text-base sm:text-lg">
                 {isEditing ? (
-                  <input 
-                    type="text" 
-                    value={editLocation} 
-                    onChange={e => setEditLocation(e.target.value)} 
-                    placeholder="Konum (örn. İstanbul)" 
-                    className="bg-background border border-border rounded px-3 py-1.5 text-sm w-full max-w-xs focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
+                  <div className="flex flex-col sm:flex-row gap-2 max-w-sm">
+                    <select
+                      value={editCountryCode}
+                      onChange={e => {
+                        setEditCountryCode(e.target.value);
+                        setEditCityName('');
+                      }}
+                      className="bg-background border border-border rounded px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      <option value="">Ülke Seçiniz...</option>
+                      {Country.getAllCountries().map(country => (
+                        <option key={country.isoCode} value={country.isoCode}>{country.name}</option>
+                      ))}
+                    </select>
+                    {editCountryCode && (
+                      <select
+                        value={editCityName}
+                        onChange={e => setEditCityName(e.target.value)}
+                        className="bg-background border border-border rounded px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      >
+                        <option value="">Şehir Seçiniz (Tümü)</option>
+                        {State.getStatesOfCountry(editCountryCode)?.map(state => (
+                          <option key={state.isoCode} value={state.name}>{state.name}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
                 ) : (
                   profile?.location || 'Konum belirtilmemiş'
                 )}
@@ -579,8 +610,28 @@ function ProfilePage() {
                   </>
                 ) : (
                   <button onClick={() => {
+                    const loc = profile?.location || '';
                     setEditBio(profile?.bio || '');
-                    setEditLocation(profile?.location || '');
+                    setEditLocation(loc);
+                    
+                    let cc = '';
+                    let cname = '';
+                    if (loc) {
+                      const parts = loc.split(',').map((s: string) => s.trim());
+                      if (parts.length === 2) {
+                        const c = Country.getAllCountries().find(c => c.name === parts[1] || c.isoCode === parts[1]);
+                        if (c) {
+                          cc = c.isoCode;
+                          cname = parts[0];
+                        }
+                      } else {
+                        const c = Country.getAllCountries().find(c => c.name === loc || c.isoCode === loc);
+                        if (c) cc = c.isoCode;
+                      }
+                    }
+                    setEditCountryCode(cc);
+                    setEditCityName(cname);
+
                     setEditLinks(profile?.links || []);
                     setEditBanner(profile?.banner || '');
                     setEditName(session?.user?.name || '');

@@ -19,6 +19,7 @@ import { trpc } from '../../lib/trpc';
 import { useUser } from '../../context/UserContext';
 import * as ImagePicker from 'expo-image-picker';
 import { getBaseUrl } from '../_layout';
+import { Country, City } from 'country-state-city';
 
 // Components
 import ExperienceModal, { ExperienceData } from '../../components/profile/ExperienceModal';
@@ -45,6 +46,11 @@ export default function ProfileScreen() {
   const [editImage, setEditImage] = useState('');
   const [editBanner, setEditBanner] = useState('');
   const [editIsPrivate, setEditIsPrivate] = useState(false);
+  const [editCountryCode, setEditCountryCode] = useState('');
+  const [editCityName, setEditCityName] = useState('');
+  
+  const [showCountryModal, setShowCountryModal] = useState(false);
+  const [showCityModal, setShowCityModal] = useState(false);
   
   // Skills
   const [skillSearch, setSkillSearch] = useState('');
@@ -77,6 +83,30 @@ export default function ProfileScreen() {
       setEditSurname(user.surname || '');
       setEditUsername(user.username || '');
       setEditImage(user.image || '');
+
+      const locStr = profile.location || '';
+      if (locStr) {
+        if (locStr.includes(',')) {
+          const parts = locStr.split(',');
+          const cName = parts[1].trim();
+          const ciName = parts[0].trim();
+          const matchedCountry = Country.getAllCountries().find(c => c.name === cName);
+          if (matchedCountry) {
+            setEditCountryCode(matchedCountry.isoCode);
+            setEditCityName(ciName);
+          } else {
+            setEditLocation(locStr);
+          }
+        } else {
+          const matchedCountry = Country.getAllCountries().find(c => c.name === locStr);
+          if (matchedCountry) {
+            setEditCountryCode(matchedCountry.isoCode);
+            setEditCityName('');
+          } else {
+            setEditLocation(locStr);
+          }
+        }
+      }
     }
   }, [profile, user, isEditing]);
 
@@ -158,13 +188,21 @@ export default function ProfileScreen() {
 
   const handleSaveProfile = () => {
     if (!userId) return;
+
+    let finalLoc = editLocation;
+    if (editCountryCode) {
+      const cName = Country.getCountryByCode(editCountryCode)?.name || '';
+      if (editCityName && cName) finalLoc = `${editCityName}, ${cName}`;
+      else if (cName) finalLoc = cName;
+    }
+
     updateProfileMutation.mutate({
       userId,
       name: editName,
       surname: editSurname,
-      username: editUsername,
+      username: editUsername.trim() === '' ? undefined : editUsername.trim(),
       bio: editBio,
-      location: editLocation,
+      location: finalLoc,
       image: editImage,
       banner: editBanner,
       isPrivate: editIsPrivate,
@@ -272,7 +310,25 @@ export default function ProfileScreen() {
           {isEditing ? (
             <>
               <TextInput style={[styles.input, styles.textArea]} value={editBio} onChangeText={setEditBio} placeholder="Kendinizden bahsedin..." multiline numberOfLines={3} />
-              <TextInput style={styles.input} value={editLocation} onChangeText={setEditLocation} placeholder="Konum (örn. İstanbul)" />
+              
+              <Text style={styles.label}>Konum</Text>
+              <View style={[styles.row, { marginTop: 8, marginBottom: 12 }]}>
+                <TouchableOpacity style={[styles.input, { flex: 1, marginRight: 8, justifyContent: 'center' }]} onPress={() => setShowCountryModal(true)}>
+                  <Text style={{ color: editCountryCode ? '#1A1A1A' : '#999' }}>
+                    {editCountryCode ? Country.getCountryByCode(editCountryCode)?.name : 'Ülke Seçin'}
+                  </Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.input, { flex: 1, justifyContent: 'center' }, !editCountryCode && { backgroundColor: '#F5F5F5', opacity: 0.5 }]} 
+                  onPress={() => editCountryCode && setShowCityModal(true)}
+                  disabled={!editCountryCode}
+                >
+                  <Text style={{ color: editCityName ? '#1A1A1A' : '#999' }}>
+                    {editCityName || 'Şehir Seçin'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </>
           ) : (
             <>
@@ -444,7 +500,53 @@ export default function ProfileScreen() {
           else addCertMut.mutate({ profileId: profile!.id, ...data } as any);
         }} 
       />
+
+      <SelectionModal 
+        visible={showCountryModal}
+        title="Ülke Seçin"
+        items={Country.getAllCountries().map(c => ({ label: c.name, value: c.isoCode }))}
+        onSelect={(val) => { setEditCountryCode(val); setEditCityName(''); setShowCountryModal(false); }}
+        onClose={() => setShowCountryModal(false)}
+      />
+
+      <SelectionModal 
+        visible={showCityModal}
+        title="Şehir Seçin"
+        items={editCountryCode ? Array.from(new Set(City.getCitiesOfCountry(editCountryCode)!.map((c: any) => c.name))).sort().map(name => ({ label: name as string, value: name as string })) : []}
+        onSelect={(val) => { setEditCityName(val); setShowCityModal(false); }}
+        onClose={() => setShowCityModal(false)}
+      />
     </SafeAreaView>
+  );
+}
+
+function SelectionModal({ visible, title, items, onSelect, onClose }: { visible: boolean, title: string, items: {label:string, value:string}[], onSelect: (v:string)=>void, onClose:()=>void }) {
+  const [search, setSearch] = useState('');
+  const filtered = items.filter(i => i.label.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <View style={visible ? [StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', zIndex: 1000 }] : { display: 'none' }}>
+      <View style={{ backgroundColor: '#FFF', margin: 20, borderRadius: 16, maxHeight: '80%' }}>
+        <View style={{ padding: 16, borderBottomWidth: 1, borderColor: '#EEE', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text style={{ fontSize: 18, fontWeight: 'bold' }}>{title}</Text>
+          <TouchableOpacity onPress={onClose}><MaterialCommunityIcons name="close" size={24} color="#666" /></TouchableOpacity>
+        </View>
+        <TextInput 
+          style={{ backgroundColor: '#F5F5F5', margin: 16, padding: 12, borderRadius: 8 }}
+          placeholder="Ara..."
+          value={search}
+          onChangeText={setSearch}
+        />
+        <ScrollView style={{ paddingHorizontal: 16 }}>
+          {filtered.map(item => (
+            <TouchableOpacity key={item.value} style={{ paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F5F5F5' }} onPress={() => onSelect(item.value)}>
+              <Text style={{ fontSize: 16, color: '#333' }}>{item.label}</Text>
+            </TouchableOpacity>
+          ))}
+          {filtered.length === 0 && <Text style={{ textAlign: 'center', marginVertical: 20, color: '#999' }}>Sonuç bulunamadı</Text>}
+        </ScrollView>
+      </View>
+    </View>
   );
 }
 

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { useSession } from '@collabswipe/auth/client';
 import { trpc } from '../lib/trpc';
@@ -11,25 +12,47 @@ export const Route = createFileRoute('/likes')({
 function LikesPage() {
   const { data: session } = useSession();
   const isCompany = (session?.user as any)?.role === 'company';
+  const [tab, setTab] = useState<'incoming' | 'outgoing'>('incoming');
   
   if (!session) return null;
 
   return (
     <div className="max-w-4xl mx-auto w-full pb-20 md:pb-0 h-full flex flex-col">
-      <div className="flex items-center gap-4 mb-6 px-2">
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isCompany ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-500'}`}>
-          {isCompany ? <Inbox className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 px-2">
+        <div className="flex items-center gap-4">
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${isCompany ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-500'}`}>
+            {isCompany ? <Inbox className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-foreground">{isCompany ? 'Başvurular ve Eşleşmeler' : 'Beğeniler ve Başvurular'}</h1>
+            <p className="text-muted-foreground text-sm">
+              {isCompany ? 'Gelen başvuruları ve gönderdiğiniz istekleri inceleyin.' : 'Seni beğenenleri ve beğendiklerini/başvurduklarını gör.'}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-black text-foreground">{isCompany ? 'Başvuranlar' : 'Seni Beğenenler'}</h1>
-          <p className="text-muted-foreground text-sm">
-            {isCompany ? 'İlanlarınıza yapılan başvuruları buradan inceleyebilirsiniz.' : 'Profilini beğenen kullanıcıları gör ve eşleş.'}
-          </p>
+
+        <div className="flex bg-secondary p-1 rounded-2xl w-full sm:w-auto shadow-inner shrink-0">
+          <button
+            onClick={() => setTab('incoming')}
+            className={`flex-1 sm:px-6 py-2 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${tab === 'incoming' ? 'bg-background text-foreground shadow-md scale-[1.02]' : 'text-muted-foreground hover:text-foreground hover:bg-background/50'}`}
+          >
+            Gelenler
+          </button>
+          <button
+            onClick={() => setTab('outgoing')}
+            className={`flex-1 sm:px-6 py-2 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${tab === 'outgoing' ? 'bg-background text-foreground shadow-md scale-[1.02]' : 'text-muted-foreground hover:text-foreground hover:bg-background/50'}`}
+          >
+            Gönderilenler
+          </button>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-        {isCompany ? <CompanyApplicants /> : <UserLikes />}
+        {isCompany ? (
+           tab === 'incoming' ? <CompanyApplicants /> : <CompanyOutgoing />
+        ) : (
+           tab === 'incoming' ? <UserLikes /> : <UserOutgoing />
+        )}
       </div>
     </div>
   );
@@ -70,9 +93,9 @@ function UserLikes() {
       {pendingRequests.map(req => (
         <div key={req.requester.id} className="bg-card border border-border rounded-2xl p-4 flex gap-4 items-center">
           {req.requester.image ? (
-            <img src={req.requester.image} alt={req.requester.name || 'User'} className="w-16 h-16 rounded-full object-cover" />
+            <img src={req.requester.image} alt={req.requester.name || 'User'} className="w-16 h-16 rounded-full object-cover shrink-0" />
           ) : (
-            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center shrink-0">
               <UserIcon className="w-8 h-8 text-muted-foreground" />
             </div>
           )}
@@ -80,7 +103,7 @@ function UserLikes() {
             <h4 className="font-bold text-lg truncate">{req.requester.name} {req.requester.surname}</h4>
             <p className="text-xs text-muted-foreground mt-1">Seni beğendi!</p>
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 shrink-0">
             <button 
               onClick={() => respondMutation.mutate({ requesterId: req.requester.id, addresseeId: session!.user!.id, status: 'ACCEPTED' })}
               className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors shadow-sm"
@@ -96,6 +119,119 @@ function UserLikes() {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function UserOutgoing() {
+  const { data: session } = useSession();
+  const utils = trpc.useUtils();
+  
+  const { data: sentRequests, isLoading: isLoadingRequests } = trpc.connection.getSentRequests.useQuery(
+    { userId: session?.user?.id || '' },
+    { enabled: !!session?.user?.id }
+  );
+
+  const { data: myApplications, isLoading: isLoadingApps } = trpc.job.getMyApplications.useQuery(
+    { userId: session?.user?.id || '' },
+    { enabled: !!session?.user?.id }
+  );
+
+  const undoSwipe = trpc.connection.undoSwipe.useMutation({
+    onSuccess: () => {
+      utils.connection.getSentRequests.invalidate();
+      toast.success('İstek geri çekildi');
+    }
+  });
+
+  const undoApply = trpc.job.undoApply.useMutation({
+    onSuccess: () => {
+      utils.job.getMyApplications.invalidate();
+      toast.success('Başvuru geri çekildi');
+    }
+  });
+
+  if (isLoadingRequests || isLoadingApps) return <div className="text-center py-10 text-muted-foreground">Yükleniyor...</div>;
+
+  const hasRequests = sentRequests && sentRequests.length > 0;
+  const hasApps = myApplications && myApplications.length > 0;
+
+  if (!hasRequests && !hasApps) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mb-4">
+          <Heart className="w-10 h-10 text-muted-foreground/30" />
+        </div>
+        <h3 className="text-xl font-bold">Henüz Gönderilen Yok</h3>
+        <p className="text-muted-foreground mt-2 max-w-sm">Keşfet sekmesinde sağa kaydırarak istek veya başvuru gönderebilirsiniz.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {hasRequests && (
+        <div>
+          <h2 className="text-lg font-black mb-4">Gönderilen Beğeniler</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {sentRequests.map(req => (
+              <div key={req.addressee.id} className="bg-card border border-border rounded-2xl p-4 flex gap-4 items-center">
+                {req.addressee.image ? (
+                  <img src={req.addressee.image} alt={req.addressee.name || 'User'} className="w-16 h-16 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                    <UserIcon className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1 overflow-hidden">
+                  <h4 className="font-bold text-lg truncate">{req.addressee.name} {req.addressee.surname}</h4>
+                  <p className="text-xs text-amber-500 font-bold mt-1">Bekliyor</p>
+                </div>
+                <button 
+                  onClick={() => undoSwipe.mutate({ requesterId: session!.user!.id, addresseeId: req.addressee.id })}
+                  className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive hover:text-white transition-colors shrink-0"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {hasApps && (
+        <div>
+          <h2 className="text-lg font-black mb-4">Yapılan Başvurular</h2>
+          <div className="space-y-4">
+            {myApplications.map(app => (
+              <div key={app.id} className="bg-card border border-border rounded-2xl p-4 flex gap-4 items-center">
+                {app.job.publisher?.image ? (
+                  <img src={app.job.publisher.image} alt={app.job.publisher.name || 'Company'} className="w-14 h-14 rounded-full object-cover shrink-0" />
+                ) : (
+                  <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                    <Building className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1 overflow-hidden">
+                  <h4 className="font-bold text-lg truncate">{app.job.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-1">{app.job.publisher?.name}</p>
+                </div>
+                <div className="shrink-0 flex items-center gap-2">
+                   <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 hidden sm:inline-block">
+                     Bekliyor
+                   </span>
+                   <button 
+                     onClick={() => undoApply.mutate({ applicantId: session!.user!.id, jobId: app.job.id })}
+                     className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive hover:text-white transition-colors"
+                   >
+                     <X className="w-5 h-5" />
+                   </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -129,7 +265,6 @@ function CompanyApplicants() {
     <div className="space-y-4">
       {applications.map(app => (
         <div key={app.id} className="bg-card border border-border rounded-2xl p-5 flex flex-col md:flex-row gap-4">
-          {/* Applicant Info */}
           <div className="flex items-start gap-4 md:w-1/2">
             {app.applicant.image ? (
               <img src={app.applicant.image} alt={app.applicant.name || 'Applicant'} className="w-14 h-14 rounded-full object-cover shrink-0" />
@@ -153,7 +288,6 @@ function CompanyApplicants() {
             </div>
           </div>
           
-          {/* Action & Status */}
           <div className="flex flex-row md:flex-col justify-between items-center md:items-end md:w-1/2 pt-4 md:pt-0 border-t md:border-t-0 border-border">
             <span className={`text-xs font-bold px-3 py-1 rounded-full mb-0 md:mb-4 ${app.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500' : app.status === 'ACCEPTED' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
               {app.status === 'PENDING' ? 'Bekliyor' : app.status === 'ACCEPTED' ? 'Kabul Edildi' : 'Reddedildi'}
@@ -176,6 +310,63 @@ function CompanyApplicants() {
               </div>
             )}
           </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CompanyOutgoing() {
+  const { data: session } = useSession();
+  const utils = trpc.useUtils();
+
+  const { data: sentRequests, isLoading } = trpc.connection.getSentRequests.useQuery(
+    { userId: session?.user?.id || '' },
+    { enabled: !!session?.user?.id }
+  );
+
+  const undoSwipe = trpc.connection.undoSwipe.useMutation({
+    onSuccess: () => {
+      utils.connection.getSentRequests.invalidate();
+      toast.success('İstek geri çekildi');
+    }
+  });
+
+  if (isLoading) return <div className="text-center py-10 text-muted-foreground">Yükleniyor...</div>;
+
+  if (!sentRequests || sentRequests.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mb-4">
+          <Heart className="w-10 h-10 text-muted-foreground/30" />
+        </div>
+        <h3 className="text-xl font-bold">Henüz İstek Yok</h3>
+        <p className="text-muted-foreground mt-2 max-w-sm">Keşfet sekmesinde yetenekleri sağa kaydırarak istek gönderebilirsiniz.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {sentRequests.map(req => (
+        <div key={req.addressee.id} className="bg-card border border-border rounded-2xl p-4 flex gap-4 items-center">
+          {req.addressee.image ? (
+            <img src={req.addressee.image} alt={req.addressee.name || 'User'} className="w-16 h-16 rounded-full object-cover shrink-0" />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center shrink-0">
+              <UserIcon className="w-8 h-8 text-muted-foreground" />
+            </div>
+          )}
+          <div className="flex-1 overflow-hidden">
+            <h4 className="font-bold text-lg truncate">{req.addressee.name} {req.addressee.surname}</h4>
+            <p className="text-xs text-amber-500 font-bold mt-1">Bekliyor</p>
+          </div>
+          <button 
+            onClick={() => undoSwipe.mutate({ requesterId: session!.user!.id, addresseeId: req.addressee.id })}
+            className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive hover:text-white transition-colors shrink-0"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
       ))}
     </div>
