@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Image,
   ActivityIndicator,
   ScrollView,
+  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -19,6 +20,14 @@ export default function MatchesScreen() {
   const { userId } = useUser();
   const router = useRouter();
   const utils = trpc.useUtils();
+
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Search users
+  const { data: searchResults, isLoading: loadingSearch } = trpc.user.search.useQuery(
+    { query: searchQuery },
+    { enabled: searchQuery.trim().length > 0 }
+  );
 
   // 1. Fetch matches (ACCEPTED connections)
   const { data: connections, isLoading: loadingConnections } =
@@ -92,9 +101,62 @@ export default function MatchesScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Mesajlar</Text>
+        <View style={styles.searchContainer}>
+          <MaterialCommunityIcons name="magnify" size={20} color="#999" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Kişi ara..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery('')}>
+              <MaterialCommunityIcons name="close-circle" size={20} color="#999" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-      {isLoading ? (
+      {searchQuery.trim().length > 0 ? (
+        <View style={{ flex: 1 }}>
+          {loadingSearch ? (
+            <View style={styles.centerContainer}>
+              <ActivityIndicator size="small" color="#FF6B6B" />
+            </View>
+          ) : searchResults?.length === 0 ? (
+            <View style={styles.centerContainer}>
+              <Text style={styles.emptyText}>Sonuç bulunamadı.</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={searchResults}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ padding: 16 }}
+              renderItem={({ item }) => {
+                const nameText = `${item.name} ${item.surname || ''}`.trim();
+                const avatarUrl = item.image || `https://api.dicebear.com/7.x/notionists/png?seed=${nameText}`;
+                return (
+                  <TouchableOpacity
+                    style={styles.convItem}
+                    onPress={() => {
+                      setSearchQuery('');
+                      handleMatchClick(item);
+                    }}
+                  >
+                    <Image source={{ uri: avatarUrl }} style={styles.convAvatar} />
+                    <View style={styles.convInfo}>
+                      <Text style={styles.convName}>{nameText}</Text>
+                      {item.username && <Text style={styles.convTime}>@{item.username}</Text>}
+                    </View>
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          )}
+        </View>
+      ) : isLoading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color="#FF6B6B" />
         </View>
@@ -190,6 +252,24 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '900',
     color: '#1A1A1A',
+    marginBottom: 12,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: '#333',
+    minHeight: 20,
   },
   centerContainer: {
     flex: 1,

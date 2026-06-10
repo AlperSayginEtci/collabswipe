@@ -4,6 +4,7 @@ import type { Message } from '@prisma/client';
 // Define the events payload mapping
 interface AppEvents {
   new_message: (message: Message) => void;
+  message_updated: (message: any) => void;
   user_typing: (data: { conversationId: string; userId: string; isTyping: boolean }) => void;
   message_read: (data: { conversationId: string; userId: string; lastReadAt: Date }) => void;
 }
