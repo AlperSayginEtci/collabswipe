@@ -9,6 +9,7 @@ import {
   Platform,
   FlatList,
   Image,
+  Modal,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -21,6 +22,9 @@ export default function ChatScreen() {
   const { userId } = useUser();
   const router = useRouter();
   const [inputText, setInputText] = useState('');
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [actionMenuVisible, setActionMenuVisible] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<any>(null);
   const utils = trpc.useUtils();
 
   const convId = typeof conversationId === 'string' ? conversationId : conversationId?.[0];
@@ -52,6 +56,27 @@ export default function ChatScreen() {
           if (userId) {
             markAsRead.mutate({ conversationId: convId, userId });
           }
+        }
+      },
+    }
+  );
+
+  trpc.chat.onMessageUpdate.useSubscription(
+    { userId: userId || '' },
+    {
+      enabled: !!userId,
+      onData(msg) {
+        if (msg.conversationId === convId) {
+          utils.chat.getMessages.setInfiniteData({ conversationId: convId }, (oldData) => {
+            if (!oldData) return oldData;
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page) => ({
+                ...page,
+                items: page.items.map((item) => (item.id === msg.id ? msg : item)),
+              })),
+            };
+          });
         }
       },
     }
@@ -103,6 +128,9 @@ export default function ChatScreen() {
   });
 
   const markAsRead = trpc.chat.markAsRead.useMutation();
+  const editMessage = trpc.chat.editMessage.useMutation();
+  const deleteMessage = trpc.chat.deleteMessage.useMutation();
+  const reactMessage = trpc.chat.reactMessage.useMutation();
 
   useEffect(() => {
     if (convId && userId) {
@@ -113,13 +141,23 @@ export default function ChatScreen() {
   const handleSend = () => {
     if (!inputText.trim() || !convId || !userId) return;
 
-    sendMessage.mutate({
-      conversationId: convId,
-      senderId: userId,
-      content: inputText.trim(),
-    });
+    if (editingMessageId) {
+      editMessage.mutate({ messageId: editingMessageId, userId, content: inputText.trim() });
+      setEditingMessageId(null);
+    } else {
+      sendMessage.mutate({
+        conversationId: convId,
+        senderId: userId,
+        content: inputText.trim(),
+      });
+    }
 
     setInputText('');
+  };
+
+  const handleLongPress = (msg: any) => {
+    setSelectedMessage(msg);
+    setActionMenuVisible(true);
   };
 
   const messages = data?.pages.flatMap((page) => page.items) || [];
@@ -156,36 +194,134 @@ export default function ChatScreen() {
           renderItem={({ item }) => {
             const isMe = item.senderId === userId;
             return (
-              <View style={[styles.messageWrapper, isMe ? styles.messageWrapperMe : styles.messageWrapperOther]}>
-                <View style={[styles.messageBubble, isMe ? styles.messageBubbleMe : styles.messageBubbleOther]}>
-                  <Text style={[styles.messageText, isMe ? styles.messageTextMe : styles.messageTextOther]}>
-                    {item.content}
+              <TouchableOpacity
+                onLongPress={() => handleLongPress(item)}
+                delayLongPress={300}
+                activeOpacity={0.9}
+                style={[styles.messageWrapper, isMe ? styles.messageWrapperMe : styles.messageWrapperOther]}
+              >
+                <View style={[styles.messageBubble, isMe ? styles.messageBubbleMe : styles.messageBubbleOther, item.isDeleted && styles.messageDeleted]}>
+                  <Text style={[styles.messageText, isMe ? styles.messageTextMe : styles.messageTextOther, item.isDeleted && styles.messageTextDeleted]}>
+                    {item.isDeleted ? "Bu mesaj silindi." : item.content}
                   </Text>
-                  <Text style={[styles.messageTime, isMe ? styles.messageTimeMe : styles.messageTimeOther]}>
-                    {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
+                  <View style={styles.messageFooter}>
+                    {item.isEdited && !item.isDeleted && (
+                      <Text style={[styles.messageEdited, isMe ? styles.messageEditedMe : styles.messageEditedOther]}>
+                        (Düzenlendi)
+                      </Text>
+                    )}
+                    <Text style={[styles.messageTime, isMe ? styles.messageTimeMe : styles.messageTimeOther]}>
+                      {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </Text>
+                  </View>
                 </View>
-              </View>
+
+                {item.reactions && item.reactions.length > 0 && (
+                  <View style={[styles.reactionsContainer, isMe ? styles.reactionsMe : styles.reactionsOther]}>
+                    {Array.from(new Set(item.reactions.map((r: any) => r.emoji))).map((emoji: any) => {
+                      const count = item.reactions.filter((r: any) => r.emoji === emoji).length;
+                      const hasReacted = item.reactions.some((r: any) => r.emoji === emoji && r.userId === userId);
+                      return (
+                        <TouchableOpacity
+                          key={emoji}
+                          onPress={() => reactMessage.mutate({ messageId: item.id, userId: userId!, emoji })}
+                          style={[styles.reactionBadge, hasReacted && styles.reactionBadgeActive]}
+                        >
+                          <Text style={styles.reactionBadgeText}>{emoji} {count > 1 ? count : ''}</Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
+              </TouchableOpacity>
             );
           }}
         />
 
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            value={inputText}
-            onChangeText={setInputText}
-            placeholder="Bir mesaj yazın..."
-            multiline
-          />
-          <TouchableOpacity
-            style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
-            onPress={handleSend}
-            disabled={!inputText.trim()}
-          >
-            <MaterialCommunityIcons name="send" size={20} color="#FFF" />
-          </TouchableOpacity>
+        <View style={styles.inputContainerOuter}>
+          {editingMessageId && (
+            <View style={styles.editingBanner}>
+              <Text style={styles.editingText}>Mesajı düzenliyorsunuz...</Text>
+              <TouchableOpacity onPress={() => { setEditingMessageId(null); setInputText(''); }}>
+                <Text style={styles.editingCancel}>İptal</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={inputText}
+              onChangeText={setInputText}
+              placeholder={editingMessageId ? "Mesajı düzenle..." : "Bir mesaj yazın..."}
+              multiline
+            />
+            <TouchableOpacity
+              style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+              onPress={handleSend}
+              disabled={!inputText.trim()}
+            >
+              <MaterialCommunityIcons name="send" size={20} color="#FFF" />
+            </TouchableOpacity>
+          </View>
         </View>
+
+        {/* Action Menu Modal */}
+        <Modal
+          visible={actionMenuVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setActionMenuVisible(false)}
+        >
+          <TouchableOpacity 
+            style={styles.modalOverlay} 
+            activeOpacity={1} 
+            onPress={() => setActionMenuVisible(false)}
+          >
+            <View style={styles.actionMenu}>
+              <View style={styles.reactionRow}>
+                {['👍', '❤️', '😂', '😮', '😢'].map((emoji) => (
+                  <TouchableOpacity 
+                    key={emoji} 
+                    style={styles.reactionBtn}
+                    onPress={() => {
+                      reactMessage.mutate({ messageId: selectedMessage.id, userId: userId!, emoji });
+                      setActionMenuVisible(false);
+                    }}
+                  >
+                    <Text style={styles.reactionEmoji}>{emoji}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              {selectedMessage?.senderId === userId && !selectedMessage?.isDeleted && (
+                <>
+                  <TouchableOpacity 
+                    style={styles.actionBtn}
+                    onPress={() => {
+                      setEditingMessageId(selectedMessage.id);
+                      setInputText(selectedMessage.content);
+                      setActionMenuVisible(false);
+                    }}
+                  >
+                    <MaterialCommunityIcons name="pencil" size={20} color="#333" />
+                    <Text style={styles.actionText}>Düzenle</Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity 
+                    style={styles.actionBtn}
+                    onPress={() => {
+                      deleteMessage.mutate({ messageId: selectedMessage.id, userId: userId! });
+                      setActionMenuVisible(false);
+                    }}
+                  >
+                    <MaterialCommunityIcons name="delete" size={20} color="#FF6B6B" />
+                    <Text style={[styles.actionText, { color: '#FF6B6B' }]}>Sil</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          </TouchableOpacity>
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -302,5 +438,128 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: '#FFB5B5',
+  },
+  inputContainerOuter: {
+    backgroundColor: '#FFF',
+    borderTopWidth: 1,
+    borderTopColor: '#EFEFEF',
+  },
+  editingBanner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  editingText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  editingCancel: {
+    fontSize: 12,
+    color: '#FF6B6B',
+    fontWeight: 'bold',
+  },
+  messageFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+    gap: 8,
+  },
+  messageTime: {
+    fontSize: 11,
+  },
+  messageEdited: {
+    fontSize: 10,
+  },
+  messageEditedMe: {
+    color: 'rgba(255,255,255,0.7)',
+  },
+  messageEditedOther: {
+    color: '#999',
+  },
+  messageDeleted: {
+    opacity: 0.6,
+  },
+  messageTextDeleted: {
+    fontStyle: 'italic',
+  },
+  reactionsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: -8,
+    marginBottom: 8,
+    zIndex: 10,
+    paddingHorizontal: 12,
+  },
+  reactionsMe: {
+    justifyContent: 'flex-end',
+  },
+  reactionsOther: {
+    justifyContent: 'flex-start',
+  },
+  reactionBadge: {
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: '#EEE',
+    borderRadius: 12,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginRight: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
+  },
+  reactionBadgeActive: {
+    backgroundColor: '#FFE5E5',
+    borderColor: '#FF6B6B',
+  },
+  reactionBadgeText: {
+    fontSize: 12,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  actionMenu: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
+  },
+  reactionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    paddingHorizontal: 8,
+  },
+  reactionBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  reactionEmoji: {
+    fontSize: 24,
+  },
+  actionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  actionText: {
+    fontSize: 16,
+    marginLeft: 12,
+    fontWeight: '500',
+    color: '#333',
   },
 });

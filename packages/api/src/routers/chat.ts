@@ -95,12 +95,14 @@ export const chatRouter = createTRPCRouter({
       const items = await ctx.prisma.message.findMany({
         where: {
           conversationId: input.conversationId,
-          isDeleted: false,
         },
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,
         orderBy: {
           createdAt: "desc", // Latest messages first
+        },
+        include: {
+          reactions: true,
         },
       });
 
@@ -134,6 +136,9 @@ export const chatRouter = createTRPCRouter({
             senderId: input.senderId,
             content: input.content,
           },
+          include: {
+            reactions: true,
+          }
         }),
         ctx.prisma.conversation.update({
           where: { id: input.conversationId },
@@ -147,6 +152,92 @@ export const chatRouter = createTRPCRouter({
       // Emit event for real-time subscribers
       ee.emit("new_message", message);
 
+      return message;
+    }),
+
+  // Edit a message
+  editMessage: publicProcedure
+    .input(z.object({
+      messageId: z.string(),
+      userId: z.string(),
+      content: z.string().min(1),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.prisma.message.findUnique({ where: { id: input.messageId } });
+      if (!existing || existing.senderId !== input.userId) throw new Error("Unauthorized");
+
+      const message = await ctx.prisma.message.update({
+        where: { id: input.messageId },
+        data: { content: input.content, isEdited: true },
+        include: { reactions: true }
+      });
+      ee.emit("message_updated", message);
+      return message;
+    }),
+
+  // Delete a message (soft delete)
+  deleteMessage: publicProcedure
+    .input(z.object({
+      messageId: z.string(),
+      userId: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.prisma.message.findUnique({ where: { id: input.messageId } });
+      if (!existing || existing.senderId !== input.userId) throw new Error("Unauthorized");
+
+      const message = await ctx.prisma.message.update({
+        where: { id: input.messageId },
+        data: { isDeleted: true },
+        include: { reactions: true }
+      });
+      ee.emit("message_updated", message);
+      return message;
+    }),
+
+  // React to a message
+  reactMessage: publicProcedure
+    .input(z.object({
+      messageId: z.string(),
+      userId: z.string(),
+      emoji: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const existing = await ctx.prisma.messageReaction.findUnique({
+        where: {
+          messageId_userId_emoji: {
+            messageId: input.messageId,
+            userId: input.userId,
+            emoji: input.emoji,
+          }
+        }
+      });
+
+      if (existing) {
+        await ctx.prisma.messageReaction.delete({
+          where: {
+            messageId_userId_emoji: {
+              messageId: input.messageId,
+              userId: input.userId,
+              emoji: input.emoji,
+            }
+          }
+        });
+      } else {
+        await ctx.prisma.messageReaction.create({
+          data: {
+            messageId: input.messageId,
+            userId: input.userId,
+            emoji: input.emoji,
+          }
+        });
+      }
+
+      const message = await ctx.prisma.message.findUnique({
+        where: { id: input.messageId },
+        include: { reactions: true }
+      });
+
+      ee.emit("message_updated", message);
       return message;
     }),
 
@@ -227,6 +318,37 @@ export const chatRouter = createTRPCRouter({
         // Cleanup
         return () => {
           ee.off("new_message", onMessage);
+        };
+      });
+    }),
+
+  onMessageUpdate: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .subscription(async ({ ctx, input }) => {
+      return observable<any>((emit) => {
+        const getParticipantConversations = async () => {
+          const parts = await ctx.prisma.participant.findMany({
+            where: { userId: input.userId },
+            select: { conversationId: true },
+          });
+          return new Set(parts.map((p) => p.conversationId));
+        };
+
+        let conversationIds: Set<string>;
+        getParticipantConversations().then((ids) => {
+          conversationIds = ids;
+        });
+
+        const onUpdate = (msg: any) => {
+          if (conversationIds && conversationIds.has(msg.conversationId)) {
+            emit.next(msg);
+          }
+        };
+
+        ee.on("message_updated", onUpdate);
+
+        return () => {
+          ee.off("message_updated", onUpdate);
         };
       });
     }),

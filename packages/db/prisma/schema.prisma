@@ -47,6 +47,7 @@ model User {
   messages           Message[]
   announcements      Announcement[]
   certificatesIssued Certificate[]   @relation("OrganizationCertificates")
+  messageReactions   MessageReaction[]
 }
 
 model Session {
@@ -385,10 +386,23 @@ model Message {
   senderId       String
   content        String
   isDeleted      Boolean  @default(false)
+  isEdited       Boolean  @default(false)
   createdAt      DateTime @default(now())
 
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  reactions      MessageReaction[]
+}
+
+model MessageReaction {
+  messageId String
+  userId    String
+  emoji     String
+
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([messageId, userId, emoji])
 }
 
 // ==========================================
