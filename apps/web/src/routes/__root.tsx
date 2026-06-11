@@ -1,7 +1,7 @@
 import { createRootRoute, Link, Outlet, useLocation, useNavigate } from '@tanstack/react-router';
-import { Home, Compass, Briefcase, MessageSquare, User as UserIcon, Bell, LogOut, ChevronDown, PlusCircle, Heart, Inbox, Shield, LifeBuoy } from 'lucide-react';
+import { Home, Compass, Briefcase, MessageSquare, User as UserIcon, Bell, LogOut, ChevronDown, PlusCircle, Heart, Inbox, Shield, LifeBuoy, ArrowUp } from 'lucide-react';
 import { useSession, signOut } from '@collabswipe/auth/client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { trpc } from '../lib/trpc';
 import { Toaster } from 'react-hot-toast';
 
@@ -15,10 +15,25 @@ function RootLayout() {
   const navigate = useNavigate();
   const [isDiscoverOpen, setIsDiscoverOpen] = useState(location.pathname === '/discover');
   
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
   const { data: unreadCount } = trpc.notification.getUnreadCount.useQuery(undefined, {
     enabled: !!session,
     refetchInterval: 30000, // Her 30 saniyede bir kontrol et
   });
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (location.pathname === '/') {
+      setShowScrollTop(e.currentTarget.scrollTop > 300);
+    } else {
+      setShowScrollTop(false);
+    }
+  };
+
+  const scrollToTop = () => {
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   useEffect(() => {
     if (!isPending && !session && location.pathname !== '/login') {
@@ -76,7 +91,7 @@ function RootLayout() {
         <nav className="flex-1 px-4 space-y-2">
           <Link to="/" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
             <Home className="w-5 h-5" />
-            Home
+            Ana Sayfa
           </Link>
           
           <div className="flex flex-col">
@@ -91,7 +106,7 @@ function RootLayout() {
             >
               <div className="flex items-center gap-3">
                 <Compass className="w-5 h-5" />
-                Discover
+                Keşfet
               </div>
               <ChevronDown className={`w-4 h-4 transition-transform ${isDiscoverOpen ? 'rotate-180' : ''}`} />
             </div>
@@ -123,11 +138,11 @@ function RootLayout() {
           </Link>
           <Link to="/matches" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
             <MessageSquare className="w-5 h-5" />
-            Matches
+            Eşleşmeler
           </Link>
           <Link to="/profile" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
             <UserIcon className="w-5 h-5" />
-            Profile
+            Profil
           </Link>
           <Link to="/support" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
             <LifeBuoy className="w-5 h-5" />
@@ -192,22 +207,33 @@ function RootLayout() {
         </div>
 
         {/* Scrollable Content — this is the ONLY scroll container */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 md:p-8">
           <div className="max-w-6xl mx-auto w-full">
             <Outlet />
           </div>
         </div>
+
+        {/* Scroll to Top Button */}
+        {showScrollTop && location.pathname === '/' && (
+          <button 
+            onClick={scrollToTop}
+            className="fixed bottom-20 md:bottom-8 right-4 md:right-8 p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:opacity-90 transition-opacity z-50 flex items-center justify-center"
+            aria-label="En üste dön"
+          >
+            <ArrowUp className="w-6 h-6" />
+          </button>
+        )}
       </main>
 
       {/* Mobile Bottom Tab Navigation */}
-      <nav className="md:hidden fixed bottom-0 w-full bg-card border-t border-border flex justify-around p-3 pb-safe z-50">
+      <nav className="md:hidden fixed bottom-0 w-full bg-card border-t border-border flex justify-around p-3 pb-safe z-40">
         <Link to="/" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground">
           <Home className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Home</span>
+          <span className="text-[10px] font-medium">Ana Sayfa</span>
         </Link>
         <Link to="/discover" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground">
           <Compass className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Discover</span>
+          <span className="text-[10px] font-medium">Keşfet</span>
         </Link>
         <Link to="/likes" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground">
           {((session?.user as any)?.role === 'company') ? <Inbox className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
@@ -224,11 +250,11 @@ function RootLayout() {
         </Link>
         <Link to="/matches" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground">
           <MessageSquare className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Matches</span>
+          <span className="text-[10px] font-medium">Eşleşmeler</span>
         </Link>
         <Link to="/profile" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground md:hidden">
           <UserIcon className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Profile</span>
+          <span className="text-[10px] font-medium">Profil</span>
         </Link>
         {(session?.user as any)?.role === 'company' && (
           <Link to="/post-job" className="[&.active]:text-primary flex flex-col items-center gap-1 text-primary">

@@ -112,6 +112,23 @@ export const connectionRouter = createTRPCRouter({
     ),
 
   // İsteği yanıtla (kabul / reddet)
+  undoSwipe: publicProcedure
+    .input(
+      z.object({
+        requesterId: z.string(),
+        addresseeId: z.string(),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.connection.deleteMany({
+        where: {
+          requesterId: input.requesterId,
+          addresseeId: input.addresseeId,
+          status: { in: ["PENDING", "REJECTED"] },
+        },
+      })
+    ),
+
   respond: publicProcedure
     .input(
       z.object({
@@ -207,7 +224,19 @@ export const connectionRouter = createTRPCRouter({
       ctx.prisma.connection.findMany({
         where: { addresseeId: input.userId, status: "PENDING" },
         include: {
-          requester: { select: { id: true, name: true, surname: true, image: true } },
+          requester: { select: { id: true, name: true, surname: true, image: true, profile: { select: { location: true } } } },
+        },
+      })
+    ),
+
+  // Gönderilen istekler
+  getSentRequests: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(({ ctx, input }) =>
+      ctx.prisma.connection.findMany({
+        where: { requesterId: input.userId, status: "PENDING" },
+        include: {
+          addressee: { select: { id: true, name: true, surname: true, image: true, profile: { select: { location: true } } } },
         },
       })
     ),

@@ -1,18 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { X, Heart, Code, MapPin, Sparkles, Briefcase, User, Filter } from 'lucide-react';
+import { X, Heart, Code, MapPin, Sparkles, Briefcase, User, Filter, RotateCcw } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { useSession } from '@collabswipe/auth/client';
 import toast from 'react-hot-toast';
+import { Country, State } from 'country-state-city';
 
-const COUNTRIES: Record<string, string[]> = {
-  'Türkiye': ['İstanbul', 'Ankara', 'İzmir', 'Bursa', 'Antalya', 'Eskişehir', 'Adana', 'Konya', 'Kocaeli', 'Gaziantep'],
-  'ABD': ['New York', 'San Francisco', 'Los Angeles', 'Chicago', 'Boston', 'Seattle'],
-  'Almanya': ['Berlin', 'Münih', 'Hamburg', 'Frankfurt', 'Köln'],
-  'İngiltere': ['Londra', 'Manchester', 'Birmingham', 'Liverpool'],
-  'Hollanda': ['Amsterdam', 'Rotterdam', 'Lahey'],
-  'Kanada': ['Toronto', 'Vancouver', 'Montreal']
-};
 
 export const Route = createFileRoute('/discover')({
   validateSearch: (search: Record<string, unknown>): { tab?: 'PROFILES' | 'JOBS' } => {
@@ -26,14 +19,16 @@ export const Route = createFileRoute('/discover')({
 function DiscoverPage() {
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const isCompany = (session?.user as any)?.role === 'company';
   const utils = trpc.useUtils();
 
   // Tabs from search params
   const { tab } = Route.useSearch();
-  const activeTab = tab || 'PROFILES';
+  const activeTab = isCompany ? 'PROFILES' : (tab || 'PROFILES');
   const navigate = Route.useNavigate();
 
   const setActiveTab = (newTab: 'PROFILES' | 'JOBS') => {
+    if (isCompany && newTab === 'JOBS') return;
     navigate({ search: { tab: newTab } });
   };
 
@@ -50,8 +45,6 @@ function DiscoverPage() {
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [skillSearch, setSkillSearch] = useState('');
-  const [filterAgeMin, setFilterAgeMin] = useState<number>(18);
-  const [filterAgeMax, setFilterAgeMax] = useState<number>(65);
 
   const { data: allSkills } = trpc.profile.getAllSkills.useQuery();
   const filteredSkills = allSkills?.filter(s => 
@@ -62,16 +55,18 @@ function DiscoverPage() {
   let finalLocation = '';
   let includeRemote: boolean | undefined = undefined;
 
+  const countryName = selectedCountry ? Country.getCountryByCode(selectedCountry)?.name || selectedCountry : '';
+
   if (locationType === 'remote') {
     includeRemote = true;
   } else if (locationType === 'in-person') {
-    if (selectedCity && selectedCountry) finalLocation = `${selectedCity}, ${selectedCountry}`;
-    else if (selectedCountry) finalLocation = selectedCountry;
+    if (selectedCity && countryName) finalLocation = `${selectedCity}, ${countryName}`;
+    else if (countryName) finalLocation = countryName;
     includeRemote = false;
   } else if (locationType === 'any') {
-    if (selectedCountry) {
-      if (selectedCity && selectedCountry) finalLocation = `${selectedCity}, ${selectedCountry}`;
-      else finalLocation = selectedCountry;
+    if (countryName) {
+      if (selectedCity && countryName) finalLocation = `${selectedCity}, ${countryName}`;
+      else finalLocation = countryName;
       includeRemote = true;
     } else {
       includeRemote = undefined;
@@ -87,14 +82,11 @@ function DiscoverPage() {
       location: finalLocation || undefined,
       includeRemote,
       skills: selectedSkills.length > 0 ? selectedSkills : undefined,
-      ageMin: filterAgeMin !== 18 ? filterAgeMin : undefined,
-      ageMax: filterAgeMax < 65 ? filterAgeMax : undefined,
     },
     { enabled: !!userId && activeTab === 'PROFILES' }
   );
 
   const sendRequest = trpc.connection.sendRequest.useMutation({
-    onSuccess: () => utils.user.getDiscoverable.invalidate(),
     onError: (err) => {
       console.error(err);
       toast.error('Bağlantı isteği gönderilemedi.');
@@ -102,7 +94,6 @@ function DiscoverPage() {
   });
 
   const rejectProfile = trpc.connection.rejectProfile.useMutation({
-    onSuccess: () => utils.user.getDiscoverable.invalidate(),
     onError: (err) => {
       console.error(err);
       toast.error('Profil reddedilemedi.');
@@ -120,10 +111,14 @@ function DiscoverPage() {
     { enabled: !!userId && activeTab === 'JOBS' }
   );
 
+  const [swipeHistory, setSwipeHistory] = useState<{ id: string, type: 'PROFILE_CONNECT' | 'PROFILE_REJECT' | 'JOB_APPLY' | 'JOB_SKIP' }[]>([]);
+
+  const undoConnection = trpc.connection.undoSwipe.useMutation();
+  const undoJob = trpc.job.undoApply.useMutation();
+
   const applyJob = trpc.job.apply.useMutation({
     onSuccess: () => {
       toast.success('İlana başvuruldu!');
-      utils.job.list.invalidate();
     },
     onError: (err) => {
       console.error(err);
@@ -134,23 +129,51 @@ function DiscoverPage() {
   const handleConnect = (targetId: string) => {
     if (!userId) return;
     setSwipedProfileIds(prev => [...prev, targetId]);
+    setSwipeHistory(prev => [...prev, { id: targetId, type: 'PROFILE_CONNECT' }]);
     sendRequest.mutate({ requesterId: userId, addresseeId: targetId });
   };
 
   const handleReject = (targetId: string) => {
     if (!userId) return;
     setSwipedProfileIds(prev => [...prev, targetId]);
+    setSwipeHistory(prev => [...prev, { id: targetId, type: 'PROFILE_REJECT' }]);
     rejectProfile.mutate({ requesterId: userId, addresseeId: targetId });
   };
 
   const handleApplyJob = (jobId: string) => {
     if (!userId) return;
     setSwipedJobIds(prev => [...prev, jobId]);
+    setSwipeHistory(prev => [...prev, { id: jobId, type: 'JOB_APPLY' }]);
     applyJob.mutate({ jobId, applicantId: userId });
   };
 
   const handleSkipJob = (jobId: string) => {
     setSwipedJobIds(prev => [...prev, jobId]);
+    setSwipeHistory(prev => [...prev, { id: jobId, type: 'JOB_SKIP' }]);
+  };
+
+  const handleUndo = () => {
+    if (swipeHistory.length === 0) return;
+    
+    const isProfileTab = activeTab === 'PROFILES';
+    const currentTabHistory = swipeHistory.filter(h => isProfileTab ? h.type.startsWith('PROFILE') : h.type.startsWith('JOB'));
+    if (currentTabHistory.length === 0) return;
+
+    const lastAction = currentTabHistory[currentTabHistory.length - 1];
+    
+    setSwipeHistory(prev => prev.filter(h => h !== lastAction));
+    
+    if (lastAction.type.startsWith('PROFILE')) {
+      setSwipedProfileIds(prev => prev.filter(id => id !== lastAction.id));
+      if (lastAction.type === 'PROFILE_CONNECT' || lastAction.type === 'PROFILE_REJECT') {
+        undoConnection.mutate({ requesterId: userId!, addresseeId: lastAction.id });
+      }
+    } else {
+      setSwipedJobIds(prev => prev.filter(id => id !== lastAction.id));
+      if (lastAction.type === 'JOB_APPLY') {
+        undoJob.mutate({ jobId: lastAction.id, applicantId: userId! });
+      }
+    }
   };
 
   // Determine current stack
@@ -244,18 +267,28 @@ function DiscoverPage() {
         <div className="flex-1 flex">
           <button
             onClick={() => setActiveTab('PROFILES')}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === 'PROFILES' ? 'bg-background text-foreground shadow-md scale-[1.02]' : 'text-muted-foreground hover:text-foreground hover:bg-background/50'}`}
+            className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === 'PROFILES' ? 'bg-background text-foreground shadow-md scale-[1.02]' : 'text-muted-foreground hover:text-foreground hover:bg-background/50'} ${isCompany ? 'rounded-r-none' : ''}`}
           >
             <User className="w-4 h-4" /> <span className="hidden sm:inline">İş Arkadaşları</span>
           </button>
-          <button
-            onClick={() => setActiveTab('JOBS')}
-            className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === 'JOBS' ? 'bg-background text-foreground shadow-md scale-[1.02]' : 'text-muted-foreground hover:text-foreground hover:bg-background/50'}`}
-          >
-            <Briefcase className="w-4 h-4" /> <span className="hidden sm:inline">İlanlar</span>
-          </button>
+          {!isCompany && (
+            <button
+              onClick={() => setActiveTab('JOBS')}
+              className={`flex-1 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === 'JOBS' ? 'bg-background text-foreground shadow-md scale-[1.02]' : 'text-muted-foreground hover:text-foreground hover:bg-background/50'}`}
+            >
+              <Briefcase className="w-4 h-4" /> <span className="hidden sm:inline">İlanlar</span>
+            </button>
+          )}
         </div>
         <div className="w-px h-6 bg-border mx-1"></div>
+        <button
+          onClick={handleUndo}
+          disabled={swipeHistory.filter(h => activeTab === 'PROFILES' ? h.type.startsWith('PROFILE') : h.type.startsWith('JOB')).length === 0}
+          className="py-2.5 px-3 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 ml-1 disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Geri Al"
+        >
+          <RotateCcw className="w-5 h-5" />
+        </button>
         <button
           onClick={() => setShowFilters(true)}
           className="py-2.5 px-4 sm:px-6 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 bg-primary text-primary-foreground hover:opacity-90 ml-1"
@@ -274,7 +307,21 @@ function DiscoverPage() {
             >
               <X className="w-5 h-5" />
             </button>
-            <h3 className="text-2xl font-black mb-6">Filtreler</h3>
+            <div className="flex justify-between items-end mb-6 pr-10">
+              <h3 className="text-2xl font-black">Filtreler</h3>
+              <button
+                onClick={() => {
+                  setLocationType('any');
+                  setSelectedCountry('');
+                  setSelectedCity('');
+                  setSelectedSkills([]);
+                  setSkillSearch('');
+                }}
+                className="text-sm font-bold text-primary hover:underline"
+              >
+                Filtreleri Kaldır
+              </button>
+            </div>
 
             <div className="space-y-6">
               
@@ -327,7 +374,7 @@ function DiscoverPage() {
                 </div>
               </div>
 
-              {activeTab === 'PROFILES' && (
+              {activeTab === 'JOBS' && (
                 <>
                   {/* LOCATION */}
                   <div>
@@ -366,8 +413,8 @@ function DiscoverPage() {
                           className="w-full bg-secondary border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary text-sm font-medium appearance-none"
                         >
                           <option value="">Ülke Seçiniz...</option>
-                          {Object.keys(COUNTRIES).map(country => (
-                            <option key={country} value={country}>{country}</option>
+                          {Country.getAllCountries().map(country => (
+                            <option key={country.isoCode} value={country.isoCode}>{country.name}</option>
                           ))}
                         </select>
 
@@ -378,61 +425,13 @@ function DiscoverPage() {
                             className="w-full bg-secondary border-none rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary text-sm font-medium appearance-none"
                           >
                             <option value="">Şehir Seçiniz (Tümü)</option>
-                            {COUNTRIES[selectedCountry].map(city => (
-                              <option key={city} value={city}>{city}</option>
+                            {State.getStatesOfCountry(selectedCountry)?.map(state => (
+                              <option key={state.isoCode} value={state.name}>{state.name}</option>
                             ))}
                           </select>
                         )}
                       </div>
                     )}
-                  </div>
-
-                  {/* AGE */}
-                  <div>
-                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4 flex justify-between">
-                      <span>Yaş Aralığı</span>
-                      <span className="text-primary font-black">{filterAgeMin} - {filterAgeMax >= 65 ? '65+' : filterAgeMax}</span>
-                    </label>
-                    
-                    <div className="relative w-full h-8 flex items-center mb-4">
-                      {/* Track background */}
-                      <div className="absolute left-0 right-0 h-2 bg-secondary rounded-full z-0"></div>
-                      
-                      {/* Track highlight */}
-                      <div 
-                        className="absolute h-2 bg-primary rounded-full z-10"
-                        style={{ 
-                          left: `calc(${((filterAgeMin - 18) / (65 - 18)) * 100}%)`, 
-                          right: `calc(${100 - ((filterAgeMax - 18) / (65 - 18)) * 100}%)` 
-                        }}
-                      ></div>
-
-                      {/* Min Slider */}
-                      <input
-                        type="range"
-                        min="18"
-                        max="65"
-                        value={filterAgeMin}
-                        onChange={(e) => {
-                          const val = Math.min(Number(e.target.value), filterAgeMax);
-                          setFilterAgeMin(val);
-                        }}
-                        className="absolute w-full left-0 appearance-none bg-transparent pointer-events-none z-20 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:cursor-grab active:[&::-webkit-slider-thumb]:cursor-grabbing [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-background [&::-moz-range-thumb]:border-4 [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:cursor-grab active:[&::-moz-range-thumb]:cursor-grabbing [&::-moz-range-thumb]:shadow-md"
-                      />
-
-                      {/* Max Slider */}
-                      <input
-                        type="range"
-                        min="18"
-                        max="65"
-                        value={filterAgeMax}
-                        onChange={(e) => {
-                          const val = Math.max(Number(e.target.value), filterAgeMin);
-                          setFilterAgeMax(val);
-                        }}
-                        className="absolute w-full left-0 appearance-none bg-transparent pointer-events-none z-30 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-background [&::-webkit-slider-thumb]:border-4 [&::-webkit-slider-thumb]:border-primary [&::-webkit-slider-thumb]:cursor-grab active:[&::-webkit-slider-thumb]:cursor-grabbing [&::-webkit-slider-thumb]:shadow-md [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-background [&::-moz-range-thumb]:border-4 [&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:cursor-grab active:[&::-moz-range-thumb]:cursor-grabbing [&::-moz-range-thumb]:shadow-md"
-                      />
-                    </div>
                   </div>
                 </>
               )}
@@ -476,25 +475,6 @@ function DiscoverPage() {
             return (
               <div
                 key={currentItem.id}
-                onMouseDown={isTop ? (e) => handleDragStart(e.clientX, e.clientY) : undefined}
-                onMouseMove={isTop ? (e) => {
-                  if (e.buttons !== 1) return;
-                  handleDragMove(e.clientX, e.clientY);
-                } : undefined}
-                onMouseUp={isTop ? () => handleDragEnd(currentItem.id) : undefined}
-                onMouseLeave={isTop ? () => {
-                  if (isDragging) handleDragEnd(currentItem.id);
-                } : undefined}
-                onTouchStart={isTop ? (e) => {
-                  const touch = e.touches[0];
-                  handleDragStart(touch.clientX, touch.clientY);
-                } : undefined}
-                onTouchMove={isTop ? (e) => {
-                  const touch = e.touches[0];
-                  handleDragMove(touch.clientX, touch.clientY);
-                } : undefined}
-                onTouchEnd={isTop ? () => handleDragEnd(currentItem.id) : undefined}
-
                 style={isTop ? {
                   transform: `translate3d(${dragOffset.x}px, ${dragOffset.y}px, 0) rotate(${dragOffset.x * 0.04}deg)`,
                   transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.255)',
@@ -505,97 +485,92 @@ function DiscoverPage() {
                   transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.255)',
                   zIndex: 20 - stackIndex
                 }}
-                className={`bg-card w-full h-full rounded-[2.5rem] shadow-2xl overflow-hidden absolute top-0 left-0 flex flex-col ${isTop ? 'cursor-grab active:cursor-grabbing' : 'pointer-events-none'}`}
+                className={`bg-card w-full h-full rounded-[2.5rem] shadow-2xl overflow-hidden absolute top-0 left-0 flex flex-col`}
               >
-                {/* Full-bleed Image Background */}
-                <div className={`absolute inset-0 z-0 ${isProfiles ? 'bg-zinc-900' : 'bg-blue-950'}`}>
-                  <img
-                    src={
-                      isProfiles
-                        ? (currentItem.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${currentItem.name}`)
-                        : (currentItem.publisher?.image || `https://api.dicebear.com/7.x/shapes/svg?seed=${currentItem.id}`)
-                    }
-                    alt="Banner"
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/90 z-10" />
-                </div>
+                <ScrollContainer className={`flex-1 overflow-y-auto relative no-scrollbar ${isTop ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+                  {/* Image/Header Area (Swipeable) */}
+                  <div
+                    className={`relative w-full h-[65%] flex-shrink-0 ${isTop ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                    onMouseDown={isTop ? (e) => handleDragStart(e.clientX, e.clientY) : undefined}
+                    onMouseMove={isTop ? (e) => {
+                      if (e.buttons !== 1) return;
+                      handleDragMove(e.clientX, e.clientY);
+                    } : undefined}
+                    onMouseUp={isTop ? () => handleDragEnd(currentItem.id) : undefined}
+                    onMouseLeave={isTop ? () => {
+                      if (isDragging) handleDragEnd(currentItem.id);
+                    } : undefined}
+                    onTouchStart={isTop ? (e) => {
+                      const touch = e.touches[0];
+                      handleDragStart(touch.clientX, touch.clientY);
+                    } : undefined}
+                    onTouchMove={isTop ? (e) => {
+                      const touch = e.touches[0];
+                      handleDragMove(touch.clientX, touch.clientY);
+                    } : undefined}
+                    onTouchEnd={isTop ? () => handleDragEnd(currentItem.id) : undefined}
+                  >
+                    <div className={`absolute inset-0 z-0 ${isProfiles ? 'bg-zinc-900' : 'bg-blue-950'}`}>
+                      <img
+                        src={
+                          isProfiles
+                            ? (currentItem.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${currentItem.name}`)
+                            : (currentItem.publisher?.image || `https://api.dicebear.com/7.x/shapes/svg?seed=${currentItem.id}`)
+                        }
+                        alt="Banner"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/90 z-10" />
+                    </div>
 
-                {/* Like/Nope Overlays */}
-                {isTop && swipeDirection === 'right' && (
-                  <div className="absolute top-12 left-8 z-30 border-4 border-green-500 text-green-500 font-black text-3xl px-6 py-2 rounded-xl uppercase tracking-widest transform -rotate-12 select-none">
-                    {isProfiles ? 'BEĞEN' : 'BAŞVUR'}
-                  </div>
-                )}
-                {isTop && swipeDirection === 'left' && (
-                  <div className="absolute top-12 right-8 z-30 border-4 border-red-500 text-red-500 font-black text-3xl px-6 py-2 rounded-xl uppercase tracking-widest transform rotate-12 select-none">
-                    GEÇ
-                  </div>
-                )}
-
-                {/* Location or Type Badge */}
-                <div className="absolute top-6 right-6 z-20 bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold text-white flex items-center gap-1.5 border border-white/20">
-                  {isProfiles ? (
-                    <>
-                      <MapPin className="w-4 h-4 text-primary" /> {currentItem.profile?.location || 'Türkiye'}
-                    </>
-                  ) : (
-                    <>
-                      <Briefcase className="w-4 h-4 text-primary" /> {currentItem.type}
-                    </>
-                  )}
-                </div>
-
-                {/* Content Area at Bottom */}
-                <div className="relative z-20 flex-1 p-6 flex flex-col justify-end pointer-events-none pb-28">
-                  <div className="text-white">
-                    <h2 className="text-4xl font-black mb-1 drop-shadow-md">
-                      {isProfiles
-                        ? `${currentItem.name} ${currentItem.surname}`
-                        : currentItem.title}
-                    </h2>
-
-                    <h3 className="text-primary font-bold text-base mb-3 drop-shadow-sm">
-                      {isProfiles
-                        ? currentItem.email
-                        : `${currentItem.publisher?.name || 'Şirket'} ${currentItem.publisher?.surname || ''}`}
-                    </h3>
-
-                    <p className="text-white/90 leading-relaxed text-sm drop-shadow-sm line-clamp-3">
-                      {isProfiles
-                        ? (currentItem.profile?.bio || 'Bu kullanıcı henüz bir biyografi eklememiş.')
-                        : (currentItem.description)}
-                    </p>
-                  </div>
-
-                  {/* Skills / Tags */}
-                  <div className="flex flex-wrap gap-2 mt-4">
-                    {isProfiles ? (
-                      currentItem.profile?.skills?.map((s: any) => (
-                        <span key={s.skill.skillName} className="bg-white/20 backdrop-blur-md text-white border border-white/30 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
-                          <Code className="w-3.5 h-3.5" /> {s.skill.skillName}
-                        </span>
-                      ))
-                    ) : (
-                      <>
-                        {(currentItem as any).matchScore > 0 && (
-                          <span className="bg-yellow-500/80 backdrop-blur-md text-white border border-yellow-400 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-lg">
-                            <Sparkles className="w-3.5 h-3.5" /> Önerilen
-                          </span>
-                        )}
-                        {currentItem.requirements?.map((req: any, index: number) => (
-                          <span key={index} className="bg-white/20 backdrop-blur-md text-white border border-white/30 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
-                            <Code className="w-3.5 h-3.5" /> {req.skillName}
-                          </span>
-                        ))}
-                      </>
+                    {/* Like/Nope Overlays */}
+                    {isTop && swipeDirection === 'right' && (
+                      <div className="absolute top-12 left-8 z-30 border-4 border-green-500 text-green-500 font-black text-3xl px-6 py-2 rounded-xl uppercase tracking-widest transform -rotate-12 select-none">
+                        {isProfiles ? 'BEĞEN' : 'BAŞVUR'}
+                      </div>
                     )}
+                    {isTop && swipeDirection === 'left' && (
+                      <div className="absolute top-12 right-8 z-30 border-4 border-red-500 text-red-500 font-black text-3xl px-6 py-2 rounded-xl uppercase tracking-widest transform rotate-12 select-none">
+                        GEÇ
+                      </div>
+                    )}
+
+                    {/* Location or Type Badge */}
+                    <div className="absolute top-6 right-6 z-20 bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold text-white flex items-center gap-1.5 border border-white/20">
+                      {isProfiles ? (
+                        <>
+                          <MapPin className="w-4 h-4 text-primary" /> {currentItem.profile?.location || 'Türkiye'}
+                        </>
+                      ) : (
+                        <>
+                          <Briefcase className="w-4 h-4 text-primary" /> {currentItem.type}
+                        </>
+                      )}
+                    </div>
+                    
+                    {/* Basic Info at bottom of image */}
+                    <div className="absolute bottom-6 left-6 right-6 z-20 pointer-events-none text-white">
+                      <h2 className="text-4xl font-black mb-1 drop-shadow-md">
+                        {isProfiles
+                          ? `${currentItem.name} ${currentItem.surname}`
+                          : currentItem.title}
+                      </h2>
+                      {!isProfiles && (
+                        <h3 className="text-primary font-bold text-base drop-shadow-sm">
+                          {`${currentItem.publisher?.name || 'Şirket'} ${currentItem.publisher?.surname || ''}`}
+                        </h3>
+                      )}
+                    </div>
                   </div>
-                </div>
+
+                  {/* Scrollable Details */}
+                  <div className="relative bg-card min-h-[60%] rounded-t-[2.5rem] -mt-6 p-6 pt-8 z-20 pb-32">
+                    <ScrollableCardDetails currentItem={currentItem} isProfiles={isProfiles} />
+                  </div>
+                </ScrollContainer>
 
                 {/* Action Buttons */}
-                <div className={`absolute bottom-6 left-0 w-full flex justify-center gap-6 px-8 z-40 transition-opacity duration-300 ${isTop ? 'opacity-100' : 'opacity-0'}`}>
+                <div className={`absolute bottom-6 left-0 w-full flex justify-center gap-6 px-8 z-40 transition-opacity duration-300 pointer-events-none ${isTop ? 'opacity-100' : 'opacity-0'}`}>
                   <button
                     onMouseDown={(e) => e.stopPropagation()}
                     onTouchStart={(e) => e.stopPropagation()}
@@ -620,6 +595,149 @@ function DiscoverPage() {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+function ScrollableCardDetails({ currentItem, isProfiles }: { currentItem: any, isProfiles: boolean }) {
+  const [bioExpanded, setBioExpanded] = useState(false);
+  
+  const bio = isProfiles 
+    ? (currentItem.profile?.bio || 'Bu kullanıcı henüz bir biyografi eklememiş.')
+    : (currentItem.description);
+  
+  const isBioLong = bio.length > 150;
+  
+  const skills = isProfiles ? (currentItem.profile?.skills?.map((s:any) => s.skill.skillName) || []) : (currentItem.requirements?.map((r:any) => r.skillName) || []);
+  const displaySkills = skills.slice(0, 5);
+  const remainingSkills = skills.slice(5);
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Bio */}
+      <div>
+        <h3 className="font-bold text-lg mb-2">Hakkında</h3>
+        <p className={`text-muted-foreground text-sm leading-relaxed ${!bioExpanded && isBioLong ? 'line-clamp-3' : ''}`}>
+          {bio}
+        </p>
+        {isBioLong && (
+          <button onClick={() => setBioExpanded(!bioExpanded)} className="text-primary text-sm font-bold mt-1 hover:underline">
+            {bioExpanded ? 'Daha az göster' : '...devamını oku'}
+          </button>
+        )}
+      </div>
+
+      {/* Top Skills */}
+      {displaySkills.length > 0 && (
+        <div>
+           <h3 className="font-bold text-lg mb-2">Yetenekler</h3>
+           <div className="flex flex-wrap gap-2">
+             {(!isProfiles && (currentItem as any).matchScore > 0) && (
+                <span className="bg-yellow-500/10 text-yellow-600 border border-yellow-400/50 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5" /> Önerilen
+                </span>
+             )}
+             {displaySkills.map((s: string) => (
+               <span key={s} className="bg-secondary text-secondary-foreground px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                 <Code className="w-3.5 h-3.5" /> {s}
+               </span>
+             ))}
+           </div>
+        </div>
+      )}
+
+      {/* All Skills */}
+      {remainingSkills.length > 0 && (
+        <div>
+           <h3 className="font-bold text-lg mb-2">Tüm Yetenekler</h3>
+           <div className="flex flex-wrap gap-2">
+             {skills.map((s: string) => (
+               <span key={`all-${s}`} className="bg-secondary/50 text-secondary-foreground px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                 {s}
+               </span>
+             ))}
+           </div>
+        </div>
+      )}
+
+      {/* Experiences */}
+      {isProfiles && currentItem.profile?.experiences?.length > 0 && (
+        <div>
+           <h3 className="font-bold text-lg mb-3">Deneyimler</h3>
+           <div className="flex flex-col gap-4">
+             {currentItem.profile.experiences.map((exp: any) => (
+               <div key={exp.expId} className="flex flex-col border-l-2 border-border pl-3 ml-1">
+                 <span className="font-bold text-foreground">{exp.title}</span>
+                 <span className="text-sm text-muted-foreground">{exp.corp}</span>
+                 <span className="text-xs text-muted-foreground/70 mb-1">
+                   {new Date(exp.startDate).getFullYear()} - {exp.endDate ? new Date(exp.endDate).getFullYear() : 'Devam Ediyor'}
+                 </span>
+                 {exp.desc && <span className="text-sm text-muted-foreground mt-1">{exp.desc}</span>}
+               </div>
+             ))}
+           </div>
+        </div>
+      )}
+
+      {/* Educations */}
+      {isProfiles && currentItem.profile?.educations?.length > 0 && (
+        <div>
+           <h3 className="font-bold text-lg mb-3">Eğitim</h3>
+           <div className="flex flex-col gap-4">
+             {currentItem.profile.educations.map((edu: any) => (
+               <div key={edu.eduId} className="flex flex-col border-l-2 border-border pl-3 ml-1">
+                 <span className="font-bold text-foreground">{edu.instName}</span>
+                 <span className="text-sm text-muted-foreground">{edu.instProgram} • {edu.instDegree}</span>
+                 <span className="text-xs text-muted-foreground/70">
+                   {new Date(edu.startDate).getFullYear()} - {edu.endDate ? new Date(edu.endDate).getFullYear() : 'Devam Ediyor'}
+                 </span>
+               </div>
+             ))}
+           </div>
+        </div>
+      )}
+
+      {/* Certificates */}
+      {isProfiles && currentItem.profile?.certificates?.length > 0 && (
+        <div>
+           <h3 className="font-bold text-lg mb-3">Sertifikalar</h3>
+           <div className="flex flex-col gap-4">
+             {currentItem.profile.certificates.map((cert: any) => (
+               <div key={cert.cerId} className="flex flex-col border-l-2 border-border pl-3 ml-1">
+                 <span className="font-bold text-foreground">{cert.title}</span>
+                 <span className="text-sm text-muted-foreground">{cert.org}</span>
+                 <span className="text-xs text-muted-foreground/70">
+                   {new Date(cert.startDate).getFullYear()}
+                 </span>
+               </div>
+             ))}
+           </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function ScrollContainer({ children, className, onScroll, ...props }: any) {
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeout = useRef<any>(null);
+
+  const handleScroll = (e: any) => {
+    setIsScrolling(true);
+    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      setIsScrolling(false);
+    }, 800);
+    if (onScroll) onScroll(e);
+  };
+
+  return (
+    <div 
+      onScroll={handleScroll}
+      className={`${className || ''} ${isScrolling ? 'is-scrolling' : ''}`}
+      {...props}
+    >
+      {children}
     </div>
   );
 }
