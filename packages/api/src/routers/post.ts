@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { createTRPCRouter, publicProcedure } from "../trpc"
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "../trpc"
 import { TRPCError } from "@trpc/server"
 
 // ─── Comment tree builder ───────────────────────────────────────────────────
@@ -13,18 +13,6 @@ function buildCommentTree(comments: any[], parentId: string | null = null): any[
     }));
 }
 
-// Shared comment include shape (author + likes — no nested replies needed)
-const COMMENT_INCLUDE = {
-  author: {
-    select: {
-      id: true, name: true, surname: true, image: true,
-      role: true, sector: true,
-      profile: { select: { bio: true } },
-    },
-  },
-  likes: { select: { userId: true, type: true } },
-  _count: { select: { likes: true } },
-};
 
 export const postRouter = createTRPCRouter({
   // ─── Gönderi oluştur ───────────────────────────────────────────────────────
@@ -39,6 +27,12 @@ export const postRouter = createTRPCRouter({
         })
     )
     .mutation(async ({ ctx, input }) => {
+          // Mute kontrolü
+          const user = await ctx.prisma.user.findUnique({ where: { id: input.authorId }, select: { muteExpires: true } });
+          if (user?.muteExpires && user.muteExpires > new Date()) {
+            throw new TRPCError({ code: "FORBIDDEN", message: "Hesabınız geçici olarak susturulmuştur." });
+          }
+
           // Create post without mediaUrl first
           const { mediaFile, ...postData } = input;
           const createdPost = await ctx.prisma.post.create({ data: postData });
@@ -63,6 +57,40 @@ export const postRouter = createTRPCRouter({
         }
     ),
 
+  // ─── Gönderiyi Düzenle ────────────────────────────────────────────────────
+  editPost: protectedProcedure
+    .input(z.object({ postId: z.string(), content: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const post = await ctx.prisma.post.findUnique({
+        where: { id: input.postId },
+      });
+      if (!post || post.authorId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: "Bu gönderiyi düzenleme yetkiniz yok." });
+      }
+
+      const updatedPost = await ctx.prisma.post.update({
+        where: { id: input.postId },
+        data: {
+          content: input.content,
+          editRequestedAt: null,
+          editRequestedBy: null,
+        },
+      });
+
+      if (post.editRequestedAt && post.editRequestedBy) {
+        await ctx.prisma.notification.create({
+          data: {
+            userId: post.editRequestedBy,
+            title: 'Düzenleme Gerçekleşti',
+            message: `Uyarı gönderdiğiniz bir post, sahibi tarafından başarıyla güncellendi.`,
+            link: `/posts/${post.id}`
+          }
+        });
+      }
+
+      return updatedPost;
+    }),
+
   // ─── Tekil Gönderi Getir ──────────────────────────────────────────────────
   getById: publicProcedure
     .input(z.object({ postId: z.string(), currentUserId: z.string().optional() }))
@@ -78,7 +106,17 @@ export const postRouter = createTRPCRouter({
             },
           },
           comments: {
-            include: COMMENT_INCLUDE,
+            include: {
+              author: {
+                select: {
+                  id: true, name: true, surname: true, image: true,
+                  role: true, sector: true,
+                  profile: { select: { bio: true } },
+                },
+              },
+              likes: { select: { userId: true, type: true } },
+              _count: { select: { likes: true } },
+            },
             orderBy: { createdAt: "asc" },
           },
           _count: { select: { likes: true, comments: true, reposts: true } },
@@ -126,7 +164,13 @@ export const postRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const items = await ctx.prisma.post.findMany({
-        where: { isBanned: false },
+        where: { 
+          isBanned: false,
+          OR: [
+            { isQuarantined: false, author: { isShadowbanned: false } },
+            { authorId: input.currentUserId } // Kendi gönderilerini her zaman görür (karantina veya shadowban olsa bile)
+          ]
+        },
         orderBy: { createdAt: "desc" },
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,
@@ -140,7 +184,17 @@ export const postRouter = createTRPCRouter({
           },
           // Fetch ALL comments flat — tree built in mapping below
           comments: {
-            include: COMMENT_INCLUDE,
+            include: {
+              author: {
+                select: {
+                  id: true, name: true, surname: true, image: true,
+                  role: true, sector: true,
+                  profile: { select: { bio: true } },
+                },
+              },
+              likes: { select: { userId: true, type: true } },
+              _count: { select: { likes: true } },
+            },
             orderBy: { createdAt: "asc" },
           },
           _count: { select: { likes: true, comments: true, reposts: true } },
@@ -167,13 +221,46 @@ export const postRouter = createTRPCRouter({
   // ─── Gönderi beğen ────────────────────────────────────────────────────────
   like: publicProcedure
     .input(z.object({ postId: z.string(), userId: z.string(), type: z.string().optional() }))
-    .mutation(({ ctx, input }) =>
-      ctx.prisma.like.upsert({
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.prisma.like.upsert({
         where: { postId_userId: { postId: input.postId, userId: input.userId } },
         update: { type: input.type ?? "LIKE" },
         create: { postId: input.postId, userId: input.userId, type: input.type ?? "LIKE" },
-      })
-    ),
+      });
+      console.log(`LIKE MUTATION: input.userId=${input.userId}, input.postId=${input.postId}`);
+
+      const post = await ctx.prisma.post.findUnique({
+        where: { id: input.postId },
+        select: { authorId: true }
+      });
+
+      if (post && post.authorId !== input.userId) {
+        console.log(`LIKE MUTATION: Notification should be created for post.authorId=${post.authorId}`);
+        const user = await ctx.prisma.user.findUnique({
+          where: { id: input.userId },
+          select: { name: true, surname: true, username: true }
+        });
+        const userName = user?.name ? `${user.name} ${user.surname}` : (user?.username || "Birisi");
+
+        try {
+          await ctx.prisma.notification.create({
+            data: {
+              userId: post.authorId,
+              title: "Yeni Tepki",
+              message: `${userName} gönderinize tepki bıraktı.`,
+              link: `/posts/${input.postId}`,
+            }
+          });
+          console.log(`LIKE MUTATION: Notification successfully created!`);
+        } catch (error) {
+          console.error(`LIKE MUTATION: Notification creation failed!`, error);
+        }
+      } else {
+        console.log(`LIKE MUTATION: Notification skipped. post.authorId=${post?.authorId}, input.userId=${input.userId}`);
+      }
+
+      return result;
+    }),
 
   // ─── Gönderi beğeni geri al ───────────────────────────────────────────────
   unlike: publicProcedure
@@ -194,20 +281,90 @@ export const postRouter = createTRPCRouter({
         parentCommentId: z.string().optional(), // undefined = top-level, otherwise nested reply
       })
     )
-    .mutation(({ ctx, input }) =>
-      ctx.prisma.comment.create({ data: input })
-    ),
+    .mutation(async ({ ctx, input }) => {
+      // Mute kontrolü
+      const user = await ctx.prisma.user.findUnique({ where: { id: input.authorId }, select: { muteExpires: true, name: true, surname: true, username: true } });
+      if (user?.muteExpires && user.muteExpires > new Date()) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Hesabınız geçici olarak susturulmuştur." });
+      }
+
+      const newComment = await ctx.prisma.comment.create({ data: input });
+
+      const userName = user?.name ? `${user.name} ${user.surname}` : (user?.username || "Birisi");
+
+      if (input.parentCommentId) {
+        // Bu bir yoruma yanıt
+        const parentComment = await ctx.prisma.comment.findUnique({
+          where: { id: input.parentCommentId },
+          select: { authorId: true }
+        });
+
+        if (parentComment && parentComment.authorId !== input.authorId) {
+          await ctx.prisma.notification.create({
+            data: {
+              userId: parentComment.authorId,
+              title: "Yeni Yanıt",
+              message: `${userName} yorumunuza yanıt verdi.`,
+              link: `/posts/${input.postId}`,
+            }
+          });
+        }
+      } else {
+        // Ana gönderiye yorum
+        const post = await ctx.prisma.post.findUnique({
+          where: { id: input.postId },
+          select: { authorId: true }
+        });
+
+        if (post && post.authorId !== input.authorId) {
+          await ctx.prisma.notification.create({
+            data: {
+              userId: post.authorId,
+              title: "Yeni Yorum",
+              message: `${userName} gönderinize yorum yaptı.`,
+              link: `/posts/${input.postId}`,
+            }
+          });
+        }
+      }
+
+      return newComment;
+    }),
 
   // ─── Yorum beğen (emoji tipi ile) ────────────────────────────────────────
   likeComment: publicProcedure
     .input(z.object({ commentId: z.string(), userId: z.string(), type: z.string().optional() }))
-    .mutation(({ ctx, input }) =>
-      ctx.prisma.commentLike.upsert({
+    .mutation(async ({ ctx, input }) => {
+      const result = await ctx.prisma.commentLike.upsert({
         where: { commentId_userId: { commentId: input.commentId, userId: input.userId } },
         update: { type: input.type ?? "LIKE" },
         create: { commentId: input.commentId, userId: input.userId, type: input.type ?? "LIKE" },
-      })
-    ),
+      });
+
+      const comment = await ctx.prisma.comment.findUnique({
+        where: { id: input.commentId },
+        select: { authorId: true, postId: true }
+      });
+
+      if (comment && comment.authorId !== input.userId) {
+        const user = await ctx.prisma.user.findUnique({
+          where: { id: input.userId },
+          select: { name: true, surname: true, username: true }
+        });
+        const userName = user?.name ? `${user.name} ${user.surname}` : (user?.username || "Birisi");
+
+        await ctx.prisma.notification.create({
+          data: {
+            userId: comment.authorId,
+            title: "Yorumuna Tepki",
+            message: `${userName} yorumunuza tepki bıraktı.`,
+            link: `/posts/${comment.postId}`,
+          }
+        });
+      }
+
+      return result;
+    }),
 
   // ─── Yorum beğenisini geri al ─────────────────────────────────────────────
   unlikeComment: publicProcedure

@@ -2,16 +2,53 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { 
   Send, Image as ImageIcon, Video, Calendar, FileText, 
   MessageSquare, Repeat2, Send as SendIcon, ThumbsUp, MoreHorizontal, 
-  Trash2, X, Globe, Clock, AlertCircle, UserPlus, Users
+  Trash2, X, Globe, Clock, AlertCircle, UserPlus, Users, FileWarning, Edit3
 } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useSession } from '@collabswipe/auth/client';
 import toast from 'react-hot-toast';
+import { ReportModal } from '@/components/ReportModal';
 
 export const Route = createFileRoute('/')({
   component: HomeFeed,
 });
+
+function EditPostModal({ post, isOpen, onClose }: { post: any; isOpen: boolean; onClose: () => void }) {
+  const [content, setContent] = React.useState(post?.content || '');
+  const utils = trpc.useUtils();
+  const editPost = trpc.post.editPost.useMutation({
+    onSuccess: () => {
+      toast.success('Gönderi güncellendi!');
+      utils.post.getFeed.invalidate();
+      onClose();
+    },
+    onError: () => toast.error('Güncelleme başarısız!')
+  });
+
+  React.useEffect(() => {
+    if (post) setContent(post.content);
+  }, [post]);
+
+  if (!isOpen || !post) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-card w-full max-w-lg rounded-2xl border border-border shadow-2xl p-6 relative">
+        <h2 className="text-xl font-bold mb-4 text-foreground">Gönderiyi Düzenle</h2>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="w-full min-h-[150px] p-3 rounded-xl border border-border/50 bg-muted/30 focus:outline-none focus:border-primary resize-none text-foreground"
+        />
+        <div className="flex justify-end gap-3 mt-4">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg font-semibold text-muted-foreground hover:bg-muted transition-colors">İptal</button>
+          <button onClick={() => editPost.mutate({ postId: post.id, content })} disabled={editPost.isPending || !content.trim()} className="px-5 py-2 rounded-lg font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">Kaydet</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function formatRelativeTime(date: Date | string) {
   const now = new Date();
@@ -68,7 +105,6 @@ interface CommentCtx {
 }
 
 // ─── Recursive comment component ────────────────────────────────────────────
-import React from 'react';
 
 function CommentNode({ comment, depth = 0, ctx }: { comment: any; depth?: number; ctx: CommentCtx }) {
   const {
@@ -259,13 +295,21 @@ function HomeFeed() {
   const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({});
   const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
   const [openMenuPostId, setOpenMenuPostId] = useState<string | null>(null);
+  const [editingPost, setEditingPost] = useState<any>(null);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Comment replies states
   const [activeReplyCommentId, setActiveReplyCommentId] = useState<string | null>(null);
   const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
 
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: 'USER' | 'POST' | 'COMMENT' | 'JOB', id: string } | null>(null);
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
   // Comment/reply emoji picker hover state
+  const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
   const [commentHoverTimeout, setCommentHoverTimeout] = useState<NodeJS.Timeout | null>(null);
   const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
   
@@ -356,7 +400,8 @@ function HomeFeed() {
     onSuccess: () => {
       toast.success('Gönderi paylaşıldı!');
       setContent('');
-      setMediaUrl('');
+      setMediaFileBase64('');
+      setMediaPreviewUrl('');
       setRepostTarget(null);
       setIsComposerOpen(false);
       utils.post.getFeed.invalidate();
@@ -433,6 +478,16 @@ function HomeFeed() {
     },
     onError: (err) => {
       console.error(err);
+    }
+  });
+
+  const createReport = trpc.user.createReport.useMutation({
+    onSuccess: () => {
+      toast.success('Şikayetiniz alındı, teşekkürler.');
+    },
+    onError: (err) => {
+      console.error(err);
+      toast.error('Şikayet gönderilemedi.');
     }
   });
 
@@ -646,11 +701,21 @@ function HomeFeed() {
                         />
                       </Link>
                       <div>
-                        <Link to="/profile" search={{ userId: post.authorId }}>
-                          <h4 className="font-bold text-foreground text-[15px] hover:underline cursor-pointer">
-                            {post.author?.name} {post.author?.surname}
-                          </h4>
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link to="/profile" search={{ userId: post.authorId }}>
+                            <h4 className="font-bold text-foreground text-[15px] hover:underline cursor-pointer">
+                              {post.author?.name} {post.author?.surname}
+                            </h4>
+                          </Link>
+                          {post.isQuarantined && (
+                            <span className="bg-red-500/10 text-red-500 border border-red-500/20 px-2 py-0.5 rounded text-[10px] font-bold">İnceleniyor (Gizlendi)</span>
+                          )}
+                          {post.editRequestedAt && post.authorId === currentUserId && (
+                            <span className="text-[10px] bg-orange-500/10 text-orange-500 px-2 py-0.5 rounded-full border border-orange-500/20 flex items-center gap-1 font-bold">
+                              Düzenleme Gerekli
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-muted-foreground line-clamp-1">
                           {post.author?.profile?.bio || (post.author?.role === 'company' ? `${post.author?.sector || 'Şirket'}` : 'CollabSwipe Üyesi')}
                         </p>
@@ -673,17 +738,27 @@ function HomeFeed() {
                       {openMenuPostId === post.id && (
                         <div className="absolute right-0 mt-1 w-40 bg-card border border-border rounded-xl shadow-xl z-20 overflow-hidden py-1">
                           {isAuthor && (
-                            <button 
-                              onClick={() => {
-                                if (confirm('Bu gönderiyi silmek istediğinize emin misiniz?')) {
-                                  deletePost.mutate({ postId: post.id });
-                                }
-                                setOpenMenuPostId(null);
-                              }}
-                              className="w-full px-4 py-2 text-left text-xs text-destructive hover:bg-destructive/10 font-medium flex items-center gap-2 transition-colors"
-                            >
-                              <Trash2 className="w-4 h-4" /> Gönderiyi Sil
-                            </button>
+                            <>
+                              <button 
+                                onClick={() => {
+                                  setEditingPost(post);
+                                  setOpenMenuPostId(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-xs hover:bg-muted font-medium flex items-center gap-2 transition-colors"
+                              >
+                                <Edit3 className="w-4 h-4" /> Düzenle
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  setDeleteTargetId(post.id);
+                                  setDeleteModalOpen(true);
+                                  setOpenMenuPostId(null);
+                                }}
+                                className="w-full px-4 py-2 text-left text-xs text-destructive hover:bg-destructive/10 font-medium flex items-center gap-2 transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" /> Gönderiyi Sil
+                              </button>
+                            </>
                           )}
                           <button 
                             onClick={() => {
@@ -695,6 +770,18 @@ function HomeFeed() {
                           >
                             <SendIcon className="w-4 h-4" /> Bağlantıyı Kopyala
                           </button>
+                          {!isAuthor && (
+                            <button 
+                              onClick={() => {
+                                setReportTarget({ type: 'POST', id: post.id });
+                                setReportModalOpen(true);
+                                setOpenMenuPostId(null);
+                              }}
+                              className="w-full px-4 py-2 text-left text-xs text-orange-500 hover:bg-orange-500/10 font-medium flex items-center gap-2 transition-colors"
+                            >
+                              <FileWarning className="w-4 h-4" /> Şikayet Et
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1180,6 +1267,49 @@ function HomeFeed() {
                   <Send className="w-4 h-4" />
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ReportModal 
+        isOpen={reportModalOpen} 
+        onClose={() => setReportModalOpen(false)} 
+        targetType={reportTarget?.type || 'POST'} 
+        targetId={reportTarget?.id || ''} 
+      />
+
+      {/* Delete Post Modal */}
+      {deleteModalOpen && deleteTargetId && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-card border border-border/70 rounded-2xl shadow-2xl max-w-sm w-full flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="p-6 text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-destructive/10 text-destructive flex items-center justify-center mx-auto">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-lg text-foreground">Gönderiyi Sil</h3>
+              <p className="text-sm text-muted-foreground">
+                Bu gönderiyi silmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+              </p>
+            </div>
+            <div className="px-5 py-4 border-t border-border/50 bg-muted/20 flex justify-end gap-2">
+              <button 
+                onClick={() => setDeleteModalOpen(false)}
+                className="px-4 py-2 font-semibold text-sm rounded-lg hover:bg-secondary transition-colors text-foreground flex-1"
+              >
+                İptal
+              </button>
+              <button 
+                onClick={() => {
+                  deletePost.mutate({ postId: deleteTargetId });
+                  setDeleteModalOpen(false);
+                  setDeleteTargetId(null);
+                }}
+                disabled={deletePost.isLoading}
+                className="px-4 py-2 bg-destructive text-destructive-foreground font-semibold text-sm rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 flex-1"
+              >
+                {deletePost.isLoading ? 'Siliniyor...' : 'Evet, Sil'}
+              </button>
             </div>
           </div>
         </div>

@@ -7,6 +7,8 @@ import { jobRouter } from "./routers/job"
 import { conversationRouter } from "./routers/conversation"
 import { adminRouter } from "./routers/admin"
 import { chatRouter } from "./routers/chat"
+import { notificationRouter } from "./routers/notification"
+import { ticketRouter } from "./routers/ticket"
 
 export const appRouter = createTRPCRouter({
   user: userRouter,
@@ -17,6 +19,8 @@ export const appRouter = createTRPCRouter({
   conversation: conversationRouter,
   admin: adminRouter,
   chat: chatRouter,
+  notification: notificationRouter,
+  ticket: ticketRouter,
 })
 
 export type AppRouter = typeof appRouter

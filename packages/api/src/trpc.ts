@@ -77,3 +77,13 @@ const isAuthed = t.middleware(({ ctx, next }) => {
 })
 
 export const protectedProcedure = t.procedure.use(isAuthed)
+
+const isAdmin = t.middleware(({ ctx, next }) => {
+  if (!ctx.session || ctx.session.user.role !== "admin") {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Admin access required" })
+  }
+  const session = ctx.session as NonNullable<TRPCContext["session"]>
+  return next({ ctx: { session } })
+})
+
+export const adminProcedure = t.procedure.use(isAdmin)
