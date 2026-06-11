@@ -30,6 +30,12 @@ function App() {
           }),
           false: httpBatchLink({
             url: 'http://localhost:3001/api/trpc',
+            fetch: (url, options) => {
+              return fetch(url, {
+                ...options,
+                credentials: 'include',
+              })
+            },
           }),
         }),
       ],

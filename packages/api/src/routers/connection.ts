@@ -45,17 +45,52 @@ export const connectionRouter = createTRPCRouter({
           },
         });
 
+        // Notify original requester
+        const addresseeUser = await ctx.prisma.user.findUnique({
+          where: { id: input.requesterId },
+          select: { name: true, surname: true, username: true }
+        });
+        const addresseeName = addresseeUser?.name ? `${addresseeUser.name} ${addresseeUser.surname}` : (addresseeUser?.username || "Birisi");
+        
+        await ctx.prisma.notification.create({
+          data: {
+            userId: input.addresseeId,
+            title: "Yeni Bağlantı",
+            message: `${addresseeName} ile artık bağlantısınız!`,
+            link: "/network",
+          }
+        });
+
         return updatedConnection;
       }
 
       // Otherwise, just create a new pending request
-      return ctx.prisma.connection.create({
+      const connection = await ctx.prisma.connection.create({
         data: {
           requesterId: input.requesterId,
           addresseeId: input.addresseeId,
           status: "PENDING",
         },
       });
+
+      if (input.requesterId !== input.addresseeId) {
+        const requesterUser = await ctx.prisma.user.findUnique({
+          where: { id: input.requesterId },
+          select: { name: true, surname: true, username: true }
+        });
+        const requesterName = requesterUser?.name ? `${requesterUser.name} ${requesterUser.surname}` : (requesterUser?.username || "Birisi");
+        
+        await ctx.prisma.notification.create({
+          data: {
+            userId: input.addresseeId,
+            title: "Yeni Bağlantı İsteği",
+            message: `${requesterName} seninle bağlantı kurmak istiyor.`,
+            link: "/network",
+          }
+        });
+      }
+
+      return connection;
     }),
 
   // Profili reddet (Bir daha keşfet kısmında çıkmasın diye veritabanında REJECTED olarak kaydet)
@@ -124,6 +159,24 @@ export const connectionRouter = createTRPCRouter({
             },
           });
         }
+
+        // Notify requester
+        if (input.requesterId !== input.addresseeId) {
+          const addresseeUser = await ctx.prisma.user.findUnique({
+            where: { id: input.addresseeId },
+            select: { name: true, surname: true, username: true }
+          });
+          const addresseeName = addresseeUser?.name ? `${addresseeUser.name} ${addresseeUser.surname}` : (addresseeUser?.username || "Birisi");
+
+          await ctx.prisma.notification.create({
+            data: {
+              userId: input.requesterId,
+              title: "Bağlantı İsteği Kabul Edildi",
+              message: `${addresseeName} bağlantı isteğini kabul etti.`,
+              link: "/network",
+            }
+          });
+        }
       }
 
       return updatedConnection;
@@ -167,13 +220,34 @@ export const connectionRouter = createTRPCRouter({
         where: { userId: input.followingId },
         select: { isPrivate: true }
       });
-      return ctx.prisma.follows.create({
+      const followResult = await ctx.prisma.follows.create({
         data: { 
           followerId: input.followerId, 
           followingId: input.followingId,
           isAccepted: targetProfile?.isPrivate ? false : true
         },
       });
+
+      if (input.followerId !== input.followingId) {
+        const followerUser = await ctx.prisma.user.findUnique({
+          where: { id: input.followerId },
+          select: { name: true, surname: true, username: true }
+        });
+        const followerName = followerUser?.name ? `${followerUser.name} ${followerUser.surname}` : (followerUser?.username || "Birisi");
+
+        await ctx.prisma.notification.create({
+          data: {
+            userId: input.followingId,
+            title: targetProfile?.isPrivate ? "Yeni Takip İsteği" : "Yeni Takipçi",
+            message: targetProfile?.isPrivate 
+              ? `${followerName} seni takip etmek istiyor.` 
+              : `${followerName} seni takip etmeye başladı.`,
+            link: `/profile/${input.followerId}`,
+          }
+        });
+      }
+
+      return followResult;
     }),
 
   // Takibi bırak

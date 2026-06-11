@@ -1,7 +1,8 @@
 import { createRootRoute, Link, Outlet, useLocation, useNavigate } from '@tanstack/react-router';
-import { Home, Compass, Briefcase, MessageSquare, User as UserIcon, Bell, LogOut, ChevronDown, PlusCircle, Heart, Inbox } from 'lucide-react';
+import { Home, Compass, Briefcase, MessageSquare, User as UserIcon, Bell, LogOut, ChevronDown, PlusCircle, Heart, Inbox, Shield, LifeBuoy } from 'lucide-react';
 import { useSession, signOut } from '@collabswipe/auth/client';
 import { useEffect, useState } from 'react';
+import { trpc } from '../lib/trpc';
 import { Toaster } from 'react-hot-toast';
 
 export const Route = createRootRoute({
@@ -13,6 +14,11 @@ function RootLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isDiscoverOpen, setIsDiscoverOpen] = useState(location.pathname === '/discover');
+  
+  const { data: unreadCount } = trpc.notification.getUnreadCount.useQuery(undefined, {
+    enabled: !!session,
+    refetchInterval: 30000, // Her 30 saniyede bir kontrol et
+  });
 
   useEffect(() => {
     if (!isPending && !session && location.pathname !== '/login') {
@@ -123,10 +129,20 @@ function RootLayout() {
             <UserIcon className="w-5 h-5" />
             Profile
           </Link>
+          <Link to="/support" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
+            <LifeBuoy className="w-5 h-5" />
+            Destek
+          </Link>
           {(session?.user as any)?.role === 'company' && (
             <Link to="/post-job" className="[&.active]:bg-primary/20 [&.active]:text-primary flex items-center gap-3 px-4 py-3 mt-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-bold transition-colors border border-primary/20">
               <PlusCircle className="w-5 h-5" />
               İlan Ver
+            </Link>
+          )}
+          {(session?.user as any)?.role === 'admin' && (
+            <Link to="/admin" className="[&.active]:bg-red-500/20 [&.active]:text-red-500 flex items-center gap-3 px-4 py-3 mt-4 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 font-bold transition-colors border border-red-500/20">
+              <Shield className="w-5 h-5" />
+              Admin Paneli
             </Link>
           )}
         </nav>
@@ -167,9 +183,12 @@ function RootLayout() {
 
         {/* Desktop Topbar */}
         <div className="hidden md:flex items-center justify-end p-4 border-b border-border bg-background/95 backdrop-blur z-10 flex-shrink-0">
-          <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-full transition-colors">
+          <Link to="/notifications" className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-full transition-colors">
             <Bell className="w-5 h-5" />
-          </button>
+            {(unreadCount ?? 0) > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full border border-background"></span>
+            )}
+          </Link>
         </div>
 
         {/* Scrollable Content — this is the ONLY scroll container */}
@@ -194,6 +213,15 @@ function RootLayout() {
           {((session?.user as any)?.role === 'company') ? <Inbox className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
           <span className="text-[10px] font-medium">{((session?.user as any)?.role === 'company') ? 'Başvuranlar' : 'Beğeniler'}</span>
         </Link>
+        <Link to="/notifications" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground relative">
+          <div className="relative">
+            <Bell className="w-6 h-6" />
+            {(unreadCount ?? 0) > 0 && (
+              <span className="absolute top-0 right-0 w-2 h-2 bg-destructive rounded-full border border-card"></span>
+            )}
+          </div>
+          <span className="text-[10px] font-medium">Bildirimler</span>
+        </Link>
         <Link to="/matches" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground">
           <MessageSquare className="w-6 h-6" />
           <span className="text-[10px] font-medium">Matches</span>
@@ -206,6 +234,12 @@ function RootLayout() {
           <Link to="/post-job" className="[&.active]:text-primary flex flex-col items-center gap-1 text-primary">
             <PlusCircle className="w-6 h-6" />
             <span className="text-[10px] font-medium">İlan Ver</span>
+          </Link>
+        )}
+        {(session?.user as any)?.role === 'admin' && (
+          <Link to="/admin" className="[&.active]:text-red-500 flex flex-col items-center gap-1 text-red-500">
+            <Shield className="w-6 h-6" />
+            <span className="text-[10px] font-medium">Admin</span>
           </Link>
         )}
       </nav>

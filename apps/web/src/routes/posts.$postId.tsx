@@ -5,6 +5,38 @@ import { ArrowLeft, Clock, MoreHorizontal, Send as SendIcon, Trash2, Heart, Mess
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 
+function EditPostModal({ post, isOpen, onClose }: { post: any; isOpen: boolean; onClose: () => void }) {
+  const [content, setContent] = useState(post?.content || '');
+  const utils = trpc.useUtils();
+  const editPost = trpc.post.editPost.useMutation({
+    onSuccess: () => {
+      toast.success('Gönderi güncellendi!');
+      utils.post.getById.invalidate();
+      onClose();
+    },
+    onError: () => toast.error('Güncelleme başarısız!')
+  });
+
+  if (!isOpen || !post) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-card w-full max-w-lg rounded-2xl border border-border shadow-2xl p-6 relative">
+        <h2 className="text-xl font-bold mb-4 text-foreground">Gönderiyi Düzenle</h2>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="w-full min-h-[150px] p-3 rounded-xl border border-border/50 bg-muted/30 focus:outline-none focus:border-primary resize-none text-foreground"
+        />
+        <div className="flex justify-end gap-3 mt-4">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg font-semibold text-muted-foreground hover:bg-muted transition-colors">İptal</button>
+          <button onClick={() => editPost.mutate({ postId: post.id, content })} disabled={editPost.isPending || !content.trim()} className="px-5 py-2 rounded-lg font-semibold bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-opacity">Kaydet</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export const Route = createFileRoute('/posts/$postId')({
   component: PostDetailPage,
 });
@@ -121,6 +153,7 @@ function PostDetailPage() {
   const [commentText, setCommentText] = useState('');
   const [openMenu, setOpenMenu] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [editingPost, setEditingPost] = useState<any>(null);
 
   const { data: post, isLoading, isError } = trpc.post.getById.useQuery(
     { postId, currentUserId: currentUserId || '' },
@@ -251,17 +284,28 @@ function PostDetailPage() {
             {openMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-xl shadow-2xl z-20 overflow-hidden py-1">
                 {isAuthor && (
-                  <button 
-                    onClick={() => {
-                      if (confirm('Bu gönderiyi silmek istediğinize emin misiniz?')) {
-                        deletePost.mutate({ postId: post.id });
-                      }
-                      setOpenMenu(false);
-                    }}
-                    className="w-full px-4 py-2.5 text-left text-sm text-destructive hover:bg-destructive/10 font-medium flex items-center gap-2 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" /> Gönderiyi Sil
-                  </button>
+                  <>
+                    <button 
+                      onClick={() => {
+                        setEditingPost(post);
+                        setOpenMenu(false);
+                      }}
+                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-muted font-medium flex items-center gap-2 transition-colors"
+                    >
+                      <Edit3 className="w-4 h-4" /> Düzenle
+                    </button>
+                    <button 
+                      onClick={() => {
+                        if (confirm('Bu gönderiyi silmek istediğinize emin misiniz?')) {
+                          deletePost.mutate({ postId: post.id });
+                        }
+                        setOpenMenu(false);
+                      }}
+                      className="w-full px-4 py-2.5 text-left text-sm text-destructive hover:bg-destructive/10 font-medium flex items-center gap-2 transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" /> Gönderiyi Sil
+                    </button>
+                  </>
                 )}
                 <button 
                   onClick={() => {
@@ -414,6 +458,11 @@ function PostDetailPage() {
           </div>
         </div>
       </div>
+      <EditPostModal 
+        post={editingPost} 
+        isOpen={!!editingPost} 
+        onClose={() => setEditingPost(null)} 
+      />
     </div>
   );
 }
