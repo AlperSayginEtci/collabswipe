@@ -18,7 +18,7 @@ import { useRouter } from 'expo-router';
 import { trpc } from '../../lib/trpc';
 import { useUser } from '../../context/UserContext';
 import * as ImagePicker from 'expo-image-picker';
-import { getBaseUrl } from '../_layout';
+import { getBaseUrl } from '../../lib/trpc';
 import { Country, City } from 'country-state-city';
 
 // Components
@@ -113,7 +113,6 @@ export default function ProfileScreen() {
   // Mutations
   const updateProfileMutation = trpc.profile.update.useMutation({
     onSuccess: () => {
-      Alert.alert('Başarılı', 'Profil bilgileriniz güncellendi.');
       utils.profile.getByUserId.invalidate({ userId: userId || '' });
       setIsEditing(false);
     },
@@ -226,7 +225,7 @@ export default function ProfileScreen() {
   if (isLoading) {
     return (
       <SafeAreaView style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FF6B6B" />
+        <ActivityIndicator size="large" color="#000000" />
       </SafeAreaView>
     );
   }
@@ -352,7 +351,7 @@ export default function ProfileScreen() {
                 <Text style={styles.skillBadgeText}>{s.skill.skillName}</Text>
                 {isEditing && (
                   <TouchableOpacity onPress={() => removeSkillMutation.mutate({ profileId: profile.id, skillId: s.skillId })} style={styles.skillRemoveButton}>
-                    <MaterialCommunityIcons name="close-circle" size={16} color="#FF6B6B" />
+                    <MaterialCommunityIcons name="close-circle" size={16} color="#000000" />
                   </TouchableOpacity>
                 )}
               </View>
@@ -400,7 +399,7 @@ export default function ProfileScreen() {
               {isEditing && (
                 <View style={styles.listActions}>
                   <TouchableOpacity onPress={() => { setEditingExp(exp); setShowExpModal(true); }}><MaterialCommunityIcons name="pencil" size={20} color="#666" /></TouchableOpacity>
-                  <TouchableOpacity onPress={() => removeExpMut.mutate({ expId: exp.expId })}><MaterialCommunityIcons name="delete" size={20} color="#FF6B6B" /></TouchableOpacity>
+                  <TouchableOpacity onPress={() => removeExpMut.mutate({ expId: exp.expId })}><MaterialCommunityIcons name="delete" size={20} color="#000000" /></TouchableOpacity>
                 </View>
               )}
             </View>
@@ -428,7 +427,7 @@ export default function ProfileScreen() {
               {isEditing && (
                 <View style={styles.listActions}>
                   <TouchableOpacity onPress={() => { setEditingEdu(edu); setShowEduModal(true); }}><MaterialCommunityIcons name="pencil" size={20} color="#666" /></TouchableOpacity>
-                  <TouchableOpacity onPress={() => removeEduMut.mutate({ eduId: edu.eduId })}><MaterialCommunityIcons name="delete" size={20} color="#FF6B6B" /></TouchableOpacity>
+                  <TouchableOpacity onPress={() => removeEduMut.mutate({ eduId: edu.eduId })}><MaterialCommunityIcons name="delete" size={20} color="#000000" /></TouchableOpacity>
                 </View>
               )}
             </View>
@@ -455,7 +454,7 @@ export default function ProfileScreen() {
               {isEditing && (
                 <View style={styles.listActions}>
                   <TouchableOpacity onPress={() => { setEditingCert(cert); setShowCertModal(true); }}><MaterialCommunityIcons name="pencil" size={20} color="#666" /></TouchableOpacity>
-                  <TouchableOpacity onPress={() => removeCertMut.mutate({ cerId: cert.cerId })}><MaterialCommunityIcons name="delete" size={20} color="#FF6B6B" /></TouchableOpacity>
+                  <TouchableOpacity onPress={() => removeCertMut.mutate({ cerId: cert.cerId })}><MaterialCommunityIcons name="delete" size={20} color="#000000" /></TouchableOpacity>
                 </View>
               )}
             </View>
@@ -464,7 +463,7 @@ export default function ProfileScreen() {
 
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout" size={20} color="#FF6B6B" />
+          <MaterialCommunityIcons name="logout" size={20} color="#000000" />
           <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
         </TouchableOpacity>
 
@@ -600,5 +599,5 @@ const styles = StyleSheet.create({
   listDesc: { fontSize: 14, color: '#555', lineHeight: 20 },
   listActions: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   logoutButton: { flexDirection: 'row', backgroundColor: '#FFF', borderWidth: 1, borderColor: '#FFE5EC', borderRadius: 16, height: 52, justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 32, marginHorizontal: 16 },
-  logoutButtonText: { color: '#FF6B6B', fontSize: 16, fontWeight: '700' },
+  logoutButtonText: { color: '#000000', fontSize: 16, fontWeight: '700' },
 });

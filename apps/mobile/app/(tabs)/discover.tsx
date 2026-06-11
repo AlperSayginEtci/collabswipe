@@ -16,6 +16,7 @@ import { useUser } from '../../context/UserContext';
 const { width, height } = Dimensions.get('window');
 const SWIPE_THRESHOLD = width * 0.3;
 
+
 const getBackgroundColor = (id: string) => {
   const hash = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const colors = ['#FFE5EC', '#E8F0FE', '#E6FFFA', '#FFF4E5', '#F3E5F5', '#EBF7EE'];
@@ -79,7 +80,6 @@ function SwipeCard({ item, isFirst, isProfiles, onSwipeKey }: { item: any; isFir
 
   const bgColor = getBackgroundColor(item.id);
   
-  // Dynamic fields
   const nameText = isProfiles ? `${item.name} ${item.surname || ''}`.trim() : item.title;
   const subtitleText = isProfiles 
     ? null
@@ -97,16 +97,25 @@ function SwipeCard({ item, isFirst, isProfiles, onSwipeKey }: { item: any; isFir
     ? (item.profile?.skills?.map((s: any) => s.skill.skillName) ?? [])
     : (item.requirements?.map((req: any) => req.skillName) ?? []);
     
-  const imageUrl = isProfiles 
-    ? (item.image || `https://api.dicebear.com/7.x/notionists/png?seed=${item.name}`)
-    : (item.publisher?.image || `https://api.dicebear.com/7.x/shapes/png?seed=${item.id}`);
+  let imageUrl = isProfiles 
+    ? (item.image || `https://api.dicebear.com/7.x/notionists/png?seed=${encodeURIComponent(item.name || item.id)}`)
+    : (item.publisher?.image || `https://api.dicebear.com/7.x/shapes/png?seed=${encodeURIComponent(item.id)}`);
+    
+  if (imageUrl && imageUrl.includes('dicebear.com')) {
+    if (imageUrl.includes('/svg')) {
+      imageUrl = imageUrl.replace('/svg', '/png');
+    }
+    if (!imageUrl.includes('size=')) {
+      imageUrl += imageUrl.includes('?') ? '&size=512' : '?size=512';
+    }
+  }
 
   const scrollContent = (
     <ScrollView 
       style={styles.scrollContainer} 
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
-      bounces={true}
+      bounces={false}
     >
       <Image source={{ uri: imageUrl }} style={styles.cardImageInline} />
       
@@ -115,7 +124,6 @@ function SwipeCard({ item, isFirst, isProfiles, onSwipeKey }: { item: any; isFir
         {subtitleText && <Text style={styles.subtitle}>{subtitleText}</Text>}
         <Text style={styles.location}><MaterialCommunityIcons name={isProfiles ? "map-marker" : "briefcase"} size={14} /> {locationText}</Text>
         
-        {/* Top Skills */}
         {skills.length > 0 && (
           <View style={styles.skillsContainerTop}>
             {skills.slice(0, 5).map((skill: string) => (
@@ -126,7 +134,6 @@ function SwipeCard({ item, isFirst, isProfiles, onSwipeKey }: { item: any; isFir
           </View>
         )}
 
-        {/* About Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Hakkında</Text>
           <Text 
@@ -147,7 +154,6 @@ function SwipeCard({ item, isFirst, isProfiles, onSwipeKey }: { item: any; isFir
           )}
         </View>
 
-        {/* Extended Details */}
         <View style={styles.detailsContainer}>
           {skills.length > 5 && (
             <View style={styles.section}>
@@ -451,7 +457,7 @@ export default function DiscoverScreen() {
                 <MaterialCommunityIcons name="undo" size={24} color="#F59E0B" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.actionButton} onPress={handleButtonReject}>
-                <MaterialCommunityIcons name="close" size={32} color="#FF6B6B" />
+                <MaterialCommunityIcons name="close" size={32} color="#000000" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.actionButton} onPress={handleButtonAccept} disabled={sendRequest.isLoading || applyJob.isLoading}>
                 <MaterialCommunityIcons name="heart" size={32} color="#4ECDC4" />
@@ -542,7 +548,7 @@ function FiltersModal(props: any) {
               <View key={s} style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#F5F5F5', borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6 }}>
                 <Text style={{ fontSize: 13, fontWeight: '600', color: '#333' }}>{s}</Text>
                 <TouchableOpacity style={{ marginLeft: 6 }} onPress={() => props.setSelectedSkills(props.selectedSkills.filter((x: string) => x !== s))}>
-                  <MaterialCommunityIcons name="close-circle" size={16} color="#FF6B6B" />
+                  <MaterialCommunityIcons name="close-circle" size={16} color="#000000" />
                 </TouchableOpacity>
               </View>
             ))}
@@ -665,7 +671,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   tabButtonActive: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#000000',
   },
   tabText: {
     fontSize: 14,
@@ -690,7 +696,7 @@ const styles = StyleSheet.create({
   },
   nopeBadge: {
     right: 40,
-    borderColor: '#FF6B6B',
+    borderColor: '#000000',
   },
   badgeTextLike: {
     fontSize: 24,
@@ -701,7 +707,7 @@ const styles = StyleSheet.create({
   badgeTextNope: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#FF6B6B',
+    color: '#000000',
     letterSpacing: 2,
   },
   cardContainer: {
@@ -730,7 +736,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   scrollContent: {
-    paddingBottom: 40,
+    flexGrow: 1,
   },
   cardImageInline: {
     width: '100%',
@@ -740,10 +746,11 @@ const styles = StyleSheet.create({
   cardInfo: {
     backgroundColor: 'rgba(255, 255, 255, 0.95)',
     padding: 20,
+    paddingBottom: 60,
     marginTop: -20,
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
-    minHeight: height * 0.35,
+    flexGrow: 1,
   },
   name: {
     fontSize: 26,
@@ -753,7 +760,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#FF6B6B',
+    color: '#000000',
     marginBottom: 4,
   },
   location: {
@@ -779,7 +786,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   readMoreText: {
-    color: '#FF6B6B',
+    color: '#000000',
     fontWeight: '700',
     marginTop: 4,
   },

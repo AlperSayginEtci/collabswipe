@@ -176,7 +176,7 @@ export default function ChatScreen() {
             {otherUserImage ? (
               <Image source={{ uri: otherUserImage as string }} style={styles.headerAvatar} />
             ) : (
-              <View style={[styles.headerAvatar, { backgroundColor: '#FF6B6B' }]} />
+              <View style={[styles.headerAvatar, { backgroundColor: '#000000' }]} />
             )}
             <Text style={styles.headerName}>{otherUserName || 'Sohbet'}</Text>
           </View>
@@ -314,8 +314,8 @@ export default function ChatScreen() {
                       setActionMenuVisible(false);
                     }}
                   >
-                    <MaterialCommunityIcons name="delete" size={20} color="#FF6B6B" />
-                    <Text style={[styles.actionText, { color: '#FF6B6B' }]}>Sil</Text>
+                    <MaterialCommunityIcons name="delete" size={20} color="#000000" />
+                    <Text style={[styles.actionText, { color: '#000000' }]}>Sil</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   messageBubbleMe: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#000000',
     borderBottomRightRadius: 4,
   },
   messageBubbleOther: {
@@ -430,7 +430,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 12,
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
   },
   editingCancel: {
     fontSize: 12,
-    color: '#FF6B6B',
+    color: '#000000',
     fontWeight: 'bold',
   },
   messageFooter: {
@@ -515,7 +515,7 @@ const styles = StyleSheet.create({
   },
   reactionBadgeActive: {
     backgroundColor: '#FFE5E5',
-    borderColor: '#FF6B6B',
+    borderColor: '#000000',
   },
   reactionBadgeText: {
     fontSize: 12,

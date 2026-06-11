@@ -260,7 +260,7 @@ function DiscoverPage() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start flex-1 h-full select-none overflow-hidden pt-4 pb-4 md:pb-8 w-full max-w-6xl mx-auto px-4 md:px-8">
+    <div className="flex flex-col items-center justify-start flex-1 h-full select-none pt-4 pb-4 md:pb-8 w-full max-w-6xl mx-auto px-4 md:px-8">
 
       {/* Top Controls: Tabs & Filter */}
       <div className="w-full max-w-md flex items-center bg-secondary/50 p-1 rounded-2xl mb-6 md:mb-12 border border-border shrink-0 z-50 relative">
@@ -359,7 +359,7 @@ function DiscoverPage() {
                     <div className="absolute z-10 w-full mt-2 bg-card border border-border rounded-xl shadow-xl max-h-48 overflow-y-auto">
                       {filteredSkills.map(skill => (
                         <button
-                          key={skill.id}
+                          key={skill.skillId}
                           onClick={() => {
                             setSelectedSkills([...selectedSkills, skill.skillName]);
                             setSkillSearch('');
@@ -465,10 +465,12 @@ function DiscoverPage() {
           </p>
         </div>
       ) : (
-        <div className="w-full max-w-[380px] h-[650px] max-h-[80vh] relative flex flex-col justify-center md:my-4 mx-auto">
+        <div className="flex flex-col items-center w-full">
+          <div className="w-full max-w-[380px] h-[600px] max-h-[65vh] relative flex flex-col justify-center md:mt-2 mx-auto">
 
-          {/* Stacked Cards */}
-          {itemsToRender.map((currentItem, index) => {
+            {/* Stacked Cards */}
+            {itemsToRender.map((item, index) => {
+            const currentItem = item as any;
             const isTop = index === itemsToRender.length - 1;
             const stackIndex = itemsToRender.length - 1 - index;
 
@@ -512,11 +514,15 @@ function DiscoverPage() {
                   >
                     <div className={`absolute inset-0 z-0 ${isProfiles ? 'bg-zinc-900' : 'bg-blue-950'}`}>
                       <img
-                        src={
-                          isProfiles
+                        src={(() => {
+                          let url = isProfiles
                             ? (currentItem.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${currentItem.name}`)
-                            : (currentItem.publisher?.image || `https://api.dicebear.com/7.x/shapes/svg?seed=${currentItem.id}`)
-                        }
+                            : (currentItem.publisher?.image || `https://api.dicebear.com/7.x/shapes/svg?seed=${currentItem.id}`);
+                          if (url && url.includes('dicebear.com') && !url.includes('size=')) {
+                            url += url.includes('?') ? '&size=512' : '?size=512';
+                          }
+                          return url;
+                        })()}
                         alt="Banner"
                         className="w-full h-full object-cover"
                       />
@@ -564,35 +570,32 @@ function DiscoverPage() {
                   </div>
 
                   {/* Scrollable Details */}
-                  <div className="relative bg-card min-h-[60%] rounded-t-[2.5rem] -mt-6 p-6 pt-8 z-20 pb-32">
+                  <div className="relative bg-card min-h-[60%] rounded-t-[2.5rem] -mt-6 p-6 pt-8 z-20 pb-8">
                     <ScrollableCardDetails currentItem={currentItem} isProfiles={isProfiles} />
                   </div>
                 </ScrollContainer>
-
-                {/* Action Buttons */}
-                <div className={`absolute bottom-6 left-0 w-full flex justify-center gap-6 px-8 z-40 transition-opacity duration-300 pointer-events-none ${isTop ? 'opacity-100' : 'opacity-0'}`}>
-                  <button
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onClick={() => handleButtonReject(currentItem.id)}
-                    disabled={isBusy}
-                    className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-xl flex items-center justify-center text-white hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all duration-300 hover:scale-110 disabled:opacity-50 pointer-events-auto"
-                  >
-                    <X className="w-8 h-8" />
-                  </button>
-                  <button
-                    onMouseDown={(e) => e.stopPropagation()}
-                    onTouchStart={(e) => e.stopPropagation()}
-                    onClick={() => handleButtonAccept(currentItem.id)}
-                    disabled={isBusy}
-                    className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-xl flex items-center justify-center text-green-400 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all duration-300 hover:scale-110 disabled:opacity-50 pointer-events-auto"
-                  >
-                    <Heart className="w-8 h-8 fill-current" />
-                  </button>
-                </div>
               </div>
             );
           })}
+          </div>
+
+          {/* Action Buttons (Below Card) */}
+          <div className="flex justify-center gap-8 mt-8 z-40">
+            <button
+              onClick={() => handleButtonReject(itemsToRender[itemsToRender.length - 1].id)}
+              disabled={isBusy}
+              className="w-16 h-16 rounded-full bg-card border border-border shadow-xl flex items-center justify-center text-muted-foreground hover:bg-destructive hover:text-destructive-foreground hover:border-destructive transition-all duration-300 hover:scale-110 disabled:opacity-50"
+            >
+              <X className="w-8 h-8" />
+            </button>
+            <button
+              onClick={() => handleButtonAccept(itemsToRender[itemsToRender.length - 1].id)}
+              disabled={isBusy}
+              className="w-16 h-16 rounded-full bg-card border border-border shadow-xl flex items-center justify-center text-green-500 hover:bg-green-500 hover:text-white hover:border-green-500 transition-all duration-300 hover:scale-110 disabled:opacity-50"
+            >
+              <Heart className="w-8 h-8 fill-current" />
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -123,7 +123,7 @@ export default function MatchesScreen() {
         <View style={{ flex: 1 }}>
           {loadingSearch ? (
             <View style={styles.centerContainer}>
-              <ActivityIndicator size="small" color="#FF6B6B" />
+              <ActivityIndicator size="small" color="#000000" />
             </View>
           ) : searchResults?.length === 0 ? (
             <View style={styles.centerContainer}>
@@ -158,7 +158,7 @@ export default function MatchesScreen() {
         </View>
       ) : isLoading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#FF6B6B" />
+          <ActivityIndicator size="large" color="#000000" />
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -192,13 +192,13 @@ export default function MatchesScreen() {
           {/* Conversations List */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Sohbetler</Text>
-            {conversations?.length === 0 ? (
+            {conversations?.filter((c: any) => c.lastMessage).length === 0 ? (
               <View style={styles.emptyConversations}>
                 <MaterialCommunityIcons name="chat-outline" size={48} color="#CCC" />
                 <Text style={styles.emptyConversationsText}>Henüz mesajlaşma başlatılmadı.</Text>
               </View>
             ) : (
-              conversations?.map((item: any) => {
+              conversations?.filter((c: any) => c.lastMessage).map((item: any) => {
                 const otherUser = item.otherUser;
                 const lastMessage = item.lastMessage;
                 const avatarUrl = otherUser?.image || `https://api.dicebear.com/7.x/notionists/png?seed=${otherUser?.name || 'User'}`;
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     borderWidth: 2,
-    borderColor: '#FF6B6B',
+    borderColor: '#000000',
     backgroundColor: '#FFF',
   },
   matchName: {
