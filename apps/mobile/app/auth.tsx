@@ -59,7 +59,7 @@ export default function AuthScreen() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FAFAFA' }}>
-        <ActivityIndicator size="large" color="#FF6B6B" />
+        <ActivityIndicator size="large" color="#000000" />
       </View>
     );
   }
@@ -171,7 +171,7 @@ export default function AuthScreen() {
                     onPress={() => setRole('user')}
                     disabled={isSubmitting}
                   >
-                    <MaterialCommunityIcons name="xml" size={20} color={role === 'user' ? '#FFF' : '#FF6B6B'} />
+                    <MaterialCommunityIcons name="xml" size={20} color={role === 'user' ? '#FFF' : '#000000'} />
                     <Text style={[styles.roleButtonText, role === 'user' && styles.activeRoleButtonText]}>Yazılımcı</Text>
                   </TouchableOpacity>
 
@@ -180,7 +180,7 @@ export default function AuthScreen() {
                     onPress={() => setRole('employer')}
                     disabled={isSubmitting}
                   >
-                    <MaterialCommunityIcons name="briefcase-outline" size={20} color={role === 'employer' ? '#FFF' : '#FF6B6B'} />
+                    <MaterialCommunityIcons name="briefcase-outline" size={20} color={role === 'employer' ? '#FFF' : '#000000'} />
                     <Text style={[styles.roleButtonText, role === 'employer' && styles.activeRoleButtonText]}>İlan Veren</Text>
                   </TouchableOpacity>
                 </View>
@@ -251,10 +251,10 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#FF6B6B',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 12,
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     color: '#888',
   },
   activeTabText: {
-    color: '#FF6B6B',
+    color: '#000000',
   },
   formCard: {
     backgroundColor: '#FFF',
@@ -349,17 +349,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
     borderWidth: 1,
-    borderColor: '#FF6B6B',
+    borderColor: '#000000',
     borderRadius: 16,
     height: 48,
   },
   activeRoleButton: {
-    backgroundColor: '#FF6B6B',
+    backgroundColor: '#000000',
   },
   roleButtonText: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#FF6B6B',
+    color: '#000000',
   },
   activeRoleButtonText: {
     color: '#FFF',

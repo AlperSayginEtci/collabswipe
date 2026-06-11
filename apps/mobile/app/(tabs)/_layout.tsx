@@ -11,7 +11,7 @@ export default function TabLayout() {
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FAFAFA' }}>
-        <ActivityIndicator size="large" color="#FF6B6B" />
+        <ActivityIndicator size="large" color="#000000" />
       </View>
     );
   }
@@ -24,7 +24,7 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#FF6B6B',
+        tabBarActiveTintColor: '#000000',
         tabBarInactiveTintColor: '#999',
         tabBarStyle: {
           borderTopWidth: 1,
@@ -38,14 +38,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Ana Sayfa',
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="home-outline" size={26} color={color} />,
         }}
       />
       <Tabs.Screen
         name="discover"
         options={{
-          title: 'Discover',
+          title: 'Keşfet',
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="cards" size={26} color={color} />,
         }}
       />
@@ -65,14 +65,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="matches"
         options={{
-          title: 'Matches',
+          title: 'Mesajlar',
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="message-text" size={26} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: 'Profil',
           tabBarIcon: ({ color }) => <MaterialCommunityIcons name="account" size={26} color={color} />,
         }}
       />

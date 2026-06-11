@@ -19,6 +19,22 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { trpc } from '../../lib/trpc';
 import { useUser } from '../../context/UserContext';
 
+const REACTION_EMOJIS: Record<string, string> = {
+  LIKE: '👍',
+  CELEBRATE: '🎉',
+  SUPPORT: '🤝',
+  INSIGHTFUL: '💡',
+  FUNNY: '😄'
+};
+
+const REACTION_LABELS: Record<string, string> = {
+  LIKE: 'Beğenildi',
+  CELEBRATE: 'Kutla',
+  SUPPORT: 'Destekle',
+  INSIGHTFUL: 'Bilgilendirici',
+  FUNNY: 'Eğlenceli'
+};
+
 export default function HomeFeedScreen() {
   const { userId, user } = useUser();
   const [content, setContent] = useState('');
@@ -256,7 +272,9 @@ export default function HomeFeedScreen() {
   );
 
   const renderPost = ({ item }: { item: any }) => {
-    const isLiked = item.likes && item.likes.length > 0;
+    const userLike = item.likes?.find((l: any) => l.userId === userId);
+    const isLiked = !!userLike;
+    const reactionType = userLike?.type || 'LIKE';
     const isAuthor = item.authorId === userId;
     const hasOriginal = !!item.originalPost;
     const isRepostOnly = item.content === 'repost' && hasOriginal;
@@ -277,7 +295,7 @@ export default function HomeFeedScreen() {
               </Text>
               {isAuthor && (
                 <TouchableOpacity onPress={() => handleDeletePostConfirm(item.id)}>
-                  <MaterialCommunityIcons name="delete-outline" size={20} color="#FF6B6B" />
+                  <MaterialCommunityIcons name="delete-outline" size={20} color="#000000" />
                 </TouchableOpacity>
               )}
             </View>
@@ -329,13 +347,7 @@ export default function HomeFeedScreen() {
           <Text style={styles.statsText}>
             {item.reactionTypes && item.reactionTypes.length > 0
               ? item.reactionTypes.map((type: string) => {
-                  const reactionMap: Record<string, string> = {
-                    LIKE: '👍',
-                    LOVE: '❤️',
-                    CELEBRATE: '👏',
-                    INSIGHTFUL: '💡',
-                    CURIOUS: '🤔'
-                  };
+                  const reactionMap: Record<string, string> = REACTION_EMOJIS;
                   return reactionMap[type] || '👍';
                 }).join(' ')
               : '👍'}{' '}
@@ -350,10 +362,10 @@ export default function HomeFeedScreen() {
             <View style={styles.reactionSelector}>
               {[
                 { type: 'LIKE', emoji: '👍' },
-                { type: 'LOVE', emoji: '❤️' },
-                { type: 'CELEBRATE', emoji: '👏' },
+                { type: 'CELEBRATE', emoji: '🎉' },
+                { type: 'SUPPORT', emoji: '🤝' },
                 { type: 'INSIGHTFUL', emoji: '💡' },
-                { type: 'CURIOUS', emoji: '🤔' }
+                { type: 'FUNNY', emoji: '😄' }
               ].map(({ type, emoji }) => (
                 <TouchableOpacity key={type} onPress={() => handleReact(item.id, type)} style={styles.reactionEmojiBtn}>
                   <Text style={styles.reactionEmoji}>{emoji}</Text>
@@ -366,12 +378,14 @@ export default function HomeFeedScreen() {
               onPress={() => handleLikeToggle(item.id, isLiked)}
               onLongPress={() => setActiveReactionPostId(item.id)}
             >
-              <MaterialCommunityIcons 
-                name={isLiked ? "thumb-up" : "thumb-up-outline"} 
-                size={18} 
-                color={isLiked ? "#4ECDC4" : "#666"} 
-              />
-              <Text style={[styles.actionText, isLiked && styles.actionTextActive]}>Beğen</Text>
+              {isLiked ? (
+                <Text style={{ fontSize: 16 }}>{REACTION_EMOJIS[reactionType] || '👍'}</Text>
+              ) : (
+                <MaterialCommunityIcons name="thumb-up-outline" size={18} color="#666" />
+              )}
+              <Text style={[styles.actionText, isLiked && styles.actionTextActive]}>
+                {isLiked ? (REACTION_LABELS[reactionType] || 'Beğenildi') : 'Beğen'}
+              </Text>
             </TouchableOpacity>
           )}
           
@@ -433,7 +447,7 @@ export default function HomeFeedScreen() {
                           <Text style={styles.commentAuthorName}>{comment.author?.name} {comment.author?.surname}</Text>
                           {isCommentAuthor && (
                             <TouchableOpacity onPress={() => deleteComment.mutate({ commentId: comment.id })}>
-                              <MaterialCommunityIcons name="delete" size={14} color="#FF6B6B" />
+                              <MaterialCommunityIcons name="delete" size={14} color="#000000" />
                             </TouchableOpacity>
                           )}
                         </View>
@@ -457,7 +471,7 @@ export default function HomeFeedScreen() {
                             <Text style={styles.commentAuthorName}>{reply.author?.name} {reply.author?.surname}</Text>
                             {reply.authorId === userId && (
                               <TouchableOpacity onPress={() => deleteComment.mutate({ commentId: reply.id })}>
-                                <MaterialCommunityIcons name="delete" size={12} color="#FF6B6B" />
+                                <MaterialCommunityIcons name="delete" size={12} color="#000000" />
                               </TouchableOpacity>
                             )}
                           </View>

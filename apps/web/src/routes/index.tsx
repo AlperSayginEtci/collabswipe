@@ -629,7 +629,7 @@ function HomeFeed() {
     {/* Hidden file input for media selection */}
     <input
       type="file"
-      accept="image/*,video/*"
+      accept="image/*"
       style={{ display: 'none' }}
       id="mediaFileInput"
       onChange={e => {

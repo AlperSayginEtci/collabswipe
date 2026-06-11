@@ -8,18 +8,13 @@ import { trpc, getTrpcClient } from '../lib/trpc';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { UserProvider } from '../context/UserContext';
 
-export const getBaseUrl = () => {
-  // Use computer's local IP (192.168.0.22) which is universally accessible on the same Wi-Fi network
-  // for both physical devices (Android/iOS) and emulators.
-  return 'http://192.168.0.22:3001';
-};
 
 function RootLayoutContent() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="auth" options={{ headerShown: false }} />
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="chat" options={{ headerShown: false, presentation: 'modal' }} />
+      <Stack.Screen name="chat/index" options={{ headerShown: false, presentation: 'modal' }} />
       <Stack.Screen name="network" options={{ headerShown: false, presentation: 'modal' }} />
     </Stack>
   );

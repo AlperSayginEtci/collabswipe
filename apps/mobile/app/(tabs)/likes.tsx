@@ -15,7 +15,7 @@ export default function LikesScreen() {
       <View style={styles.header}>
         <View style={styles.headerTitleRow}>
           <View style={[styles.iconWrapper, { backgroundColor: isCompany ? 'rgba(78, 205, 196, 0.1)' : 'rgba(255, 107, 107, 0.1)' }]}>
-            <MaterialCommunityIcons name={isCompany ? "inbox" : "heart"} size={28} color={isCompany ? "#4ECDC4" : "#FF6B6B"} />
+            <MaterialCommunityIcons name={isCompany ? "inbox" : "heart"} size={28} color={isCompany ? "#4ECDC4" : "#000000"} />
           </View>
           <View>
             <Text style={styles.headerTitle}>{isCompany ? 'Başvurular' : 'Beğeniler'}</Text>
@@ -68,7 +68,7 @@ function UserLikes() {
     }
   });
 
-  if (isLoading) return <ActivityIndicator size="large" color="#FF6B6B" style={{ marginTop: 50 }} />;
+  if (isLoading) return <ActivityIndicator size="large" color="#000000" style={{ marginTop: 50 }} />;
 
   if (!pendingRequests || pendingRequests.length === 0) {
     return (
@@ -102,7 +102,7 @@ function UserLikes() {
               style={[styles.actionBtn, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}
               onPress={() => respondMutation.mutate({ requesterId: req.requester.id, addresseeId: userId!, status: 'REJECTED' })}
             >
-              <MaterialCommunityIcons name="close" size={24} color="#FF6B6B" />
+              <MaterialCommunityIcons name="close" size={24} color="#000000" />
             </TouchableOpacity>
           </View>
         </View>
@@ -137,7 +137,7 @@ function UserOutgoing() {
     }
   });
 
-  if (isLoadingReq || isLoadingApps) return <ActivityIndicator size="large" color="#FF6B6B" style={{ marginTop: 50 }} />;
+  if (isLoadingReq || isLoadingApps) return <ActivityIndicator size="large" color="#000000" style={{ marginTop: 50 }} />;
 
   const hasReqs = sentRequests && sentRequests.length > 0;
   const hasApps = myApps && myApps.length > 0;
@@ -170,7 +170,7 @@ function UserOutgoing() {
                 style={[styles.actionBtn, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}
                 onPress={() => undoSwipe.mutate({ requesterId: userId!, addresseeId: req.addressee.id })}
               >
-                <MaterialCommunityIcons name="undo" size={24} color="#FF6B6B" />
+                <MaterialCommunityIcons name="undo" size={24} color="#000000" />
               </TouchableOpacity>
             </View>
           ))}
@@ -194,7 +194,7 @@ function UserOutgoing() {
                 style={[styles.actionBtn, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}
                 onPress={() => undoApply.mutate({ applicantId: userId!, jobId: app.job.id })}
               >
-                <MaterialCommunityIcons name="undo" size={24} color="#FF6B6B" />
+                <MaterialCommunityIcons name="undo" size={24} color="#000000" />
               </TouchableOpacity>
             </View>
           ))}
@@ -249,7 +249,7 @@ function CompanyApplicants() {
                 style={[styles.btn, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}
                 onPress={() => updateStatus.mutate({ applicationId: app.id, status: 'REJECTED' })}
               >
-                <Text style={{ color: '#FF6B6B', fontWeight: 'bold' }}>Reddet</Text>
+                <Text style={{ color: '#000000', fontWeight: 'bold' }}>Reddet</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.btn, { backgroundColor: '#4ECDC4' }]}
@@ -259,7 +259,7 @@ function CompanyApplicants() {
               </TouchableOpacity>
             </View>
           ) : (
-            <Text style={{ textAlign: 'right', fontWeight: 'bold', color: app.status === 'ACCEPTED' ? '#4ECDC4' : '#FF6B6B' }}>
+            <Text style={{ textAlign: 'right', fontWeight: 'bold', color: app.status === 'ACCEPTED' ? '#4ECDC4' : '#000000' }}>
               {app.status === 'ACCEPTED' ? 'Kabul Edildi' : 'Reddedildi'}
             </Text>
           )}
@@ -311,7 +311,7 @@ function CompanyOutgoing() {
             style={[styles.actionBtn, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}
             onPress={() => undoSwipe.mutate({ requesterId: userId!, addresseeId: req.addressee.id })}
           >
-            <MaterialCommunityIcons name="undo" size={24} color="#FF6B6B" />
+            <MaterialCommunityIcons name="undo" size={24} color="#000000" />
           </TouchableOpacity>
         </View>
       ))}
