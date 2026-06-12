@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import superjson from 'superjson';
 import { Platform } from 'react-native';
 import { trpc, getTrpcClient } from '../lib/trpc';
@@ -23,6 +23,19 @@ function RootLayoutContent() {
 export default function RootLayout() {
   const [queryClient] = useState(() => new QueryClient());
   const [trpcClient] = useState(() => getTrpcClient());
+
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      const style = document.createElement('style');
+      style.textContent = `
+        input, textarea {
+          user-select: text !important;
+          -webkit-user-select: text !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

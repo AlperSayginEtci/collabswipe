@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profil Oluşturma - Diller</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+            extend: {
+                colors: {
+                "primary": "#13a4ec",
+                "background-light": "#f6f7f8",
+                "background-dark": "#101c22",
+                "surface-dark": "#192b33",
+                },
+                fontFamily: {
+                "display": ["Inter", "sans-serif"]
+                },
+                borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white transition-colors duration-300">
+<!-- Mobile Container -->
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<div class="flex items-center p-4 pb-2 justify-between sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
+<button class="text-slate-900 dark:text-white flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex-1"></div> <!-- Spacer to keep left aligned if needed or center title -->
+<button class="text-primary font-semibold text-sm px-2">Atla</button>
+</div>
+<!-- Page Indicators -->
+<div class="flex w-full flex-row items-center justify-center gap-2 py-4">
+<div class="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-[#325567]"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-[#325567]"></div>
+<div class="h-1.5 w-8 rounded-full bg-primary"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-[#325567]"></div>
+<div class="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-[#325567]"></div>
+</div>
+<!-- Scrollable Content Area -->
+<div class="flex-1 flex flex-col px-6">
+<!-- Headline Text -->
+<div class="pb-2 pt-2">
+<h1 class="text-slate-900 dark:text-white tracking-tight text-[28px] font-bold leading-tight text-left">
+                    Hangi dilleri konuşuyorsun?
+                </h1>
+<p class="text-slate-500 dark:text-slate-400 text-base font-normal leading-normal pt-2">
+                    İletişim becerilerini profilinde öne çıkar. Eşleşme şansını arttır.
+                </p>
+</div>
+<!-- Search Field -->
+<div class="py-6">
+<label class="flex flex-col w-full relative group">
+<div class="flex w-full items-center rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-[#325567] focus-within:border-primary dark:focus-within:border-primary transition-all shadow-sm">
+<div class="pl-4 text-slate-400 flex items-center justify-center pointer-events-none">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 resize-none bg-transparent border-none focus:ring-0 text-slate-900 dark:text-white h-12 placeholder:text-slate-400 dark:placeholder:text-[#92b7c9] px-3 text-base font-normal leading-normal rounded-full" placeholder="Dil ara..." type="text" value=""/>
+</div>
+</label>
+</div>
+<!-- Added Languages List -->
+<div class="flex flex-col gap-3">
+<h3 class="text-sm font-semibold text-slate-500 dark:text-[#92b7c9] uppercase tracking-wider mb-1 pl-1">Eklenenler</h3>
+<!-- Language Item 1 -->
+<div class="flex items-center justify-between p-3 pl-4 rounded-[20px] bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/5 shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-xl shrink-0">
+                            🇹🇷
+                        </div>
+<div class="flex flex-col">
+<span class="text-slate-900 dark:text-white font-semibold text-base">Türkçe</span>
+<span class="text-primary text-sm font-medium">Anadil</span>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-white/5">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Language Item 2 -->
+<div class="flex items-center justify-between p-3 pl-4 rounded-[20px] bg-white dark:bg-surface-dark border border-slate-200 dark:border-white/5 shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-xl shrink-0">
+                            🇬🇧
+                        </div>
+<div class="flex flex-col">
+<span class="text-slate-900 dark:text-white font-semibold text-base">İngilizce</span>
+<span class="text-primary text-sm font-medium">İleri Seviye</span>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-white/5">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+<!-- Suggestions / Popular -->
+<div class="flex flex-col gap-3 mt-6">
+<h3 class="text-sm font-semibold text-slate-500 dark:text-[#92b7c9] uppercase tracking-wider mb-1 pl-1">Popüler</h3>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full border border-slate-200 dark:border-[#325567] bg-white dark:bg-transparent text-slate-700 dark:text-slate-300 text-sm font-medium hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors flex items-center gap-2">
+<span>🇩🇪</span> Almanca
+                        <span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+<button class="px-4 py-2 rounded-full border border-slate-200 dark:border-[#325567] bg-white dark:bg-transparent text-slate-700 dark:text-slate-300 text-sm font-medium hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors flex items-center gap-2">
+<span>🇪🇸</span> İspanyolca
+                        <span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+<button class="px-4 py-2 rounded-full border border-slate-200 dark:border-[#325567] bg-white dark:bg-transparent text-slate-700 dark:text-slate-300 text-sm font-medium hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors flex items-center gap-2">
+<span>🇫🇷</span> Fransızca
+                        <span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+<button class="px-4 py-2 rounded-full border border-slate-200 dark:border-[#325567] bg-white dark:bg-transparent text-slate-700 dark:text-slate-300 text-sm font-medium hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors flex items-center gap-2">
+<span>🇮🇹</span> İtalyanca
+                        <span class="material-symbols-outlined text-[16px]">add</span>
+</button>
+</div>
+</div>
+<!-- Spacer to push footer down if content is short -->
+<div class="h-10"></div>
+</div>
+<!-- Footer Action -->
+<div class="p-6 pt-2 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark dark:to-transparent sticky bottom-0 z-10">
+<button class="w-full h-14 bg-primary hover:bg-sky-400 text-white font-bold text-lg rounded-full shadow-lg shadow-primary/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                Devam Et
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Simulating a Proficiency Selection Modal (Visually positioned absolutely to demonstrate UI state) -->
+<!-- In a real app, this would be hidden by default and shown on click -->
+<!-- Using a comment to indicate this is a potential state -->
+<!-- 
+    <div class="absolute inset-0 z-50 bg-black/60 flex items-end backdrop-blur-[2px]">
+        <div class="w-full bg-background-light dark:bg-[#1E293B] rounded-t-[32px] p-6 pb-10 animate-in slide-in-from-bottom duration-300">
+            <div class="w-12 h-1 bg-slate-300 dark:bg-slate-600 rounded-full mx-auto mb-6"></div>
+            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-6 text-center">🇪🇸 İspanyolca Seviyen</h3>
+            <div class="space-y-3">
+                <button class="w-full p-4 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-between text-left hover:border-primary dark:hover:border-primary group">
+                    <span class="text-slate-700 dark:text-slate-200 font-medium">Başlangıç</span>
+                    <span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100">check_circle</span>
+                </button>
+                <button class="w-full p-4 rounded-xl border-2 border-primary bg-primary/10 flex items-center justify-between text-left">
+                    <span class="text-slate-900 dark:text-white font-semibold">Orta</span>
+                    <span class="material-symbols-filled text-primary">check_circle</span>
+                </button>
+                <button class="w-full p-4 rounded-xl border border-slate-200 dark:border-white/10 flex items-center justify-between text-left hover:border-primary dark:hover:border-primary group">
+                    <span class="text-slate-700 dark:text-slate-200 font-medium">İleri</span>
+                    <span class="material-symbols-outlined text-primary opacity-0 group-hover:opacity-100">check_circle</span>
+                </button>
+            </div>
+            <button class="w-full mt-6 h-12 bg-primary text-white font-bold rounded-full">Seçimi Onayla</button>
+        </div>
+    </div> 
+    -->
+</body></html>

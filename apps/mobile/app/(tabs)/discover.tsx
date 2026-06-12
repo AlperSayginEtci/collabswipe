@@ -2,14 +2,19 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Alert, ActivityIndicator, Image, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSpring,
   interpolate,
   runOnJS,
+  useAnimatedScrollHandler,
+  Extrapolation,
 } from 'react-native-reanimated';
 import { GestureDetector, Gesture, ScrollView } from 'react-native-gesture-handler';
+
+const AnimatedGHScrollView = Animated.createAnimatedComponent(ScrollView);
 import { trpc } from '../../lib/trpc';
 import { useUser } from '../../context/UserContext';
 
@@ -78,6 +83,26 @@ function SwipeCard({ item, isFirst, isProfiles, onSwipeKey }: { item: any; isFir
     };
   });
 
+  const scrollY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const animatedImageStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(scrollY.value, [0, height], [0, -height * 0.5], Extrapolation.CLAMP);
+    const scale = interpolate(scrollY.value, [-height, 0], [2, 1], Extrapolation.CLAMP);
+    
+    return {
+      transform: [
+        { translateY },
+        { scale },
+      ],
+    };
+  });
+
   const bgColor = getBackgroundColor(item.id);
   
   const nameText = isProfiles ? `${item.name} ${item.surname || ''}`.trim() : item.title;
@@ -110,116 +135,137 @@ function SwipeCard({ item, isFirst, isProfiles, onSwipeKey }: { item: any; isFir
     }
   }
 
+  const HERO_HEIGHT = height * 0.70;
+
   const scrollContent = (
-    <ScrollView 
-      style={styles.scrollContainer} 
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-      bounces={false}
-    >
-      <Image source={{ uri: imageUrl }} style={styles.cardImageInline} />
-      
-      <View style={styles.cardInfo}>
-        <Text style={styles.name}>{nameText}</Text>
-        {subtitleText && <Text style={styles.subtitle}>{subtitleText}</Text>}
-        <Text style={styles.location}><MaterialCommunityIcons name={isProfiles ? "map-marker" : "briefcase"} size={14} /> {locationText}</Text>
-        
-        {skills.length > 0 && (
-          <View style={styles.skillsContainerTop}>
-            {skills.slice(0, 5).map((skill: string) => (
-              <View key={skill} style={styles.skillBadge}>
-                <Text style={styles.skillBadgeText}>{skill}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Hakkında</Text>
-          <Text 
-            style={styles.bio} 
-            numberOfLines={isBioExpanded ? undefined : 4}
-            onTextLayout={(e) => {
-              if (e.nativeEvent.lines.length > 4 && !isBioExpanded && !showReadMore) {
-                setShowReadMore(true);
-              }
-            }}
-          >
-            {bioText}
-          </Text>
-          {showReadMore && !isBioExpanded && (
-            <TouchableOpacity onPress={() => setIsBioExpanded(true)}>
-              <Text style={styles.readMoreText}>...devam et</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        <View style={styles.detailsContainer}>
-          {skills.length > 5 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Tüm Yetenekler</Text>
-              <View style={styles.skillsContainer}>
-                {skills.map((skill: string) => (
-                  <View key={`all-${skill}`} style={styles.skillBadge}>
-                    <Text style={styles.skillBadgeText}>{skill}</Text>
+    <>
+      <Animated.Image 
+        source={{ uri: imageUrl }} 
+        style={[styles.parallaxImage, animatedImageStyle]} 
+        resizeMode="cover"
+      />
+      <AnimatedGHScrollView 
+        style={styles.scrollContainer} 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        bounces={true}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+      >
+        <View style={{ height: HERO_HEIGHT, justifyContent: 'flex-end' }}>
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.8)']}
+            style={styles.heroGradient}
+          />
+          <View style={styles.heroSummary}>
+            <Text style={[styles.name, { color: '#FFF' }]}>{nameText}</Text>
+            {subtitleText && <Text style={[styles.subtitle, { color: '#EEE' }]}>{subtitleText}</Text>}
+            <Text style={[styles.location, { color: '#DDD' }]}><MaterialCommunityIcons name={isProfiles ? "map-marker" : "briefcase"} size={14} color="#DDD" /> {locationText}</Text>
+            
+            {skills.length > 0 && (
+              <View style={styles.skillsContainerTop}>
+                {skills.slice(0, 3).map((skill: string) => (
+                  <View key={skill} style={[styles.skillBadge, { backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 0 }]}>
+                    <Text style={[styles.skillBadgeText, { color: '#FFF' }]}>{skill}</Text>
                   </View>
                 ))}
               </View>
+            )}
+            
+            <View style={{ alignItems: 'center', marginTop: 15, opacity: 0.7 }}>
+              <MaterialCommunityIcons name="chevron-down" size={28} color="#FFF" />
             </View>
-          )}
-
-          {isProfiles && item.profile?.experiences && item.profile.experiences.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Deneyimler</Text>
-              {item.profile.experiences.map((exp: any) => (
-                <View key={exp.expId} style={styles.detailItem}>
-                  <Text style={styles.detailTitle}>{exp.title}</Text>
-                  <Text style={styles.detailSubtitle}>{exp.corp}</Text>
-                  <Text style={styles.detailDate}>
-                    {new Date(exp.startDate).getFullYear()} - {exp.endDate ? new Date(exp.endDate).getFullYear() : 'Devam Ediyor'}
-                  </Text>
-                  {exp.desc && <Text style={styles.detailDesc}>{exp.desc}</Text>}
-                </View>
-              ))}
-            </View>
-          )}
-
-          {isProfiles && item.profile?.educations && item.profile.educations.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Eğitim</Text>
-              {item.profile.educations.map((edu: any) => (
-                <View key={edu.eduId} style={styles.detailItem}>
-                  <Text style={styles.detailTitle}>{edu.instName}</Text>
-                  <Text style={styles.detailSubtitle}>{edu.instProgram} • {edu.instDegree}</Text>
-                  <Text style={styles.detailDate}>
-                    {new Date(edu.startDate).getFullYear()} - {edu.endDate ? new Date(edu.endDate).getFullYear() : 'Devam Ediyor'}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {isProfiles && item.profile?.certificates && item.profile.certificates.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Sertifikalar</Text>
-              {item.profile.certificates.map((cert: any) => (
-                <View key={cert.cerId} style={styles.detailItem}>
-                  <Text style={styles.detailTitle}>{cert.title}</Text>
-                  <Text style={styles.detailSubtitle}>{cert.org}</Text>
-                  <Text style={styles.detailDate}>
-                    {new Date(cert.startDate).getFullYear()}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+
+        <View style={styles.cardDetails}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Hakkında</Text>
+            <Text 
+              style={styles.bio} 
+              numberOfLines={isBioExpanded ? undefined : 4}
+              onTextLayout={(e) => {
+                if (e.nativeEvent.lines.length > 4 && !isBioExpanded && !showReadMore) {
+                  setShowReadMore(true);
+                }
+              }}
+            >
+              {bioText}
+            </Text>
+            {showReadMore && !isBioExpanded && (
+              <TouchableOpacity onPress={() => setIsBioExpanded(true)}>
+                <Text style={styles.readMoreText}>...devam et</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <View style={styles.detailsContainer}>
+            {skills.length > 3 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Tüm Yetenekler</Text>
+                <View style={styles.skillsContainer}>
+                  {skills.map((skill: string) => (
+                    <View key={`all-${skill}`} style={styles.skillBadge}>
+                      <Text style={styles.skillBadgeText}>{skill}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {isProfiles && item.profile?.experiences && item.profile.experiences.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Deneyimler</Text>
+                {item.profile.experiences.map((exp: any) => (
+                  <View key={exp.expId} style={styles.detailItem}>
+                    <Text style={styles.detailTitle}>{exp.title}</Text>
+                    <Text style={styles.detailSubtitle}>{exp.corp}</Text>
+                    <Text style={styles.detailDate}>
+                      {new Date(exp.startDate).getFullYear()} - {exp.endDate ? new Date(exp.endDate).getFullYear() : 'Devam Ediyor'}
+                    </Text>
+                    {exp.desc && <Text style={styles.detailDesc}>{exp.desc}</Text>}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {isProfiles && item.profile?.educations && item.profile.educations.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Eğitim</Text>
+                {item.profile.educations.map((edu: any) => (
+                  <View key={edu.eduId} style={styles.detailItem}>
+                    <Text style={styles.detailTitle}>{edu.instName}</Text>
+                    <Text style={styles.detailSubtitle}>{edu.instProgram} • {edu.instDegree}</Text>
+                    <Text style={styles.detailDate}>
+                      {new Date(edu.startDate).getFullYear()} - {edu.endDate ? new Date(edu.endDate).getFullYear() : 'Devam Ediyor'}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {isProfiles && item.profile?.certificates && item.profile.certificates.length > 0 && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Sertifikalar</Text>
+                {item.profile.certificates.map((cert: any) => (
+                  <View key={cert.cerId} style={styles.detailItem}>
+                    <Text style={styles.detailTitle}>{cert.title}</Text>
+                    <Text style={styles.detailSubtitle}>{cert.org}</Text>
+                    <Text style={styles.detailDate}>
+                      {new Date(cert.startDate).getFullYear()}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
+      </AnimatedGHScrollView>
+    </>
   );
 
   const cardContent = (
-    <>
+    <View style={styles.cardInner}>
       {isFirst && (
         <>
           <Animated.View style={[styles.badgeContainer, styles.likeBadge, animatedLikeStyle]} pointerEvents="none">
@@ -231,16 +277,16 @@ function SwipeCard({ item, isFirst, isProfiles, onSwipeKey }: { item: any; isFir
         </>
       )}
       {scrollContent}
-    </>
+    </View>
   );
 
   if (!isFirst) {
-    return <View style={[styles.card, { backgroundColor: bgColor }]}>{cardContent}</View>;
+    return <View style={[styles.card, { backgroundColor: '#FFF' }]}>{cardContent}</View>;
   }
 
   return (
     <GestureDetector gesture={panGesture}>
-      <Animated.View style={[styles.card, { backgroundColor: bgColor }, animatedCardStyle]}>
+      <Animated.View style={[styles.card, { backgroundColor: '#FFF' }, animatedCardStyle]}>
         {cardContent}
       </Animated.View>
     </GestureDetector>
@@ -320,7 +366,6 @@ export default function DiscoverScreen() {
   
   const applyJob = trpc.job.apply.useMutation({
     onSuccess: () => {
-      Alert.alert('Başarılı', 'İlana başvuruldu!');
       utils.job.list.invalidate();
     },
     onError: (err) => Alert.alert('Hata', err.message || 'Başvuru yapılamadı.')
@@ -436,7 +481,7 @@ export default function DiscoverScreen() {
                 </Text>
               </View>
             ) : (
-              [...activeData].reverse().map((item, index, arr) => {
+              [...activeData].slice(0, 3).reverse().map((item, index, arr) => {
                 const isFirst = index === arr.length - 1;
                 return (
                   <SwipeCard
@@ -716,7 +761,7 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: '100%',
     marginTop: 10,
-    marginBottom: 10,
+    marginBottom: 0,
   },
   card: {
     width: width * 0.9,
@@ -724,11 +769,15 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     position: 'absolute',
     top: 0,
-    elevation: 4,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: 20,
+  },
+  cardInner: {
+    flex: 1,
+    borderRadius: 28,
     overflow: 'hidden',
   },
   scrollContainer: {
@@ -738,19 +787,32 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
-  cardImageInline: {
+  parallaxImage: {
+    ...StyleSheet.absoluteFillObject,
     width: '100%',
-    height: height * 0.35,
-    backgroundColor: 'rgba(0,0,0,0.03)',
+    height: height * 0.75,
+    backgroundColor: '#000',
   },
-  cardInfo: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  heroGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 400,
+  },
+  heroSummary: {
     padding: 20,
-    paddingBottom: 60,
+    paddingBottom: 120,
+    zIndex: 2,
+  },
+  cardDetails: {
+    backgroundColor: '#FFF',
+    padding: 24,
+    paddingTop: 30,
+    paddingBottom: 120,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     marginTop: -20,
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-    flexGrow: 1,
   },
   name: {
     fontSize: 26,
@@ -873,12 +935,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   actionsContainer: {
+    position: 'absolute',
+    bottom: 35,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 15,
     gap: 20,
-    marginTop: -10, // Bring closer to card
+    zIndex: 100,
+    elevation: 10,
   },
   actionButton: {
     width: 64,
@@ -887,11 +954,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 5,
+    elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
   },
   actionButtonSmall: {
     width: 50,
@@ -900,11 +967,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 3,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   input: {
     backgroundColor: '#F5F5F5',

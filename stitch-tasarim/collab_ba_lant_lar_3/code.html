@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Collab Swipe - Bağlantılar</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#A78BFA",      // Marka
+                        "background": "#0F172A",   // Zemin
+                        "surface": "#1E293B",      // Kart Rengi
+                        "text-main": "#F1F5F9",    // Ana Metin
+                        "text-secondary": "#94A3B8", // İkincil Metin
+                        "action-accept": "#34D399", // Swipe Right
+                        "action-reject": "#FB7185", // Swipe Left
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background font-display text-text-main overflow-x-hidden antialiased selection:bg-primary selection:text-white">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-background shadow-2xl overflow-hidden pb-20">
+<div class="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-white/5">
+<div class="flex items-center p-4 pb-2 justify-between">
+<h2 class="text-xl font-bold leading-tight tracking-[-0.015em] flex-1 text-text-main">Collab Swipe</h2>
+<div class="flex items-center justify-end gap-3">
+<button class="flex items-center justify-center rounded-full h-10 w-10 bg-surface hover:bg-surface/80 transition-colors text-text-main border border-white/5">
+<span class="material-symbols-outlined text-[24px]">qr_code_scanner</span>
+</button>
+<button class="flex items-center justify-center rounded-full h-10 w-10 bg-primary hover:bg-primary/90 transition-colors text-background shadow-[0_0_15px_rgba(167,139,250,0.3)]">
+<span class="material-symbols-outlined text-[24px]">person_add</span>
+</button>
+</div>
+</div>
+<div class="px-4 py-2 pb-4">
+<label class="flex flex-col w-full h-12">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full bg-surface shadow-sm border border-white/5">
+<div class="text-text-secondary flex items-center justify-center pl-4 rounded-l-xl">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl bg-transparent text-text-main focus:outline-0 focus:ring-0 border-none h-full placeholder:text-text-secondary px-4 rounded-l-none pl-2 text-base font-normal leading-normal" placeholder="Kişi, unvan veya şirket ara..." value=""/>
+</div>
+</label>
+</div>
+</div>
+<div class="px-4 py-4">
+<div class="flex h-12 w-full items-center justify-center rounded-full bg-surface p-1 shadow-sm border border-white/5">
+<label class="flex cursor-pointer h-full flex-1 items-center justify-center overflow-hidden rounded-full px-2 has-[:checked]:bg-primary has-[:checked]:text-background text-text-secondary text-sm font-semibold transition-all">
+<span class="truncate">Bağlantılarım</span>
+<input checked="" class="invisible w-0 fixed" name="tabs" type="radio" value="Bağlantılarım"/>
+</label>
+<label class="flex cursor-pointer h-full flex-1 items-center justify-center overflow-hidden rounded-full px-2 has-[:checked]:bg-primary has-[:checked]:text-background text-text-secondary text-sm font-semibold transition-all">
+<span class="truncate">İstekler</span>
+<div class="ml-2 bg-action-reject text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">3</div>
+<input class="invisible w-0 fixed" name="tabs" type="radio" value="İstekler"/>
+</label>
+<label class="flex cursor-pointer h-full flex-1 items-center justify-center overflow-hidden rounded-full px-2 has-[:checked]:bg-primary has-[:checked]:text-background text-text-secondary text-sm font-semibold transition-all">
+<span class="truncate">Öneriler</span>
+<input class="invisible w-0 fixed" name="tabs" type="radio" value="Öneriler"/>
+</label>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto no-scrollbar pb-4">
+<div class="mb-6">
+<div class="flex items-center justify-between px-4 pb-2 pt-2">
+<h3 class="text-text-main text-lg font-bold leading-tight tracking-tight">Bekleyen İstekler <span class="text-primary">(3)</span></h3>
+<button class="text-xs font-medium text-text-secondary hover:text-primary transition-colors">Tümünü Gör</button>
+</div>
+<div class="flex flex-col gap-3 p-4 mx-4 mb-3 rounded-2xl bg-surface border border-white/5 shadow-md">
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 border-2 border-background" data-alt="Portrait of Ayşe Yılmaz, a professional woman" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBORGl2Bj3nKFKUDkCyK4i1ZEr3Kaar5SA4DXgXnWUaomwhh-3l6yq_Zi7XlFZyZfQb4KsT1twjXB9TvEfQKvUXMcG0hZiblF3kf3G7yD3CRUa5_M6Hw-Qqw7MM2bXtE-nQkzioUipBRdOWJ_3FyzFjafIOE1v60ILwDqF7buiIbaTeC1KCGuHBIQCmzTaNcQrUl4KvbnXyHjNBFSapOfqiHoZ4DNS_GOxFkT3-DWO0JCUCTLWv9Cebj_icbowNsiQq7gG5vDuxjtlk");'></div>
+<div class="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5">
+<span class="material-symbols-outlined text-primary text-[16px] bg-primary/20 rounded-full p-0.5">work</span>
+</div>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-text-main text-base font-semibold leading-tight line-clamp-1">Ayşe Yılmaz</p>
+<p class="text-text-secondary text-xs font-normal leading-normal line-clamp-1">Product Designer @ Trendyol</p>
+<p class="text-text-secondary/60 text-[10px] mt-0.5">2 ortak bağlantı</p>
+</div>
+</div>
+<div class="flex gap-2 w-full mt-1">
+<button class="flex-1 h-9 items-center justify-center rounded-lg bg-action-accept text-background text-sm font-bold hover:bg-action-accept/90 transition-colors">
+                            Kabul Et
+                        </button>
+<button class="h-9 w-9 flex items-center justify-center rounded-lg bg-background text-text-secondary hover:text-action-reject hover:bg-action-reject/10 transition-colors border border-white/5">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-3 p-4 mx-4 mb-3 rounded-2xl bg-surface border border-white/5 shadow-md">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12 border-2 border-background" data-alt="Portrait of Mehmet Demir, a developer" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC8zh6qr-xxNs23jRo8ErKblAzHF2qWLKjpJHHA9Xd36PCmQMNRuWHQe3jJwx4TgUxr7v9qz_C4F6n4bQcbNVhlWuBs9mXpr92iyi_9vUXmFtprvpzw9OxkAYXtWyHSy82LZ5sbw3SUFDgbjU7gkjoPlMMDPdRyi36dcHYsaGvMca4VN1Dipm---i9ht3h-Tki3FTXofAHnYThXTrgWc2tHb9V8zpC-FLzNTkrtDlXxFCAOTEr9aH1QSNRPufO8L_-mwQ1k7uKyWEMA");'></div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-text-main text-base font-semibold leading-tight line-clamp-1">Mehmet Demir</p>
+<p class="text-text-secondary text-xs font-normal leading-normal line-clamp-1">Frontend Developer @ Getir</p>
+<p class="text-text-secondary/60 text-[10px] mt-0.5">Seninle çalışmak istiyor</p>
+</div>
+</div>
+<div class="flex gap-2 w-full mt-1">
+<button class="flex-1 h-9 items-center justify-center rounded-lg bg-action-accept text-background text-sm font-bold hover:bg-action-accept/90 transition-colors">
+                            Kabul Et
+                        </button>
+<button class="h-9 w-9 flex items-center justify-center rounded-lg bg-background text-text-secondary hover:text-action-reject hover:bg-action-reject/10 transition-colors border border-white/5">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<div class="h-px bg-white/5 mx-4 mb-6"></div>
+<div>
+<div class="flex items-center justify-between px-4 pb-2">
+<h3 class="text-text-main text-lg font-bold leading-tight tracking-tight">Bağlantıların</h3>
+<div class="flex gap-2">
+<button class="text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">sort</span>
+</button>
+<button class="text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-4 px-4 py-3 hover:bg-surface/50 transition-colors cursor-pointer group rounded-xl mx-2">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12" data-alt="Portrait of Zeynep Kaya" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBnW1a89AulsBRWAlScluK-5xi6d32vgS4h1MIPHlu3vKP9brfvRoZgiNiDCPZreU74GKGi29Lcfr12hReXGKkiLLYRe4VOdyAMyp1BoM3zvgupCA7WIasb1poaYGBG5QjFCLuNAehfpxstkqWXU2arynnmtsqZ4Z_Dz-NVxLZFxMfUc3GUAwGcdod6nIYCS4aI7d3_oCYb4cgxNRN-8EYSJXfjW6GcS2myszPggyL7GOV0S-4l2L9I152yKQdgV8P63tBupV37mvRX");'></div>
+<div class="absolute bottom-0 right-0 h-3 w-3 bg-action-accept border-2 border-background rounded-full"></div>
+</div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<p class="text-text-main text-sm font-semibold leading-normal truncate">Zeynep Kaya</p>
+<p class="text-text-secondary text-xs font-normal leading-normal truncate">HR Specialist @ Koç Holding</p>
+</div>
+<button class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-background transition-all">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+</button>
+</div>
+<div class="flex items-center gap-4 px-4 py-3 hover:bg-surface/50 transition-colors cursor-pointer group rounded-xl mx-2">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12" data-alt="Portrait of Can Yıldız" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDk_ojOvijEumRyW-cQBv-20DN_uKlUP5L6G5g03cXwBlfY3S96sFBiWe8yHrQx8XwAClYJq0wP1ut2MbXWcvUjIWLvDB8hdZjU_UgHolc49eV0dTX7tlEOEi_SgNybA-mv3mcg3jN9AE_7gp-l1d59_INdXBq01iarfkC1g1sYsn4dmkvYchsuJmNLqgwCZty450AQ6wxo8fNAnIduMbq923QtpP_7HWhF0IwlbJFW02ISQ2-N26vkMETDBIhoPPyHIrrt4zXgJVu6");'></div>
+</div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<p class="text-text-main text-sm font-semibold leading-normal truncate">Can Yıldız</p>
+<p class="text-text-secondary text-xs font-normal leading-normal truncate">Marketing Manager @ Yemeksepeti</p>
+</div>
+<button class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-background transition-all">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+</button>
+</div>
+<div class="flex items-center gap-4 px-4 py-3 hover:bg-surface/50 transition-colors cursor-pointer group rounded-xl mx-2">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12" data-alt="Portrait of Elif Demir" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB3tSQciJV1dL1fwwOiUBefl9sba07zk-T_CcFpwZpZ__YbfeRr4NQ6lUpJ-vRw3E1zY8YUX_pU78kMG_A6cZuxjmHujjiQAn5M-QPYYzNFfQ0QpipGOJ9b3u2w7pcrJQRmdoKmXrA3mvEBH8hMax2jqKVut4jeEh2PV4VnAfqAO2lczByyAI_TjY1Q6AYAeXRDFOmpk5CnM2w9GWwQaNdRJlgDGciSvfixlc3segsngZrSDcJZLEzuZLUGrvlR3QtPb9gaAiXBtmIK");'></div>
+<div class="absolute bottom-0 right-0 h-3 w-3 bg-action-accept border-2 border-background rounded-full"></div>
+</div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<p class="text-text-main text-sm font-semibold leading-normal truncate">Elif Demir</p>
+<p class="text-text-secondary text-xs font-normal leading-normal truncate">UX Researcher @ Freelance</p>
+</div>
+<button class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-background transition-all">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+</button>
+</div>
+<div class="flex items-center gap-4 px-4 py-3 hover:bg-surface/50 transition-colors cursor-pointer group rounded-xl mx-2">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-12 w-12" data-alt="Portrait of Burak Öztürk" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCdu9VpffKPxPKHsnk3Mi9nxZQDPaC72IAc1ZQ6yOPZN2kn1VwHhgujQpxXJm9Qq1qPs2_1SjdQJAJBg35LGnZ8t9lgqqxsAEz4gWziI7WPqXz7vvqpDdQWmGkEQI6tnC1EcRTApmxLO6nbm_3RLry2z0C9TqcjwPhHqlGctjeVxicDEMb-mVg2_sDDL4Y_OA-zkfoHAQGDpzzK4SkHdHh3gTq7yk2F8iTbhQE0Sgq1vLF3nqYHeB7I0xXd47OsjwdJzAvhNdgNMTcc");'></div>
+</div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<p class="text-text-main text-sm font-semibold leading-normal truncate">Burak Öztürk</p>
+<p class="text-text-secondary text-xs font-normal leading-normal truncate">CTO @ Startup Inc.</p>
+</div>
+<button class="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-background transition-all">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+</button>
+</div>
+</div>
+<div class="h-10"></div>
+</div>
+<div class="absolute bottom-0 left-0 w-full bg-background/95 backdrop-blur-md border-t border-white/5 pb-5 pt-2 px-2">
+<div class="flex justify-around items-center">
+<button class="flex flex-col items-center gap-1 p-2 text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Ana Sayfa</span>
+</button>
+<button class="flex flex-col items-center gap-1 p-2 text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">search</span>
+<span class="text-[10px] font-medium">Keşfet</span>
+</button>
+<button class="flex flex-col items-center gap-1 p-2 text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined">swipe</span>
+<span class="text-[10px] font-medium">Swipe</span>
+</button>
+<button class="flex flex-col items-center gap-1 p-2 text-primary">
+<span class="material-symbols-outlined fill-current">chat</span>
+<span class="text-[10px] font-medium">Mesajlar</span>
+</button>
+<button class="flex flex-col items-center gap-1 p-2 text-text-secondary hover:text-primary transition-colors">
+<div class="h-6 w-6 rounded-full bg-gray-600 overflow-hidden ring-1 ring-white/10" data-alt="User profile picture small" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuARnL0bUqZnaV6NOx-1X8qgcI1SaaPjsWTjFZ-6LMyHB3zScqs05CH_78o5uWIBs0O2zDVEabRW3doAYyKHIk7jdDtCv27L2_CzjzKOj1jtUlXNGp1YAZOQ0zTfeT7iWqR2lNTiitFMfoTVl07mKfm3ThxE6eN1xu7lo-25JeZvQgjir2RTWm4pX_YjBxzPujw8NK-9shJ72ZNQkGZo377EGKlSgEs6fM4vRJoSdfz963b2I0ceYawqVAKx1E__QLKLnppToQUUw7hA"); background-size: cover;'></div>
+<span class="text-[10px] font-medium">Profil</span>
+</button>
+</div>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Giriş/Kayıt - Kariyer App</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13a4ec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22",
+                        "surface-dark": "#192b33",
+                        "surface-highlight": "#233c48"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar hide for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen w-full flex justify-center overflow-x-hidden">
+<!-- Mobile Container -->
+<div class="relative flex h-full min-h-screen w-full max-w-md flex-col bg-background-light dark:bg-background-dark shadow-xl overflow-hidden">
+<!-- Status Bar Area / Top Nav -->
+<div class="flex items-center justify-between px-6 pt-6 pb-2">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 text-slate-900 dark:text-white hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="text-sm font-medium text-slate-500 dark:text-slate-400">İş Arayan</div>
+</div>
+<!-- Header Section -->
+<div class="flex flex-col items-center px-6 pt-4 pb-6">
+<div class="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-primary to-[#0d7ab0] flex items-center justify-center mb-6 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-4xl text-white">work</span>
+</div>
+<h1 class="text-slate-900 dark:text-white text-3xl font-bold text-center leading-tight mb-2">
+                Kariyerine Yön Ver
+            </h1>
+<p class="text-slate-500 dark:text-slate-400 text-center text-sm px-4">
+                Hayalindeki işi bulmak veya ekibini kurmak için hemen başla.
+            </p>
+</div>
+<!-- Segmented Control (Tabs) -->
+<div class="px-6 pb-6">
+<div class="flex h-12 w-full items-center justify-center rounded-full bg-slate-200 dark:bg-surface-highlight p-1">
+<label class="group relative flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2">
+<input checked="" class="peer invisible w-0 absolute" name="auth-mode" type="radio"/>
+<span class="z-10 text-sm font-semibold transition-colors duration-300 text-slate-600 peer-checked:text-white dark:text-slate-400 dark:peer-checked:text-white">Giriş Yap</span>
+<div class="absolute inset-0 bg-primary opacity-0 transition-all duration-300 peer-checked:opacity-100 rounded-full shadow-md"></div>
+</label>
+<label class="group relative flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2">
+<input class="peer invisible w-0 absolute" name="auth-mode" type="radio"/>
+<span class="z-10 text-sm font-semibold transition-colors duration-300 text-slate-600 peer-checked:text-white dark:text-slate-400 dark:peer-checked:text-white">Kayıt Ol</span>
+<div class="absolute inset-0 bg-primary opacity-0 transition-all duration-300 peer-checked:opacity-100 rounded-full shadow-md"></div>
+</label>
+</div>
+</div>
+<!-- Form Section -->
+<div class="flex flex-col gap-5 px-6 pb-6 flex-1">
+<!-- Email Field -->
+<label class="flex flex-col gap-2">
+<span class="text-slate-700 dark:text-slate-300 text-sm font-medium ml-1">E-posta</span>
+<div class="relative">
+<div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</div>
+<input class="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl h-14 pl-12 pr-4 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base" placeholder="ornek@email.com" type="email"/>
+</div>
+</label>
+<!-- Password Field -->
+<label class="flex flex-col gap-2">
+<span class="text-slate-700 dark:text-slate-300 text-sm font-medium ml-1">Şifre</span>
+<div class="relative">
+<div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<input class="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 rounded-2xl h-14 pl-12 pr-12 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base" placeholder="••••••••" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+<div class="flex justify-end mt-1">
+<a class="text-sm font-medium text-primary hover:text-primary/80 transition-colors" href="#">
+                        Şifremi unuttum?
+                    </a>
+</div>
+</label>
+<!-- Main Action Button -->
+<button class="mt-2 w-full h-14 bg-primary hover:bg-[#1192d4] active:scale-[0.98] transition-all rounded-full flex items-center justify-center shadow-lg shadow-primary/25">
+<span class="text-white text-base font-bold tracking-wide">Giriş Yap</span>
+</button>
+<!-- Divider -->
+<div class="relative flex py-2 items-center">
+<div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+<span class="flex-shrink-0 mx-4 text-slate-400 dark:text-slate-500 text-xs font-medium uppercase tracking-wider">veya</span>
+<div class="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
+</div>
+<!-- Social Login Buttons -->
+<div class="grid grid-cols-3 gap-3">
+<button class="flex items-center justify-center h-14 rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors relative overflow-hidden group">
+<div class="w-6 h-6 bg-contain bg-center bg-no-repeat" data-alt="Google G logo" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCACBAf3MDqExHuawdOpAh-DtjQPhEugrwHSOfIeBHad_EuN9CbI5H0meS2kZ8JfXO2Yqc0XmA4TbJfKlPvWFJTJk6cUb04HE8ZyGX4i-lWQlhuQbHO644T5fQqQXUlGn_bpXUWIpLWwQPKn2LXH54pcSz5gwZGPo7PxmmMHj_QMZnSD9prdSjKqCb8GMtJ061n-DiYGkbiWCLIJh3OwEYKu-TVoo8adpJnvTb01ugqrBsW3T_Ibch1ANhNf_Ooql2z1tEweve2lvuA');"></div>
+</button>
+<button class="flex items-center justify-center h-14 rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors relative overflow-hidden group">
+<div class="w-6 h-6 bg-contain bg-center bg-no-repeat dark:invert" data-alt="Apple logo silhouette" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB69HX2VPgK5WkI-fKm9MylZpSc1ykHxhRu1BlGuPa9nF4DmNmJTjc4G4E7JAunW8E7bfyW1t-o1fAEDKmgmB_a6BqqxuejQRijuMV0ScIW0lgErv2lkwXhBbZ-Bhy04Az1Mq8MyQDjCY1-s4GGcUMmXjqceOBNQ9cGFmpOF8vnXbSWUQAFAQQ0P1zqcpeZV40k0NR5JQOpGJk12DWMA4waYeBu7lTKo8mC_nIrsGR3yImucH8nGyKc8rZ8vjBG_JkPCphmvGldq8Ny');"></div>
+</button>
+<button class="flex items-center justify-center h-14 rounded-2xl bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-surface-highlight transition-colors relative overflow-hidden group">
+<div class="w-6 h-6 bg-contain bg-center bg-no-repeat" data-alt="LinkedIn logo" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD4SXLHuFufzbW7bN2TqVdXsxOrt4N7-JbD0soLKrU6jiTCQNSY83QjmthfhLTPmu6cLJg7Ufw-n47wdvkzJqAP6LYlvabmH_n93oI0KGcazPqu0N9TOjI01y5XYkvdU5PMBk9ajSsIfYg4Pk6dFhT4rwJbXLBhpPzy1JMQnuYM68Oyq1JmH9yFhlPWTac4uN2rZj5yq9GMhbqub1RH-fIbkWvqRUZgRLnAepm3kTeP4tVQu4CxLrlUjXJ8HnLopnfKe2-eLtNNUNre');"></div>
+</button>
+</div>
+</div>
+<!-- Footer -->
+<div class="p-6 pt-0 mt-auto">
+<p class="text-center text-xs text-slate-400 dark:text-slate-500 leading-relaxed">
+                Devam ederek, <a class="text-slate-600 dark:text-slate-300 underline decoration-slate-300 dark:decoration-slate-600 underline-offset-2" href="#">Hizmet Şartları</a> ve <a class="text-slate-600 dark:text-slate-300 underline decoration-slate-300 dark:decoration-slate-600 underline-offset-2" href="#">Gizlilik Politikası</a>'nı kabul etmiş olursunuz.
+            </p>
+</div>
+<!-- Spacer for iOS Home Indicator if needed -->
+<div class="h-6 w-full"></div>
+</div>
+</body></html>

@@ -12,12 +12,13 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { trpc } from '../../lib/trpc';
 import { useUser } from '../../context/UserContext';
+import { MentionTextInput } from '../../components/MentionTextInput';
+import { FormattedText } from '../../components/FormattedText';
 
 const REACTION_EMOJIS: Record<string, string> = {
   LIKE: '👍',
@@ -213,9 +214,10 @@ export default function HomeFeedScreen() {
           source={{ uri: (user as any)?.image || `https://api.dicebear.com/7.x/notionists/png?seed=${user?.name || 'user'}` }}
           style={styles.composerAvatar}
         />
-        <View style={{ flex: 1 }}>
-          <TextInput
+        <View style={{ flex: 1, zIndex: 1000 }}>
+          <MentionTextInput
             style={styles.composerInput}
+            containerStyle={{ zIndex: 1000 }}
             placeholder="Neler düşünüyorsun? Proje paylaş veya soru sor..."
             placeholderTextColor="#999"
             multiline
@@ -299,6 +301,7 @@ export default function HomeFeedScreen() {
                 </TouchableOpacity>
               )}
             </View>
+
             <Text style={styles.postAuthorHeadline} numberOfLines={1}>
               {item.author?.profile?.bio || (item.author?.role === 'company' ? `${item.author?.sector || 'Şirket'}` : 'CollabSwipe Üyesi')}
             </Text>
@@ -310,7 +313,7 @@ export default function HomeFeedScreen() {
         
         {/* Post Content */}
         {!isRepostOnly && item.content !== '' && (
-          <Text style={styles.postContent}>{item.content}</Text>
+          <FormattedText text={item.content} style={styles.postContent} />
         )}
 
         {/* Post Media */}
@@ -335,7 +338,7 @@ export default function HomeFeedScreen() {
                 </Text>
               </View>
             </View>
-            <Text style={styles.repostContent}>{item.originalPost.content}</Text>
+            <FormattedText text={item.originalPost.content} style={styles.originalPostText} />
             {item.originalPost.mediaUrl && (
               <Image source={{ uri: item.originalPost.mediaUrl }} style={styles.repostMedia} resizeMode="cover" />
             )}
@@ -412,13 +415,14 @@ export default function HomeFeedScreen() {
           <View style={styles.commentsSection}>
             {/* Comment Composer */}
             <View style={styles.commentComposer}>
-              <TextInput
+              <MentionTextInput
                 style={styles.commentInput}
-                placeholder="Yorum yaz..."
+                containerStyle={{ flex: 1, zIndex: 1000 }}
+                placeholder="Yorum ekle..."
                 placeholderTextColor="#999"
                 value={commentText}
                 onChangeText={setCommentText}
-                maxLength={200}
+                multiline
               />
               <TouchableOpacity 
                 style={[styles.commentSendBtn, !commentText.trim() && styles.commentSendBtnDisabled]}

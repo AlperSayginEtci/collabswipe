@@ -72,7 +72,7 @@ function RootLayout() {
   const name = session?.user?.name || 'User';
   const surname = (session?.user as any)?.surname || '';
   const initials = (name[0] + (surname[0] || '')).toUpperCase();
-  const username = (session?.user as any)?.username ? `@${(session?.user as any).username}` : `@${name.toLowerCase()}${surname ? surname.toLowerCase() : ''}`;
+  const fullName = `${name} ${surname}`.trim();
 
   return (
     <div className="flex h-screen bg-background text-foreground font-sans">
@@ -156,12 +156,11 @@ function RootLayout() {
               </div>
             )}
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-medium truncate">{name} {surname}</p>
-              <p className="text-xs text-muted-foreground truncate">{username}</p>
+              <p className="text-sm font-bold text-foreground truncate">{fullName}</p>
             </div>
           </Link>
           <button 
-            onClick={() => signOut({ callbackURL: '/login' })}
+            onClick={() => signOut({ fetchOptions: { onSuccess: () => navigate({ to: '/login' }) } })}
             className="flex items-center justify-center gap-2 w-full bg-destructive/10 hover:bg-destructive/20 text-destructive text-sm font-bold py-2.5 rounded-xl transition-colors"
           >
             <LogOut className="w-4 h-4" />
@@ -175,7 +174,7 @@ function RootLayout() {
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card flex-shrink-0">
           <h1 className="text-xl font-black text-primary">CollabSwipe</h1>
-          <button className="text-muted-foreground" onClick={() => signOut({ callbackURL: '/login' })}>
+          <button className="text-muted-foreground" onClick={() => signOut({ fetchOptions: { onSuccess: () => navigate({ to: '/login' }) } })}>
             <LogOut className="w-6 h-6 text-destructive" />
           </button>
         </header>

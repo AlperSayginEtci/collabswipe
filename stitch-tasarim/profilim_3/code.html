@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profilim - Collab Swipe</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#A78BFA",      // Marka
+                "background": "#0F172A",   // Zemin
+                "card": "#1E293B",         // Kart Rengi
+                "text-main": "#F1F5F9",    // Ana Metin
+                "text-secondary": "#94A3B8", // İkincil Metin
+                "swipe-right": "#34D399",  // Positive Action
+                "swipe-left": "#FB7185",   // Negative Action
+              },
+              fontFamily: {
+                "display": ["Inter", "sans-serif"]
+              },
+              borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+            background-color: #0F172A;}
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-text-main font-display selection:bg-primary selection:text-background">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<div class="flex items-center p-4 justify-between sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-white/5">
+<div class="w-12">
+</div>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] text-center text-text-main">Profilim</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="flex items-center justify-center rounded-full w-10 h-10 text-text-main hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col items-center px-4 pt-2 pb-6 gap-6">
+<div class="relative">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full w-32 h-32 border-4 border-card shadow-xl" data-alt="Professional portrait of a man smiling in a studio setting" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuC6jJ2jtZB1xdIRC09fCY2OUVjcJA4WWBvsQxAsR6qxz4TfxmX_6xmcCCjnR8biBzckwybxgbua1pJMXwtAMmMiaeZLVKensSS20Jh7bcit6qrUDM_vDrZ1_pv1eTwdvJvY9Ir8lkkD7I18X4-EDMENsJ6dPuu53Ikwj2CxzC5uSu5v0BS69YHJhh00cvyNtG5_12F8WaSZ3kc_KDlAwgXW30M420lopvF4txAeN5Nhbo_JXjTeTXPUrYbujfBuSCiPc4idiD4IErLT");'>
+</div>
+<div class="absolute bottom-1 right-1 bg-primary text-background rounded-full p-1 border-4 border-background flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+</div>
+</div>
+<div class="flex flex-col items-center text-center gap-1">
+<h1 class="text-2xl font-bold leading-tight text-text-main">Ahmet Yılmaz</h1>
+<p class="text-text-secondary text-base font-normal">Kıdemli UI Tasarımcısı</p>
+<div class="flex items-center gap-1 text-sm text-text-secondary mt-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>İstanbul, Türkiye</span>
+</div>
+</div>
+<div class="w-full max-w-xs flex gap-3">
+<button class="flex-1 cursor-pointer flex items-center justify-center rounded-full h-12 bg-primary text-background text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors">
+<span class="material-symbols-outlined mr-2 text-[20px]">edit</span>
+                Profili Düzenle
+            </button>
+<button class="flex-none cursor-pointer flex items-center justify-center rounded-full w-12 h-12 bg-card text-text-main border border-white/5 hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<div class="flex gap-3 px-4 mb-6 overflow-x-auto no-scrollbar">
+<div class="flex min-w-[100px] flex-1 flex-col gap-1 rounded-lg bg-card border border-white/5 p-4 items-center text-center shadow-sm">
+<p class="text-primary text-2xl font-bold">12</p>
+<p class="text-text-secondary text-xs font-medium uppercase tracking-wide">Başvuru</p>
+</div>
+<div class="flex min-w-[100px] flex-1 flex-col gap-1 rounded-lg bg-card border border-white/5 p-4 items-center text-center shadow-sm">
+<p class="text-text-main text-2xl font-bold">58</p>
+<p class="text-text-secondary text-xs font-medium uppercase tracking-wide">Görüntülenme</p>
+</div>
+<div class="flex min-w-[100px] flex-1 flex-col gap-1 rounded-lg bg-card border border-white/5 p-4 items-center text-center shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 w-3 h-3 bg-swipe-left rounded-full border-2 border-card -mt-1 -mr-1"></div>
+<p class="text-text-main text-2xl font-bold">85%</p>
+<p class="text-text-secondary text-xs font-medium uppercase tracking-wide">Doluluk</p>
+</div>
+</div>
+<div class="px-4 mb-6">
+<div class="flex h-12 w-full items-center rounded-full bg-card p-1 border border-white/5">
+<label class="flex-1 cursor-pointer h-full flex items-center justify-center rounded-full transition-all duration-200 has-[:checked]:bg-primary has-[:checked]:text-background has-[:checked]:shadow-md text-text-secondary font-medium text-sm">
+<span>Başvurularım</span>
+<input checked="" class="hidden" name="profile_tab" type="radio"/>
+</label>
+<label class="flex-1 cursor-pointer h-full flex items-center justify-center rounded-full transition-all duration-200 has-[:checked]:bg-primary has-[:checked]:text-background has-[:checked]:shadow-md text-text-secondary font-medium text-sm">
+<span>İlanlarım</span>
+<input class="hidden" name="profile_tab" type="radio"/>
+</label>
+</div>
+</div>
+<div class="flex flex-col gap-4 px-4">
+<div class="group flex flex-col bg-card rounded-lg p-4 shadow-sm border border-white/5 active:scale-[0.99] transition-transform duration-100">
+<div class="flex items-start justify-between gap-4">
+<div class="flex gap-4">
+<div class="bg-white p-2 rounded-lg h-14 w-14 flex items-center justify-center border border-transparent">
+<img class="w-full h-full object-contain" data-alt="Abstract colorful hexagon logo for Tech Solutions" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBKdt3RcXgLd0xOFfjmeUrwSH_ucLThL-Vl30Zc7-K4IqxJo0qkQJG5DMojQi95QgRTyrBofHMlS9gNE0hIatfXxk7YtWqWqh1dgfPJn7xEpSMlZdpwWBnY_h8J2G8kTJDbpiDYPdimUc-P7oLafOt8TFj5HjiGN8cQ2FiyUw6v7EEcp1B_ju3H8jMZN8-C5zM9rf_Ft3WAua8KTB6If4c2d1ZF4Z5HJ-gOvbYA915OGnhBZDoCMWMxm55e4z6YwoTQY9ZP2OBcHQBU"/>
+</div>
+<div>
+<h3 class="text-text-main font-bold text-base line-clamp-1">Senior UX Designer</h3>
+<p class="text-text-secondary text-sm mt-0.5">Tech Solutions A.Ş.</p>
+</div>
+</div>
+<div class="bg-primary/20 text-primary px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">
+                    Değerlendiriliyor
+                </div>
+</div>
+<div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-xs text-text-secondary">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">calendar_today</span>
+<span>2 gün önce başvuruldu</span>
+</div>
+<span class="font-semibold text-primary">Detayları Gör</span>
+</div>
+</div>
+<div class="group flex flex-col bg-card rounded-lg p-4 shadow-sm border border-white/5 active:scale-[0.99] transition-transform duration-100">
+<div class="flex items-start justify-between gap-4">
+<div class="flex gap-4">
+<div class="bg-white p-2 rounded-lg h-14 w-14 flex items-center justify-center border border-transparent">
+<img class="w-full h-full object-contain" data-alt="Minimalist mountain logo for Peak Games" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBG5_4kI4WppAiC0QG5mVXtD_xBmu92Cb8KBLkv07GeuvRJ6kRjkO4FOl8aLBlclZIk75iX41sbl3ixiflczw90AU7hI_h1po7nJRdFSDt2qu22NyXbvaqDklqNQ4HHoXnGKRSAwcs64MTdqI3HQEgWUcZH6eUO9GHNfDdjD8I-EJ8YWYPH4ki6mCnrDjOPKqzOKya5mvCIXO4UMSKyG0BFxR_j58xYU-16sVbtGy5Rm_8oQeqgmFGkLWmAGchWeas7ptNuA-reGdBs"/>
+</div>
+<div>
+<h3 class="text-text-main font-bold text-base line-clamp-1">Product Designer</h3>
+<p class="text-text-secondary text-sm mt-0.5">Peak Games</p>
+</div>
+</div>
+<div class="bg-swipe-right/20 text-swipe-right px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap">
+                    Mülakat
+                </div>
+</div>
+<div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-xs text-text-secondary">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">event</span>
+<span>Yarın, 14:00</span>
+</div>
+<span class="font-semibold text-primary">Detayları Gör</span>
+</div>
+</div>
+<div class="mt-4">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-lg font-bold text-text-main">Yetenekler</h3>
+<button class="text-primary text-sm font-semibold hover:text-primary/80 transition-colors">Düzenle</button>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-4 py-2 bg-card border border-white/5 rounded-full text-sm font-medium text-text-main">Figma</span>
+<span class="px-4 py-2 bg-card border border-white/5 rounded-full text-sm font-medium text-text-main">UI Design</span>
+<span class="px-4 py-2 bg-card border border-white/5 rounded-full text-sm font-medium text-text-main">Prototyping</span>
+<span class="px-4 py-2 bg-card border border-white/5 rounded-full text-sm font-medium text-text-main">HTML/CSS</span>
+<span class="px-4 py-2 bg-card border border-white/5 rounded-full text-sm font-medium text-text-main">Design Systems</span>
+</div>
+</div>
+<div class="mt-6">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-lg font-bold text-text-main">Portfolyo</h3>
+<button class="text-primary text-sm font-semibold hover:text-primary/80 transition-colors">Tümünü Gör</button>
+</div>
+<div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4">
+<div class="min-w-[200px] h-[140px] rounded-lg bg-cover bg-center shadow-sm relative overflow-hidden group" data-alt="Screenshot of a mobile banking app interface design" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBjEdR-ecr9Dec_7632mwWihojPJjJFNrKUSA19qCKGQ-AJXi6qRwvIXfdLHPdgzdVwPnI38DDSL6mcfot3tvlVK7nrIi4eBqbPYLnmxtOvCQdv8YlrynBG1ZRbNUllN0HN0jD39sqwWnBQjrL9bom8-bo9aITdpyL_w0iu79mYcNwIA03d7OPZJ_9jLLVWgZ4q5hPzUxEk7yFJzgO25RKGB1kgcDsDprNOLcR6aYlodFHmkG3ya3BWce9bZbF8b23RJcwcpP0CnECS");'>
+<div class="absolute inset-0 bg-background/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="text-text-main font-bold">Fintech App</span>
+</div>
+</div>
+<div class="min-w-[200px] h-[140px] rounded-lg bg-cover bg-center shadow-sm relative overflow-hidden group" data-alt="Screenshot of a food delivery dashboard design" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCt1txNi6mZysfFl2O4AmuiKzh27lsg0BjakSm6nO3jFCil0gHC2UrPfwNy7HYolHepELczr7KugO_gejfTZyOJ9V3EHrbItkvQLVUSdtVIzA6fBGUM9UWkGU6z2h1eW_QlQKGxSp98sv4yAc5JuJ-ADcZsxc02uTY6IP_fSUd2mcrGj25OJ7H8mbBUMcY23k_oXFtpCncySMfcDCSx46D16sg6S5MSMcATwsGm87P43BD9ACSNq2no4d6A3a3UyDvy8WXTZxusGN-m");'>
+<div class="absolute inset-0 bg-background/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="text-text-main font-bold">Dashboard</span>
+</div>
+</div>
+<div class="min-w-[200px] h-[140px] rounded-lg bg-cover bg-center shadow-sm relative overflow-hidden group" data-alt="Abstract gradient artwork representing creative design" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCN9XDC68tqHyZrny3aGqmNabmjD90-Wm0Gd0hQDwqvJCMjYTOSFgUfbPngiRuo-4oglmlVdYsWr56rmBhvX4WuZDtvEhGUAMM3nOte-u4VDWkpuS0K6LYSOstNcsGkxrWVRI_rSb95GZ0AjtC-Cx-5OhAAi2tLEuDWU-HNYDSwXr2U0XiEYjtEy_3L3pgHNKayIbIRzg_rGKiw1rlwG0UI4Q5qf7Y9_bJ7VHeXRXZkNDkarrr-8qbin3ulyZ36LE6ZWUaajEpuN2hN");'>
+<div class="absolute inset-0 bg-background/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="text-text-main font-bold">Art Direction</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 w-full bg-background border-t border-white/5 h-20 px-6 pb-2 pt-2 z-50">
+<div class="flex justify-between items-center h-full">
+<button class="flex flex-col items-center gap-1 text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[26px]">home</span>
+<span class="text-[10px] font-medium">Anasayfa</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[26px]">group</span>
+<span class="text-[10px] font-medium">Network</span>
+</button>
+<button class="flex items-center justify-center -mt-8 rounded-full bg-primary text-background w-14 h-14 shadow-lg shadow-primary/40 ring-4 ring-background hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[32px]">style</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-text-secondary hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[26px]">chat_bubble</span>
+<span class="text-[10px] font-medium">Mesajlar</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[26px] fill-current">person</span>
+<span class="text-[10px] font-medium">Profilim</span>
+</button>
+</div>
+</div>
+</div>
+
+</body></html>

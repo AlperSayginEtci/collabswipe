@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Collab Swipe</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#A78BFA", // Marka
+                        "background-light": "#F1F5F9",
+                        "background-dark": "#0F172A", // Zemin
+                        "card-dark": "#1E293B", // Kart Rengi
+                        "input-dark": "#334155", // Derived for contrast against #1E293B
+                        "text-main": "#F1F5F9", // Ana Metin
+                        "text-secondary": "#94A3B8", // İkincil Metin
+                        "accent-green": "#34D399", // Swipe Right
+                        "accent-red": "#FB7185", // Swipe Left
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "2xl": "2.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>.scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .glass-effect {
+            background: rgba(15, 23, 42, 0.85);backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-text-main antialiased overflow-x-hidden pb-24">
+<div class="fixed top-0 left-0 right-0 z-50 glass-effect border-b border-white/5 px-4 pt-12 pb-3 flex items-center justify-between gap-3 transition-all duration-300">
+<div class="flex-shrink-0">
+<div class="h-10 w-10 rounded-full bg-cover bg-center border border-white/10" data-alt="User profile picture showing a smiling professional man" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCYeM3Wmw_ldQO8jIObGPX8VWKA87M3lBwe7e_Fnhq9cjqf8um4tCHz7D_thanpdYNms041H4tgpGi_EulngQLYWWirMxKHrpTK91GOIQJm8ua997FyrVT2IBVMLDJoEqyDtDwMhBADqjdkV0K1LPSTb5RFGGvMZeRPPdZ-FgFPc8ksP_jqfb7313M9s7uMoLY9CqdMGEN56zMgwdf836W7r5QZFFYfJ4ORCChOtfUVQ-g6aR63xuoB1fsCqg34LMB9p08xR4BxrEqw');">
+</div>
+</div>
+<div class="flex-1">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-text-secondary">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="block w-full rounded-full border-none bg-input-dark py-2.5 pl-10 pr-4 text-sm text-text-main placeholder-text-secondary focus:ring-2 focus:ring-primary focus:bg-slate-700 transition-colors" placeholder="Ara..." type="text"/>
+</div>
+</div>
+<button class="flex-shrink-0 relative h-10 w-10 flex items-center justify-center rounded-full hover:bg-white/5 active:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-text-main" style="font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;">notifications</span>
+<span class="absolute top-2 right-2 h-2.5 w-2.5 rounded-full bg-accent-red border-2 border-background-dark"></span>
+</button>
+</div>
+<div class="h-[100px]"></div>
+<div class="w-full overflow-x-auto scrollbar-hide px-4 pb-2 pt-2">
+<div class="flex gap-4 min-w-min">
+<div class="flex flex-col items-center gap-2 w-[72px] flex-shrink-0 cursor-pointer group">
+<div class="relative w-[68px] h-[68px] rounded-full p-[2px] border-2 border-dashed border-text-secondary/50 group-hover:border-primary transition-colors">
+<div class="w-full h-full rounded-full bg-input-dark flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center opacity-60" data-alt="User's profile picture blurred in background" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDph7kIXna6z8tzyYQdRSE2qJIzlwKBwL0Cldw18R7VVcwlW-V1GAbkyj68fxgIA6GiVqBFtwJO_sObgRkrWIBHFBj7sZ4PTIXrx5KkEDfJnZiaZoxlbjBt0dxjh-jrreSz45zLaTAeTgzgtKkyZC9wwaAaqyvm90EJdORrQZPOrPvpTNPdZmMxopyd1z7R5sJM3jcdmvKVCv_zoEQgP6R6viY9aISDekdEyp_30ognoDwA88Xx0Zh7fLoz9Vsu6MiY4_snaDUjNVi1');"></div>
+<span class="material-symbols-outlined text-text-main relative z-10 font-bold bg-primary/20 p-2 rounded-full">add</span>
+</div>
+</div>
+<p class="text-xs font-medium text-text-main truncate w-full text-center">Hikayem</p>
+</div>
+<div class="flex flex-col items-center gap-2 w-[72px] flex-shrink-0 cursor-pointer">
+<div class="w-[68px] h-[68px] rounded-full p-[2px] bg-gradient-to-tr from-accent-green to-primary">
+<div class="w-full h-full rounded-full border-2 border-background-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Company logo for TechCorp on a blue background" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAXVFzDvoD1jxGebVvY6YifLZpVdXEu4cYv0pF54NjNpfJYW2dq4HEHxoyRF_VVMLCmNtVDVsfUYjbx1mED70FEIiRRTNa6rz4L01ZOHciXDT6dArfcD7Lnjpmea4EaFZJZsaLLsg9AGPjbXwPrOS1EOL14xYj6VVUleES3dQjliLqqEOTvfq1OejVnjh6b16tUp0fYHGw64OUzNHgSm3KxeRuV6dn2HaZ0UN-rmSDWQ91d0urhOMOZ_uwtAh9oFCpg72c9jh3Ot_WM');"></div>
+</div>
+</div>
+<p class="text-xs font-medium text-text-main truncate w-full text-center">TechCorp</p>
+</div>
+<div class="flex flex-col items-center gap-2 w-[72px] flex-shrink-0 cursor-pointer">
+<div class="w-[68px] h-[68px] rounded-full p-[2px] bg-gradient-to-tr from-accent-green to-primary">
+<div class="w-full h-full rounded-full border-2 border-background-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Portrait of Elif K. wearing a white blouse" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA4JT06IcmP_PuVnUdN_gHrm7IzwvtoibCTKNigq4J8ZUliCLKS5UCHHjWaQKtS9UdLaMk2xbCpjNgtJz-i5fnKclUG54YoAUoynA0Ze7VUzaRaXoPIK0CuZSqHXbgCpM3_Oxm6oAMcwfq98YVGEXfF7iMsXIbGBSqMhnFiGtPAPrmNfNglTM4m6q9vnnJ3dQGs9TfVMbbIhWJrN4W4rFqxvLRUCOg2Kvf5yjYtMb_jeqQYaEI4KPU_fh1Pll3_kFmldHZOx06ZmF6M');"></div>
+</div>
+</div>
+<p class="text-xs font-medium text-text-main truncate w-full text-center">Elif K.</p>
+</div>
+<div class="flex flex-col items-center gap-2 w-[72px] flex-shrink-0 cursor-pointer">
+<div class="w-[68px] h-[68px] rounded-full p-[2px] bg-input-dark">
+<div class="w-full h-full rounded-full border-2 border-background-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Logo for SoftSys software company" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDmwnocxLCO6yXHHz35zXbUBgqmd5moKbaLmmka5jTegwf0dPAizq2L-E3gOzbsYQYxRfATCAsRnObh-BW2JHlQ_WE020_lG6ywDUSgXdsg9zUHCUrjOUYDB63SLFLIti82gY-w_661SgWHCvjogOr_Qx-l921r4eU9yF_1OwtLJj-GrfddBXsBrH5Nzr5LX0ura86F9K-LaUULq0Oy7JMmiQNwcsdUnzotM9o2n7gftXpwCrvRKommw9iU0frXSTN_A5r3N9Qkji9e');"></div>
+</div>
+</div>
+<p class="text-xs font-medium text-text-secondary truncate w-full text-center">SoftSys</p>
+</div>
+<div class="flex flex-col items-center gap-2 w-[72px] flex-shrink-0 cursor-pointer">
+<div class="w-[68px] h-[68px] rounded-full p-[2px] bg-gradient-to-tr from-accent-green to-primary">
+<div class="w-full h-full rounded-full border-2 border-background-dark overflow-hidden">
+<div class="w-full h-full bg-cover bg-center" data-alt="Portrait of Mehmet wearing glasses" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDLetlRNc89_5uwuuxhhCAKE90WTrkfW3W8rL_H8_F70mAEbs5Ib078owrLqJIhzZQqW5UwUL8x3AA1MV96VORO_AkNOrrUmdxPBhdu9EyEdKEOVXLumLKGEYYqFJZfEmijv3wbzOKlok1cjrSHU0Wb0GxV54rUzLS2yubIrl8PVAkD6HLkR85FqDcz0Gzu59s1tU6kvwX6FyniT79N_o7v4T3QYtEjQmDtEa_Ja2qys-c7qUNTD2crYk6tWVcWQntmiuhpwpZauqug');"></div>
+</div>
+</div>
+<p class="text-xs font-medium text-text-main truncate w-full text-center">Mehmet</p>
+</div>
+</div>
+</div>
+<div class="sticky top-[104px] z-40 bg-background-dark/95 backdrop-blur-sm py-3 border-b border-white/5">
+<div class="w-full overflow-x-auto scrollbar-hide px-4">
+<div class="flex gap-2">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary pl-5 pr-5 shadow-lg shadow-primary/20 transition-transform active:scale-95">
+<p class="text-white text-sm font-semibold">Tümü</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-input-dark border border-white/5 pl-5 pr-5 hover:bg-slate-700 transition-colors active:scale-95">
+<p class="text-text-secondary text-sm font-medium">İş İlanları</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-input-dark border border-white/5 pl-5 pr-5 hover:bg-slate-700 transition-colors active:scale-95">
+<p class="text-text-secondary text-sm font-medium">Haberler</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-input-dark border border-white/5 pl-5 pr-5 hover:bg-slate-700 transition-colors active:scale-95">
+<p class="text-text-secondary text-sm font-medium">Ağım</p>
+</button>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4 px-4 pt-4">
+<article class="flex flex-col rounded-xl bg-card-dark shadow-sm border border-white/5 overflow-hidden">
+<div class="p-4 pb-2 flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-10">
+<div class="absolute top-0 left-0 w-10 h-10 rounded-full border-2 border-card-dark bg-cover bg-center z-10" data-alt="Profile picture of Recruiter Ahmet Yılmaz" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAtEFVUuDOuUf8xi9PAYV3c7dj8P2xZrgeuyvh7luQha8j06iuRLz-ADdHc1NTjvTaYC3BYZ-XGHsgZwsxl0AnOcem_95mcm8uMUTGTutCfb7ZvB3B1hnnWRKNQvxlaRuJ1KnYDVa9Az3nEICAgyAUSyAAU4Hy6Lj-h9DJs6hWiXjqn2WG_nKFXfJoEXVD8Rb2ryqGLeSoGI5nsBl3BBlbgax7kxBx247hUaOkGfvIoeM58QCbuEXULPpmDlMLnBUMCVzZkjvRmeJi3');"></div>
+<div class="absolute top-0 left-6 w-10 h-10 rounded-full border-2 border-card-dark bg-cover bg-center bg-white" data-alt="Company logo of TechCorp" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAnrppLVcOTQYeb_B-1Qox_rSXyyyg0fsytAdFzT4E0oFEOeXA2YSDjeKN5xI9GnvvtbWE51FT2LR998hvgatAK_RTZiTRmqxlpAMQEMqe9FZrSyz5ZA1tmjJqcbE7GNlpCgQBA-2z_4xBf5Wa68M7epDjdmMdDb6TnQFfi8T79CMT_6aFZS7FllFBO82ISKxFELA7r33e4oxufO08r9h926ExCC5OaGVlROfqRcdrPlbGsG6-4U78e4ZjpZa-mg6W7ehQJKjv4xZMC');"></div>
+</div>
+<div class="flex flex-col pl-6"> 
+<div class="flex flex-wrap items-baseline gap-1">
+<span class="text-text-main text-sm font-bold">Ahmet Yılmaz</span>
+<span class="text-text-secondary text-xs">ve</span>
+<span class="text-text-main text-sm font-bold">TechCorp</span>
+</div>
+<span class="text-text-secondary text-xs">2 saat önce • İstanbul</span>
+</div>
+</div>
+<button class="text-text-secondary p-1 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="px-4 py-2">
+<p class="text-text-main text-sm leading-relaxed mb-3">
+                    Ekibimiz büyüyor! 🚀 Yeni ofisimizde görev almak üzere <span class="text-primary font-medium cursor-pointer">#SeniorDeveloper</span> arıyoruz. Yaratıcı projelerde yer almak istiyorsanız başvurunuzu bekliyoruz.
+                </p>
+<div class="flex flex-wrap gap-2 mb-3">
+<span class="bg-primary/10 text-primary text-xs px-2.5 py-1 rounded-full font-medium">Tam Zamanlı</span>
+<span class="bg-primary/10 text-primary text-xs px-2.5 py-1 rounded-full font-medium">Hibrit</span>
+<span class="bg-white/5 text-text-secondary text-xs px-2.5 py-1 rounded-full font-medium">İstanbul</span>
+</div>
+</div>
+<div class="w-full bg-cover bg-center aspect-video relative group cursor-pointer" data-alt="Modern open office space with employees working at desks with computers" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBgz5PSz9dkk1edbaCGztdtokNzITzId5aiWBLxmkqDMda8JHzFGV1H2wGgSrEOO-8r39R5uFBeCkhYDsjG4KfiYxSaVItL2l72QCtDbWoqwUjR5r5Xhi5hN0LKP_QCVQdFVkVe0mdw0RzdiHKQCZLHMzhWseP8_EE6fpMKwtp5eCXkeDdg8Yg87wmh_7IEMcin_i9j6w93pXAYkegHbYziLfs9wpijmIUZSa8CWrGU5Xoj61aLtAhisEtvH9RGh7LhnPaPP46R7TND');">
+<div class="absolute bottom-4 right-4">
+<button class="bg-primary hover:bg-violet-400 text-white text-sm font-bold py-2 px-6 rounded-full shadow-lg transition-transform active:scale-95 flex items-center gap-2">
+<span>Başvur</span>
+<span class="material-symbols-outlined text-lg">arrow_outward</span>
+</button>
+</div>
+</div>
+<div class="px-4 py-3 flex items-center justify-between border-t border-white/5">
+<div class="flex items-center gap-1 text-text-secondary text-xs">
+<div class="flex -space-x-1.5 mr-2">
+<div class="w-5 h-5 rounded-full border border-card-dark bg-gray-400 bg-cover bg-center" data-alt="Small avatar of a liker" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAqNdRa5lKDPUw04okyo8eNrzaYDvwPGqTnOjqq2GyVHBpk0N5ppBpR5ij3ALEBH6iVPM37-dC-WLUdIgVNLjpm0QmC1uiN2FVMEv-wgL2SUFujldl6KhQl7DPFdq2oR-uVMiCR2QIaw8IBxo4tjdcPAwe3VAONKKjg5X7eNHZ_ETJ0LBr-S_wwhlYABglfV3cdhcaDWMNhN5-p0kt68rfsPNdYxG0jI976CBLRaAwafOtGpdPmgn653w28ac13mIXALB8uGhCED7P0')"></div>
+<div class="w-5 h-5 rounded-full border border-card-dark bg-gray-400 bg-cover bg-center" data-alt="Small avatar of a liker" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB1Ta5-dr3C2BTKKXJgAiqgTG7eZv8hJlFrUztQKuy__bF2YghZZODnMFYHzaCGVG0aazXk3LA8R90BW49XUx24G53gHXxus4uUN8FQf2kC7cogM2hlqVoLKblXihFDYKYHpr9x0l4yl69c0mz88FE7FK28grKvid348APy945wLOzkr4fnlXfMDXwiwOSMQ8UkDL8bDDq7MThLCdnhuM1tGzwCTCnFv-KpTQOVByk9sxLqGdMzmxPB336C_1lbvz3pnW4G3j86-RYS')"></div>
+<div class="w-5 h-5 rounded-full border border-card-dark bg-primary flex items-center justify-center text-[8px] text-white font-bold">+42</div>
+</div>
+<span>kişi başvurdu</span>
+</div>
+<span class="text-text-secondary text-xs">12 yorum • 5 paylaşım</span>
+</div>
+<div class="px-2 pb-2 grid grid-cols-4 gap-1">
+<button class="flex flex-col items-center justify-center py-2 rounded-lg hover:bg-white/5 text-text-secondary hover:text-primary transition-colors gap-1">
+<span class="material-symbols-outlined text-[22px]">thumb_up</span>
+<span class="text-[10px] font-medium">Beğen</span>
+</button>
+<button class="flex flex-col items-center justify-center py-2 rounded-lg hover:bg-white/5 text-text-secondary hover:text-text-main transition-colors gap-1">
+<span class="material-symbols-outlined text-[22px]">chat_bubble</span>
+<span class="text-[10px] font-medium">Yorum</span>
+</button>
+<button class="flex flex-col items-center justify-center py-2 rounded-lg hover:bg-white/5 text-text-secondary hover:text-text-main transition-colors gap-1">
+<span class="material-symbols-outlined text-[22px]">share</span>
+<span class="text-[10px] font-medium">Paylaş</span>
+</button>
+<button class="flex flex-col items-center justify-center py-2 rounded-lg hover:bg-white/5 text-text-secondary hover:text-text-main transition-colors gap-1">
+<span class="material-symbols-outlined text-[22px]">bookmark</span>
+<span class="text-[10px] font-medium">Kaydet</span>
+</button>
+</div>
+</article>
+<div class="py-2">
+<div class="flex items-center justify-between px-1 mb-3">
+<h3 class="text-text-main text-sm font-semibold">İlginizi çekebilir</h3>
+<button class="text-primary text-xs font-medium hover:underline">Tümünü gör</button>
+</div>
+<div class="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+<div class="w-[140px] shrink-0 bg-card-dark rounded-xl p-3 flex flex-col items-center border border-white/5 relative">
+<button class="absolute top-2 right-2 text-text-secondary hover:text-text-main">
+<span class="material-symbols-outlined text-base">close</span>
+</button>
+<div class="w-14 h-14 rounded-full bg-cover bg-center mb-2 mt-1" data-alt="Logo of DesignStudio agency" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBlTvCS_I8kV4oWWZlvUYdTc35IaobO2iMxCaLXgX47HeTqeW2WG0wPXe98vITc2ftX5zl0u5lonQPhifpJjPoRVBym4U3SxiM0zmoyQTWFEGZObc0mzOwUmfh5lEOQmwIyUpdXO96M5T9hDQPoxrxp09e5k2lTChvmZ5f0rtLGu1I39P9f8RIAHKj8DKyyfRP9yjhaO4xYobxr-fABomsNwPRWgjjQDxmOidkfCVY_fw1haZyU5XauiCRPHZYixmU67Zi16s4_VJYE');"></div>
+<p class="text-text-main text-xs font-bold text-center truncate w-full">DesignStudio</p>
+<p class="text-text-secondary text-[10px] text-center mb-3 truncate w-full">Tasarım &amp; Medya</p>
+<button class="w-full py-1.5 rounded-full bg-input-dark hover:bg-white/10 text-primary text-xs font-semibold transition-colors border border-primary/30">
+                        Takip Et
+                    </button>
+</div>
+<div class="w-[140px] shrink-0 bg-card-dark rounded-xl p-3 flex flex-col items-center border border-white/5 relative">
+<button class="absolute top-2 right-2 text-text-secondary hover:text-text-main">
+<span class="material-symbols-outlined text-base">close</span>
+</button>
+<div class="w-14 h-14 rounded-full bg-cover bg-center mb-2 mt-1" data-alt="Portrait of software engineer Canan" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDGU3cocg6rYRuAsEyPe75eRqMMfJNkXVke9Yhnz4KCBsY1vt5rF-75sk_Yxym7y2ZL3gIaLp6-kPFaSKmyrvu2sYdUxTbi1UNfLhHqVxZKCx2UeTVy5BPL9F4_9V1vRgAPCCb5KWPbZmRCQokPz0NDIfjl3z0TeH2MNiyJCtQtbaS7TBC8puIPmC9jsfNO6nubn-7BjbwWmCmi4Lz2cFMDHtY9SaTB9TVSv3hXiYIB6d6iwrhnGyJmJ9EgVPu0Zyws40Z2WzfjwvuC');"></div>
+<p class="text-text-main text-xs font-bold text-center truncate w-full">Canan D.</p>
+<p class="text-text-secondary text-[10px] text-center mb-3 truncate w-full">İK Uzmanı</p>
+<button class="w-full py-1.5 rounded-full bg-input-dark hover:bg-white/10 text-primary text-xs font-semibold transition-colors border border-primary/30">
+                        Takip Et
+                    </button>
+</div>
+<div class="w-[140px] shrink-0 bg-card-dark rounded-xl p-3 flex flex-col items-center border border-white/5 relative">
+<button class="absolute top-2 right-2 text-text-secondary hover:text-text-main">
+<span class="material-symbols-outlined text-base">close</span>
+</button>
+<div class="w-14 h-14 rounded-full bg-cover bg-center mb-2 mt-1" data-alt="Logo of Global Logistic company" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAvZMGzm9dqrJQptjYT275B61LTkMXPtVHKZltegndlISxIZe2u6bhazDjmmEbOusj5YUPQK-ZizRnA_rdeUp_HJoQGSm70cPyiHU4odX3hfBDllD3uNTXveN3Mud8eeYAZTka_U_s7q5BO2CahuyCWPrT-STZe3vDnvaHR9mq35jiDacrqiYqg_0YZsgTgAcnXjQRRLuHZtK4a2k2UxsLPpRwAUZaTImqgiLgG8ZqLC8MaoE0wA6V2fws2pTDv0hYwU99H-5U4Exxe');"></div>
+<p class="text-text-main text-xs font-bold text-center truncate w-full">Global Log</p>
+<p class="text-text-secondary text-[10px] text-center mb-3 truncate w-full">Lojistik</p>
+<button class="w-full py-1.5 rounded-full bg-input-dark hover:bg-white/10 text-primary text-xs font-semibold transition-colors border border-primary/30">
+                        Takip Et
+                    </button>
+</div>
+</div>
+</div>
+<article class="flex flex-col rounded-xl bg-card-dark shadow-sm border border-white/5 overflow-hidden mb-6">
+<div class="p-4 flex items-start justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="Logo of SoftSys company" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDQvaCBWS6onl9yjGnFMLWKCHMw5wLJIHaxdZ6TtK_O-WAnmbbGvgY5mSmcIF6RhHE-rT3l04VFSLIpcruUv62bixmyVNyIZRRSk_AqugB_YTU4cBMtfV59FkkmNwKifSWLb5yawqiAVUkzbUI7fECftQ2OuC2BWlxrqo06csV0XA-lM_o8JZmosPHxLwUkMw6kwtsA91oVK5TDq7UqOlLcEqFP7lv8z--QSMdfQL9z8CoAh0g4us9AIRmkokGGReFlREKBN_oV3mwd');"></div>
+<div class="flex flex-col">
+<span class="text-text-main text-sm font-bold">SoftSys</span>
+<span class="text-text-secondary text-xs">5 saat önce</span>
+</div>
+</div>
+<button class="text-text-secondary p-1 rounded-full hover:bg-white/5">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="px-4 pb-2">
+<p class="text-text-main text-sm leading-relaxed mb-3">
+                    Yapay zeka destekli yeni ürünümüzü duyurmaktan gurur duyuyoruz! Müşteri deneyimini dönüştürmek için tasarlandı. Detaylar yakında... 🤖✨ <span class="text-primary cursor-pointer">#AI</span> <span class="text-primary cursor-pointer">#Innovation</span>
+</p>
+</div>
+<div class="w-full bg-cover bg-center aspect-[4/3]" data-alt="Abstract visualization of artificial intelligence data nodes glowing blue" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCR6FvzJ_I0II1ig4KQRJrBBc9q8Y9lsXVotDJX9IRA2hZ47i4grnptEmlheFUS95WAcMk0j9vvSW2k7ZrIoERbgDXZXB8gW8phutoKLhFOMXrmTl8qwUSr9fYfne7_wCK5IzCtTIg0T4Psu7snH7HbM0uzpSmbp7d5x3-4h86PXXEW2VXWKPsYnHLzOAnTtprCjKL8v0LYgCe5NvorTBzysvew6km6Z32Od8jTM1eAG2GnNwavcsuBZotVTixRkTYXskjD33eUb2R8');">
+</div>
+<div class="px-4 py-3 flex items-center justify-between border-t border-white/5">
+<div class="flex items-center gap-1.5 text-text-secondary text-xs">
+<div class="flex items-center justify-center w-5 h-5 bg-primary rounded-full">
+<span class="material-symbols-outlined text-[12px] text-white">thumb_up</span>
+</div>
+<span>245 beğeni</span>
+</div>
+<span class="text-text-secondary text-xs">18 yorum</span>
+</div>
+<div class="px-2 pb-2 grid grid-cols-4 gap-1">
+<button class="flex flex-col items-center justify-center py-2 rounded-lg hover:bg-white/5 text-primary hover:text-primary transition-colors gap-1">
+<span class="material-symbols-outlined text-[22px] font-bold" style="font-variation-settings: 'FILL' 1;">thumb_up</span>
+<span class="text-[10px] font-medium">Beğendin</span>
+</button>
+<button class="flex flex-col items-center justify-center py-2 rounded-lg hover:bg-white/5 text-text-secondary hover:text-text-main transition-colors gap-1">
+<span class="material-symbols-outlined text-[22px]">chat_bubble</span>
+<span class="text-[10px] font-medium">Yorum</span>
+</button>
+<button class="flex flex-col items-center justify-center py-2 rounded-lg hover:bg-white/5 text-text-secondary hover:text-text-main transition-colors gap-1">
+<span class="material-symbols-outlined text-[22px]">share</span>
+<span class="text-[10px] font-medium">Paylaş</span>
+</button>
+<button class="flex flex-col items-center justify-center py-2 rounded-lg hover:bg-white/5 text-text-secondary hover:text-text-main transition-colors gap-1">
+<span class="material-symbols-outlined text-[22px]">send</span>
+<span class="text-[10px] font-medium">Gönder</span>
+</button>
+</div>
+</article>
+</div>
+<div class="fixed bottom-0 w-full z-50 glass-effect border-t border-white/5 pb-5 pt-3 px-6">
+<div class="flex items-center justify-between">
+<button class="flex flex-col items-center gap-1 text-primary w-12 group">
+<span class="material-symbols-outlined text-[26px] group-active:scale-95 transition-transform" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-[10px] font-medium">Ana Sayfa</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-text-secondary hover:text-text-main w-12 group transition-colors">
+<span class="material-symbols-outlined text-[26px] group-active:scale-95 transition-transform">search</span>
+<span class="text-[10px] font-medium">Keşfet</span>
+</button>
+<button class="flex items-center justify-center -mt-6 bg-primary text-white h-14 w-14 rounded-full shadow-lg shadow-primary/40 hover:bg-violet-400 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[30px]">add</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-text-secondary hover:text-text-main w-12 group transition-colors">
+<span class="material-symbols-outlined text-[26px] group-active:scale-95 transition-transform">group</span>
+<span class="text-[10px] font-medium">Ağım</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-text-secondary hover:text-text-main w-12 group transition-colors">
+<span class="material-symbols-outlined text-[26px] group-active:scale-95 transition-transform">work</span>
+<span class="text-[10px] font-medium">İlanlar</span>
+</button>
+</div>
+</div>
+</body></html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>E-posta Doğrulama - Collab Swipe</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#A78BFA",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0F172A",
+                        "surface-dark": "#1E293B",
+                        "surface-highlight": "#334155",
+                        "text-main": "#F1F5F9",
+                        "text-secondary": "#94A3B8",
+                        "swipe-right": "#34D399",
+                        "swipe-left": "#FB7185"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen w-full flex justify-center overflow-x-hidden">
+<div class="relative flex h-full min-h-screen w-full max-w-md flex-col bg-background-light dark:bg-background-dark shadow-xl overflow-hidden">
+<div class="flex items-center justify-between px-6 pt-6 pb-2">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 text-slate-900 dark:text-text-main hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="text-sm font-medium text-slate-500 dark:text-text-secondary">E-posta Doğrulama</div>
+</div>
+<div class="flex flex-col items-center px-6 pt-12 pb-6 flex-1">
+<div class="relative mb-8">
+<div class="w-24 h-24 rounded-[2rem] bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center shadow-lg shadow-primary/20 relative z-10">
+<span class="material-symbols-outlined text-5xl text-white">mark_email_unread</span>
+</div>
+<div class="absolute -top-3 -right-3 w-10 h-10 bg-background-light dark:bg-background-dark rounded-full flex items-center justify-center z-20">
+<div class="w-8 h-8 bg-swipe-right rounded-full flex items-center justify-center border-2 border-white dark:border-background-dark">
+<span class="material-symbols-outlined text-white text-sm font-bold">priority_high</span>
+</div>
+</div>
+</div>
+<h1 class="text-slate-900 dark:text-text-main text-3xl font-bold text-center leading-tight mb-4">
+            Lütfen E-postanı Doğrula
+        </h1>
+<p class="text-slate-500 dark:text-text-secondary text-center text-sm px-4 leading-relaxed mb-8">
+            Kaydın başarıyla alındı! Profil oluşturma adımına geçebilmen için <strong class="text-slate-800 dark:text-text-main font-semibold">kullanici@mail.com</strong> adresine gönderdiğimiz doğrulama bağlantısına tıkla veya kodu kullan.
+        </p>
+<div class="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-surface-highlight rounded-2xl p-4 mb-8 flex items-center gap-4 shadow-sm select-none">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary text-2xl">mail</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="text-xs text-slate-400 dark:text-text-secondary uppercase tracking-wider font-semibold mb-0.5">Gönderen</div>
+<div class="text-sm text-slate-900 dark:text-text-main truncate font-medium">verify@collabswipe.com</div>
+</div>
+<div class="w-6 h-6 rounded-full bg-swipe-right/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-swipe-right text-sm font-bold">check</span>
+</div>
+</div>
+<div class="w-full flex flex-col gap-3">
+<button class="w-full h-14 bg-primary hover:bg-violet-400 active:scale-[0.98] transition-all rounded-full flex items-center justify-center shadow-lg shadow-primary/25">
+<span class="text-background-dark text-base font-bold tracking-wide">E-posta Uygulamasını Aç</span>
+</button>
+<button class="w-full h-14 bg-transparent border border-slate-200 dark:border-surface-highlight hover:bg-slate-50 dark:hover:bg-surface-highlight active:scale-[0.98] transition-all rounded-full flex items-center justify-center">
+<span class="text-slate-600 dark:text-text-secondary font-semibold">Profili Oluştur</span>
+</button>
+</div>
+</div>
+<div class="p-6 pt-0 mt-auto">
+<div class="flex flex-col items-center">
+<p class="text-center text-xs text-slate-400 dark:text-text-secondary mb-2">
+                E-postayı almadın mı? Spam klasörünü kontrol et veya
+            </p>
+<button class="text-primary hover:text-primary/80 font-medium text-sm py-2 px-4 transition-colors">
+                Tekrar Gönder
+            </button>
+</div>
+</div>
+<div class="h-6 w-full"></div>
+</div>
+</body></html>

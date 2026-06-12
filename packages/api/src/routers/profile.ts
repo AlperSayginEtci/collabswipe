@@ -16,7 +16,7 @@ export const profileRouter = createTRPCRouter({
           languages: { include: { language: true } },
           user: { 
             select: { 
-              name: true, surname: true, username: true, image: true, role: true, sector: true,
+              name: true, surname: true, image: true, role: true, sector: true,
               _count: { select: { followers: { where: { isAccepted: true } }, following: { where: { isAccepted: true } } } }
             } 
           },
@@ -45,7 +45,6 @@ export const profileRouter = createTRPCRouter({
           user: {
             name: user.name,
             surname: (user as any).surname,
-            username: user.username,
             image: user.image,
             role: (user as any).role,
             sector: (user as any).sector,
@@ -62,7 +61,6 @@ export const profileRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
-        username: z.string().min(3).regex(/^[a-z0-9_]+$/, 'Sadece küçük harf, rakam ve alt çizgi kullanılabilir.').optional(),
         name: z.string().optional(),
         surname: z.string().optional(),
         image: z.string().optional(),
@@ -75,25 +73,15 @@ export const profileRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const { userId, username, name, surname, image, ...data } = input
-      
-      if (username) {
-        const existing = await ctx.prisma.user.findFirst({
-          where: { username, id: { not: userId } }
-        });
-        if (existing) {
-          throw new Error("Bu kullanıcı adı daha önce alınmış.");
-        }
-      }
+      const { userId, name, surname, image, ...data } = input
 
-      if (name !== undefined || surname !== undefined || image !== undefined || username !== undefined) {
+      if (name !== undefined || surname !== undefined || image !== undefined) {
         await ctx.prisma.user.update({
           where: { id: userId },
           data: {
             ...(name !== undefined && { name }),
             ...(surname !== undefined && { surname }),
             ...(image !== undefined && { image }),
-            ...(username !== undefined && { username }),
           },
         });
       }

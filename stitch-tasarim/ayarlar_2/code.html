@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ayarlar</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: "#A78BFA",       // Marka
+                        base: "#0F172A",        // Zemin
+                        card: "#1E293B",        // Kart Rengi
+                        txt: "#F1F5F9",         // Ana Metin
+                        sub: "#94A3B8",         // İkincil Metin
+                        success: "#34D399",     // Swipe Right
+                        danger: "#FB7185",      // Swipe Left
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-base min-h-screen font-display text-txt overflow-x-hidden antialiased">
+<div class="relative flex h-full w-full max-w-md mx-auto flex-col pb-32">
+<div class="sticky top-0 z-40 flex items-center bg-base/95 backdrop-blur-md p-4 pb-2 justify-between border-b border-white/5">
+<div class="text-txt flex size-10 shrink-0 items-center justify-center cursor-pointer active:scale-95 transition-transform rounded-full hover:bg-white/10">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back_ios_new</span>
+</div>
+<h2 class="text-txt text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Ayarlar</h2>
+</div>
+<div class="flex p-4 mt-2">
+<div class="flex w-full items-center gap-4 bg-card p-4 rounded-2xl shadow-sm border border-white/5">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-16 w-16 shrink-0 border-2 border-brand/20" data-alt="Professional profile photo of a young man smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDcmU2lVzBWcDKAVBvePC-iqurscRhiFN3cGk5OfQCKO1v78Pfh9ZWHkhBBdZFSEPoe4iXCUXanShyg5bJTzVPI05gO2xSkTMjHZLlpfJNdKmLFHKQZp_h-74sq01pmhzBs2U7--hxMvhFkaHASWF9S7DOVKnyxAnTM9gSnZLe3PIrwPAlVBWVi0ztDN6zXVxhCj9EXAO0p0fCRh6El-MxyYueJFNSSp0DbXvtcIhceCdtPHQU5mqqIbznKd_wgRb9P9D-5CU64AyQO");'>
+</div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<p class="text-txt text-xl font-bold leading-tight truncate">Ahmet Yılmaz</p>
+<p class="text-sub text-sm font-medium mt-1">Yazılım Geliştirici</p>
+<button class="text-brand text-sm font-semibold leading-normal text-left mt-1 hover:text-brand/80 w-fit flex items-center gap-1">
+                        Profili Düzenle
+                        <span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+</div>
+</div>
+</div>
+<div class="px-4 mt-2">
+<h4 class="text-sub text-xs font-bold uppercase tracking-wider px-2 py-3 mb-1">Hesap</h4>
+<div class="flex flex-col overflow-hidden rounded-2xl bg-card border border-white/5 shadow-sm divide-y divide-white/5">
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-brand flex items-center justify-center rounded-full bg-brand/10 shrink-0 size-10 transition-colors group-hover:bg-brand group-hover:text-base">
+<span class="material-symbols-outlined">manage_accounts</span>
+</div>
+<p class="text-txt text-base font-medium leading-normal flex-1 truncate">Hesap Yönetimi</p>
+</div>
+<div class="shrink-0 text-sub">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-brand flex items-center justify-center rounded-full bg-brand/10 shrink-0 size-10 transition-colors group-hover:bg-brand group-hover:text-base">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<p class="text-txt text-base font-medium leading-normal flex-1 truncate">Gizlilik Ayarları</p>
+</div>
+<div class="shrink-0 text-sub">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4 mt-2">
+<h4 class="text-sub text-xs font-bold uppercase tracking-wider px-2 py-3 mb-1">Tercihler</h4>
+<div class="flex flex-col overflow-hidden rounded-2xl bg-card border border-white/5 shadow-sm divide-y divide-white/5">
+<div class="flex items-center gap-4 px-4 py-4 justify-between group">
+<div class="flex items-center gap-4">
+<div class="text-brand flex items-center justify-center rounded-full bg-brand/10 shrink-0 size-10">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<div class="flex flex-col">
+<p class="text-txt text-base font-medium leading-normal flex-1 truncate">Bildirimler</p>
+<p class="text-sub text-xs">İş alarmları ve mesajlar</p>
+</div>
+</div>
+<div class="shrink-0">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand"></div>
+</label>
+</div>
+</div>
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-brand flex items-center justify-center rounded-full bg-brand/10 shrink-0 size-10 transition-colors group-hover:bg-brand group-hover:text-base">
+<span class="material-symbols-outlined">language</span>
+</div>
+<p class="text-txt text-base font-medium leading-normal flex-1 truncate">Dil Seçimi</p>
+</div>
+<div class="shrink-0 flex items-center gap-2 text-sub">
+<span class="text-sm text-sub font-medium">Türkçe</span>
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-brand flex items-center justify-center rounded-full bg-brand/10 shrink-0 size-10 transition-colors group-hover:bg-brand group-hover:text-base">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<p class="text-txt text-base font-medium leading-normal flex-1 truncate">Görünüm</p>
+</div>
+<div class="shrink-0 flex items-center gap-2 text-sub">
+<span class="text-sm text-sub font-medium">Karanlık</span>
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4 mt-2">
+<h4 class="text-sub text-xs font-bold uppercase tracking-wider px-2 py-3 mb-1">Destek &amp; Yasal</h4>
+<div class="flex flex-col overflow-hidden rounded-2xl bg-card border border-white/5 shadow-sm divide-y divide-white/5">
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-brand flex items-center justify-center rounded-full bg-brand/10 shrink-0 size-10 transition-colors group-hover:bg-brand group-hover:text-base">
+<span class="material-symbols-outlined">help_center</span>
+</div>
+<p class="text-txt text-base font-medium leading-normal flex-1 truncate">Yardım Merkezi</p>
+</div>
+<div class="shrink-0 text-sub">
+<span class="material-symbols-outlined">open_in_new</span>
+</div>
+</div>
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-brand flex items-center justify-center rounded-full bg-brand/10 shrink-0 size-10 transition-colors group-hover:bg-brand group-hover:text-base">
+<span class="material-symbols-outlined">description</span>
+</div>
+<p class="text-txt text-base font-medium leading-normal flex-1 truncate">Kullanım Koşulları</p>
+</div>
+<div class="shrink-0 text-sub">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 mt-6 flex flex-col items-center gap-4">
+<button class="w-full rounded-2xl bg-card border border-danger/30 p-4 flex items-center justify-center gap-2 group active:scale-95 transition-all hover:bg-danger/5">
+<span class="material-symbols-outlined text-danger group-hover:text-danger">logout</span>
+<span class="text-danger group-hover:text-danger font-bold text-base">Çıkış Yap</span>
+</button>
+<div class="text-center">
+<p class="text-sub text-xs font-medium">Collab Swipe v4.2.0 (Build 302)</p>
+</div>
+</div>
+<nav class="fixed bottom-0 left-0 right-0 z-50 mx-auto w-full max-w-md bg-base/80 backdrop-blur-xl border-t border-white/5 pb-5 pt-3">
+<div class="flex items-center justify-around px-2">
+<button class="group flex flex-1 flex-col items-center gap-1 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sub group-hover:text-txt transition-colors text-[26px]">home</span>
+<span class="text-[10px] font-medium text-sub group-hover:text-txt transition-colors">Home</span>
+</button>
+<button class="group flex flex-1 flex-col items-center gap-1 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sub group-hover:text-txt transition-colors text-[26px]">group</span>
+<span class="text-[10px] font-medium text-sub group-hover:text-txt transition-colors">Network</span>
+</button>
+<button class="group flex flex-1 flex-col items-center gap-1 -mt-6 active:scale-95 transition-transform">
+<div class="flex items-center justify-center size-14 rounded-full bg-brand shadow-lg shadow-brand/40 text-white border-4 border-base group-hover:scale-105 transition-all">
+<span class="material-symbols-outlined text-[28px]">style</span>
+</div>
+<span class="text-[10px] font-semibold text-brand transition-colors">Swipe</span>
+</button>
+<button class="group flex flex-1 flex-col items-center gap-1 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-sub group-hover:text-txt transition-colors text-[26px]">chat_bubble</span>
+<span class="text-[10px] font-medium text-sub group-hover:text-txt transition-colors">DM</span>
+</button>
+<button class="group flex flex-1 flex-col items-center gap-1 active:scale-95 transition-transform">
+<span class="material-symbols-outlined filled text-brand transition-colors text-[26px]">person</span>
+<span class="text-[10px] font-medium text-brand transition-colors">Profile</span>
+</button>
+</div>
+</nav>
+</div>
+</body></html>

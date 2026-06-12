@@ -37,7 +37,6 @@ function ProfilePage() {
   
   const [editName, setEditName] = useState('');
   const [editSurname, setEditSurname] = useState('');
-  const [editUsername, setEditUsername] = useState('');
   const [editBio, setEditBio] = useState('');
   const [editLocation, setEditLocation] = useState('');
   const [editCountryCode, setEditCountryCode] = useState('');
@@ -167,7 +166,6 @@ function ProfilePage() {
           setEditBanner(data.banner || '');
           setEditName(session.user.name || '');
           setEditSurname((session.user as any).surname || '');
-          setEditUsername((session.user as any)?.username || `${(session.user?.name || '').toLowerCase().replace(/\s+/g, '')}${((session.user as any)?.surname || '').toLowerCase().replace(/\s+/g, '')}`);
           setEditImage(session.user.image || '');
           setEditIsPrivate(data.isPrivate || false);
         }
@@ -305,11 +303,10 @@ function ProfilePage() {
     if (!userId) return;
     
     // Auth sistemindeki oturumu güncelleyelim (Böylece JWT / Cookie içindeki resim de güncellenir)
-    if (editName !== session?.user?.name || editImage !== session?.user?.image || editUsername !== (session?.user as any)?.username) {
+    if (editName !== session?.user?.name || editImage !== session?.user?.image) {
       await authClient.updateUser({
         name: editName,
         image: editImage,
-        username: editUsername,
       } as any);
     }
 
@@ -331,7 +328,6 @@ function ProfilePage() {
 
     updateProfile.mutate({
       userId,
-      username: editUsername.trim() === '' ? undefined : editUsername.trim(),
       name: editName,
       surname: editSurname,
       image: editImage,
@@ -521,12 +517,6 @@ function ProfilePage() {
                     <input type="text" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Ad" className="bg-background border border-border rounded px-3 py-1.5 font-black text-xl w-32" />
                     <input type="text" value={editSurname} onChange={e => setEditSurname(e.target.value)} placeholder="Soyad" className="bg-background border border-border rounded px-3 py-1.5 font-black text-xl w-32" />
                   </div>
-                  <div className="mb-2">
-                    <div className="flex items-center text-muted-foreground bg-background border border-border rounded px-3 w-48 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
-                      <span className="text-sm font-medium pr-1 select-none">@</span>
-                      <input type="text" value={editUsername} onChange={e => setEditUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))} placeholder="kullanici_adi" className="bg-transparent py-1 text-sm font-bold w-full outline-none" />
-                    </div>
-                  </div>
                   <div className="mb-2 flex items-center gap-2 mt-3">
                     <input 
                       type="checkbox" 
@@ -545,9 +535,6 @@ function ProfilePage() {
                   <h1 className="text-2xl sm:text-3xl font-black text-foreground">
                     {isOwnProfile ? session?.user?.name : profile?.user?.name} {isOwnProfile ? (session?.user as any)?.surname : profile?.user?.surname}
                   </h1>
-                  <p className="text-primary font-bold text-sm mt-0.5">
-                    @{isOwnProfile ? ((session?.user as any)?.username || `${(session?.user?.name || '').toLowerCase().replace(/\s+/g, '')}${((session?.user as any)?.surname || '').toLowerCase().replace(/\s+/g, '')}`) : profile?.user?.username}
-                  </p>
                 </>
               )}
               {isOwnProfile && (
@@ -636,7 +623,6 @@ function ProfilePage() {
                     setEditBanner(profile?.banner || '');
                     setEditName(session?.user?.name || '');
                     setEditSurname((session?.user as any)?.surname || '');
-                    setEditUsername((session?.user as any)?.username || `${(session?.user?.name || '').toLowerCase().replace(/\s+/g, '')}${((session?.user as any)?.surname || '').toLowerCase().replace(/\s+/g, '')}`);
                     setEditImage(session?.user?.image || '');
                     setIsEditing(true);
                   }} className="w-full sm:w-auto bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-bold hover:opacity-90 flex items-center justify-center gap-2 shadow-sm">

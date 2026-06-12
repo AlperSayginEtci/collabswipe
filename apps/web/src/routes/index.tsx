@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { 
   Send, Image as ImageIcon, Video, Calendar, FileText, 
-  MessageSquare, Repeat2, Send as SendIcon, ThumbsUp, MoreHorizontal, 
+  MessageSquare, Repeat2, SendIcon, ThumbsUp, MoreHorizontal, 
   Trash2, X, Globe, Clock, AlertCircle, UserPlus, Users
 } from 'lucide-react';
+import { MentionTextarea } from '@/components/MentionTextarea';
+import { MentionInput } from '@/components/MentionInput';
+import { FormattedText } from '@/components/FormattedText';
 import { trpc } from '@/lib/trpc';
 import { useState } from 'react';
 import { useSession } from '@collabswipe/auth/client';
@@ -704,7 +707,7 @@ function HomeFeed() {
                   <div className="space-y-3 mb-4">
                     {contentToRender && (
                       <p className="text-foreground text-sm leading-relaxed whitespace-pre-line">
-                        {showSeeMore ? `${contentToRender.slice(0, textLimit)}...` : contentToRender}
+                        <FormattedText text={showSeeMore ? `${contentToRender.slice(0, textLimit)}...` : contentToRender} />
                         {showSeeMore && (
                           <button 
                             onClick={() => toggleExpandText(post.id)}
@@ -751,8 +754,8 @@ function HomeFeed() {
                             </p>
                           </div>
                         </div>
-                        <p className="text-foreground/90 text-xs leading-normal">
-                          {post.originalPost?.content}
+                        <p className="text-foreground/90 text-sm leading-relaxed mb-3">
+                          <FormattedText text={post.originalPost?.content || ''} />
                         </p>
                         {post.originalPost?.mediaUrl && (
                           <div className="rounded-lg overflow-hidden border border-border/40 max-h-60 bg-muted/10">
@@ -913,15 +916,14 @@ function HomeFeed() {
                           )}
                         </div>
                         <div className="flex-1 flex gap-2">
-                          <input 
-                            type="text" 
+                          <MentionInput 
                             placeholder="Yorum ekle..."
                             value={commentTexts[post.id] || ''}
-                            onChange={(e) => setCommentTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
+                            onChange={(val) => setCommentTexts(prev => ({ ...prev, [post.id]: val }))}
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') handleAddComment(post.id);
                             }}
-                            className="flex-1 bg-muted/60 border border-border/40 hover:border-border/80 focus:border-primary/80 focus:outline-none px-3 py-2 rounded-xl text-sm transition-colors"
+                            className="w-full bg-muted/60 border border-border/40 hover:border-border/80 focus:border-primary/80 focus:outline-none px-3 py-2 rounded-xl text-sm transition-colors"
                           />
                           <button 
                             onClick={() => handleAddComment(post.id)}
@@ -1082,10 +1084,10 @@ function HomeFeed() {
               </div>
 
               {/* Text Area */}
-              <textarea 
+              <MentionTextarea 
                 placeholder={repostTarget ? "Bu paylaşım hakkında ne düşünüyorsunuz?" : "Neler düşünüyorsunuz? Bir güncelleme paylaşın..."}
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={(val) => setContent(val)}
                 className="w-full min-h-[120px] bg-transparent resize-none focus:outline-none text-sm placeholder:text-muted-foreground/75 leading-relaxed"
                 autoFocus
               />
