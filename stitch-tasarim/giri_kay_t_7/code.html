@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Şifremi Unuttum - Collab Swipe</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#A78BFA",
+                        "background-light": "#f8fafc",
+                        "background-dark": "#0F172A",
+                        "surface-dark": "#1E293B",
+                        "surface-highlight": "#334155",
+                        "text-main": "#F1F5F9",
+                        "text-secondary": "#94A3B8",
+                        "swipe-right": "#34D399",
+                        "swipe-left": "#FB7185"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen w-full flex justify-center overflow-x-hidden">
+<div class="relative flex h-full min-h-screen w-full max-w-md flex-col bg-background-light dark:bg-background-dark shadow-xl overflow-hidden">
+<div class="flex items-center justify-between px-6 pt-6 pb-2">
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-white/10 text-slate-900 dark:text-text-main hover:bg-white/20 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="text-sm font-medium text-slate-500 dark:text-text-secondary">Şifre Sıfırlama</div>
+</div>
+<div class="flex flex-col items-center px-6 pt-10 pb-8">
+<div class="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center mb-8 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-4xl text-white">lock_reset</span>
+</div>
+<h1 class="text-slate-900 dark:text-text-main text-3xl font-bold text-center leading-tight mb-4">
+            Şifremi Unuttum
+        </h1>
+<p class="text-slate-500 dark:text-text-secondary text-center text-sm px-4 leading-relaxed max-w-xs mx-auto">
+            Hesabınızla ilişkili e-posta adresini girin, şifrenizi sıfırlamanız için size bir bağlantı gönderelim.
+        </p>
+</div>
+<div class="flex flex-col gap-6 px-6 pb-6 flex-1">
+<label class="flex flex-col gap-2">
+<span class="text-slate-700 dark:text-text-main text-sm font-medium ml-1">E-posta</span>
+<div class="relative">
+<div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-text-secondary">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</div>
+<input class="w-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-surface-highlight rounded-2xl h-14 pl-12 pr-4 text-slate-900 dark:text-text-main placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-base" placeholder="ornek@email.com" type="email"/>
+</div>
+</label>
+<button class="mt-4 w-full h-14 bg-primary hover:bg-violet-400 active:scale-[0.98] transition-all rounded-full flex items-center justify-center shadow-lg shadow-primary/25">
+<span class="text-background-dark text-base font-bold tracking-wide">Bağlantı Gönder</span>
+</button>
+</div>
+<div class="p-6 pt-0 mt-auto mb-6">
+<p class="text-center text-sm text-slate-400 dark:text-text-secondary">
+            Şifreni hatırladın mı? <a class="text-primary font-semibold hover:text-primary/80 transition-colors ml-1" href="#">Giriş Yap</a>
+</p>
+</div>
+<div class="h-6 w-full"></div>
+</div>
+
+</body></html>

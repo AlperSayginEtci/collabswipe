@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Image, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useRouter, useLocalSearchParams, Redirect } from 'expo-router';
 import { trpc } from '../lib/trpc';
 import { useUser } from '../context/UserContext';
 
@@ -16,8 +16,12 @@ export default function NetworkScreen() {
   const isOwner = targetUserId === loggedInUserId;
 
   const [activeTab, setActiveTab] = useState<TabType>((initialTab as TabType) || 'followers');
-
   const utils = trpc.useUtils();
+
+  if (!loggedInUserId) {
+    return <Redirect href="/auth" />;
+  }
+
 
   const { data: followers, isLoading: loadingFollowers } = trpc.connection.getFollowers.useQuery(
     { userId: targetUserId || '' },
@@ -141,7 +145,7 @@ export default function NetworkScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)')} style={styles.backBtn}>
           <MaterialCommunityIcons name="arrow-left" size={24} color="#1A1A1A" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Ağım</Text>

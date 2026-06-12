@@ -8,6 +8,9 @@ export const Route = createFileRoute('/support')({
   component: SupportPage,
 });
 
+const getSafeImageSrc = (url: string) =>
+  /^(https?:|blob:|data:image\/)/i.test(url) ? url : '';
+
 function SupportPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [subject, setSubject] = useState('');
@@ -186,7 +189,7 @@ function SupportPage() {
                                 {url.match(/\.(mp4|webm|ogg)\?/) ? (
                                   <video src={url} controls className="w-full h-full object-cover" />
                                 ) : (
-                                  <img src={url.replace('dl=0', 'raw=1')} alt="attachment" className="w-full h-full object-cover max-h-[250px]" />
+                                  <img src={getSafeImageSrc(url.replace('dl=0', 'raw=1'))} alt="attachment" className="w-full h-full object-cover max-h-[250px]" />
                                 )}
                               </div>
                             ))}
@@ -218,9 +221,11 @@ function SupportPage() {
                     
                     {replyMediaPreviewUrls.length > 0 && (
                       <div className="flex gap-2 flex-wrap z-20">
-                        {replyMediaPreviewUrls.map((url, idx) => (
+                        {replyMediaPreviewUrls.map((_, idx) => (
                           <div key={idx} className="relative inline-block">
-                            <img src={url} alt="Preview" className="h-20 w-20 rounded-lg object-cover border border-border/50" />
+                            <div className="h-20 w-20 rounded-lg border border-border/50 bg-muted/40 flex items-center justify-center text-muted-foreground">
+                              <ImageIcon className="w-5 h-5" />
+                            </div>
                             <button onClick={() => removePreview(idx, true)} className="absolute -top-2 -right-2 bg-foreground text-background rounded-full p-1 shadow-lg hover:scale-110 transition-transform">
                               <X className="w-3 h-3" />
                             </button>
@@ -315,9 +320,11 @@ function SupportPage() {
 
               {mediaPreviewUrls.length > 0 && (
                 <div className="flex gap-3 flex-wrap">
-                  {mediaPreviewUrls.map((url, idx) => (
+                  {mediaPreviewUrls.map((_, idx) => (
                     <div key={idx} className="relative inline-block">
-                      <img src={url} alt="Preview" className="h-24 w-24 rounded-xl object-cover border border-border shadow-md" />
+                      <div className="h-24 w-24 rounded-xl border border-border shadow-md bg-muted/40 flex items-center justify-center text-muted-foreground">
+                        <ImageIcon className="w-6 h-6" />
+                      </div>
                       <button onClick={() => removePreview(idx, false)} className="absolute -top-2 -right-2 bg-foreground text-background rounded-full p-1.5 shadow-xl hover:scale-110 transition-transform z-10">
                         <X className="w-3 h-3" />
                       </button>

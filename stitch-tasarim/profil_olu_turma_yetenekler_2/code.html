@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profil Oluşturma - Yetenekler</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#A78BFA", // Updated Brand Color
+              "background-light": "#f6f7f8", // Kept for light mode fallback if needed, though dark is main context
+              "background-dark": "#0F172A", // Updated Background Color
+              "surface-dark": "#1E293B", // Updated Card Color
+              "text-main": "#F1F5F9", // Updated Main Text Color
+              "text-secondary": "#94A3B8", // Updated Secondary Text Color
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-text-main antialiased overflow-hidden">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-y-auto overflow-x-hidden mx-auto max-w-md bg-background-light dark:bg-background-dark shadow-2xl">
+<div class="sticky top-0 z-10 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between">
+<button class="text-slate-900 dark:text-text-main flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-text-main text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">Profil Oluşturma</h2>
+</div>
+<div class="flex w-full flex-row items-center justify-center gap-3 py-5">
+<div class="h-2 w-2 rounded-full bg-slate-300 dark:bg-surface-dark"></div>
+<div class="h-2 w-2 rounded-full bg-slate-300 dark:bg-surface-dark"></div>
+<div class="h-2 w-8 rounded-full bg-primary transition-all duration-300"></div>
+<div class="h-2 w-2 rounded-full bg-slate-300 dark:bg-surface-dark"></div>
+<div class="h-2 w-2 rounded-full bg-slate-300 dark:bg-surface-dark"></div>
+</div>
+<div class="flex flex-col px-4">
+<h1 class="text-slate-900 dark:text-text-main tracking-light text-[32px] font-bold leading-tight text-left pb-3 pt-2">Yeteneklerin neler?</h1>
+<p class="text-slate-600 dark:text-text-secondary text-base font-normal leading-normal pb-6">Sana en uygun iş fırsatlarını bulabilmemiz için yeteneklerini ekle. En az 3 yetenek seçmen önerilir.</p>
+</div>
+<div class="px-4 pb-4">
+<label class="flex flex-col h-14 w-full">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full shadow-sm bg-white dark:bg-surface-dark">
+<div class="text-slate-500 dark:text-text-secondary flex border-none items-center justify-center pl-4 rounded-l-xl border-r-0">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-text-main focus:outline-0 focus:ring-2 focus:ring-primary/50 border-none bg-transparent focus:border-none h-full placeholder:text-slate-400 dark:placeholder:text-text-secondary px-4 rounded-l-none border-l-0 pl-2 text-base font-normal leading-normal" placeholder="Yetenek ara (örn. Swift, Pazarlama)" value=""/>
+</div>
+</label>
+</div>
+<div class="px-4 py-2">
+<h3 class="text-sm font-semibold text-slate-500 dark:text-text-secondary uppercase tracking-wider mb-3">Seçilenler</h3>
+<div class="flex flex-wrap gap-2">
+<button class="group flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-white shadow-md hover:bg-primary/90 transition-all">
+<span>UI Design</span>
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+<button class="group flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-white shadow-md hover:bg-primary/90 transition-all">
+<span>Figma</span>
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+<button class="group flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-white shadow-md hover:bg-primary/90 transition-all">
+<span>Prototyping</span>
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+</div>
+<div class="px-4 py-6 flex-1">
+<h3 class="text-sm font-semibold text-slate-500 dark:text-text-secondary uppercase tracking-wider mb-3">Önerilenler</h3>
+<div class="flex flex-wrap gap-2">
+<button class="group flex items-center gap-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-transparent px-4 py-2 text-sm font-medium text-slate-700 dark:text-text-main hover:bg-slate-100 dark:hover:bg-primary/20 hover:border-primary/50 transition-all">
+<span>Adobe XD</span>
+<span class="material-symbols-outlined text-[18px] text-slate-400 dark:text-text-secondary group-hover:text-primary">add</span>
+</button>
+<button class="group flex items-center gap-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-transparent px-4 py-2 text-sm font-medium text-slate-700 dark:text-text-main hover:bg-slate-100 dark:hover:bg-primary/20 hover:border-primary/50 transition-all">
+<span>User Research</span>
+<span class="material-symbols-outlined text-[18px] text-slate-400 dark:text-text-secondary group-hover:text-primary">add</span>
+</button>
+<button class="group flex items-center gap-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-transparent px-4 py-2 text-sm font-medium text-slate-700 dark:text-text-main hover:bg-slate-100 dark:hover:bg-primary/20 hover:border-primary/50 transition-all">
+<span>Wireframing</span>
+<span class="material-symbols-outlined text-[18px] text-slate-400 dark:text-text-secondary group-hover:text-primary">add</span>
+</button>
+<button class="group flex items-center gap-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-transparent px-4 py-2 text-sm font-medium text-slate-700 dark:text-text-main hover:bg-slate-100 dark:hover:bg-primary/20 hover:border-primary/50 transition-all">
+<span>Sketch</span>
+<span class="material-symbols-outlined text-[18px] text-slate-400 dark:text-text-secondary group-hover:text-primary">add</span>
+</button>
+<button class="group flex items-center gap-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-transparent px-4 py-2 text-sm font-medium text-slate-700 dark:text-text-main hover:bg-slate-100 dark:hover:bg-primary/20 hover:border-primary/50 transition-all">
+<span>HTML/CSS</span>
+<span class="material-symbols-outlined text-[18px] text-slate-400 dark:text-text-secondary group-hover:text-primary">add</span>
+</button>
+<button class="group flex items-center gap-2 rounded-full bg-white dark:bg-surface-dark border border-slate-200 dark:border-transparent px-4 py-2 text-sm font-medium text-slate-700 dark:text-text-main hover:bg-slate-100 dark:hover:bg-primary/20 hover:border-primary/50 transition-all">
+<span>Mobile Design</span>
+<span class="material-symbols-outlined text-[18px] text-slate-400 dark:text-text-secondary group-hover:text-primary">add</span>
+</button>
+</div>
+</div>
+<div class="mt-auto w-full p-4 bg-background-light dark:bg-background-dark/80 backdrop-blur-md sticky bottom-0 border-t border-slate-200 dark:border-white/5">
+<div class="flex flex-col gap-3">
+<button class="flex w-full items-center justify-center rounded-full bg-primary px-6 py-4 text-base font-bold text-white shadow-lg shadow-primary/25 hover:bg-primary/90 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    Devam Et
+                </button>
+<button class="flex w-full items-center justify-center rounded-full bg-transparent px-6 py-2 text-base font-medium text-slate-500 dark:text-text-secondary hover:text-slate-900 dark:hover:text-text-main transition-colors">
+                    Şimdilik Atla
+                </button>
+</div>
+</div>
+</div>
+
+</body></html>

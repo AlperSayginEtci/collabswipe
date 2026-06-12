@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ayarlar</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13a4ec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22",
+                        "surface-dark": "#1a262d", // Slightly lighter for cards/lists
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen font-display text-slate-900 dark:text-white overflow-x-hidden antialiased">
+<div class="relative flex h-full w-full max-w-md mx-auto flex-col pb-10">
+<!-- TopAppBar -->
+<div class="sticky top-0 z-50 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-gray-200 dark:border-white/5 backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
+<div class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center cursor-pointer active:scale-95 transition-transform rounded-full hover:bg-black/5 dark:hover:bg-white/10">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back_ios_new</span>
+</div>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">Ayarlar</h2>
+</div>
+<!-- ProfileHeader -->
+<div class="flex p-4 mt-2">
+<div class="flex w-full items-center gap-4 bg-white dark:bg-surface-dark p-4 rounded-2xl shadow-sm dark:shadow-none border border-gray-100 dark:border-white/5">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-16 w-16 shrink-0 border-2 border-primary/20" data-alt="Professional profile photo of a young man smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDcmU2lVzBWcDKAVBvePC-iqurscRhiFN3cGk5OfQCKO1v78Pfh9ZWHkhBBdZFSEPoe4iXCUXanShyg5bJTzVPI05gO2xSkTMjHZLlpfJNdKmLFHKQZp_h-74sq01pmhzBs2U7--hxMvhFkaHASWF9S7DOVKnyxAnTM9gSnZLe3PIrwPAlVBWVi0ztDN6zXVxhCj9EXAO0p0fCRh6El-MxyYueJFNSSp0DbXvtcIhceCdtPHQU5mqqIbznKd_wgRb9P9D-5CU64AyQO");'>
+</div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white text-xl font-bold leading-tight truncate">Ahmet Yılmaz</p>
+<p class="text-slate-500 dark:text-[#92b7c9] text-sm font-medium mt-1">Yazılım Geliştirici</p>
+<button class="text-primary text-sm font-semibold leading-normal text-left mt-1 hover:underline w-fit flex items-center gap-1">
+                        Profili Düzenle
+                        <span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Section 1: HESAP -->
+<div class="px-4 mt-2">
+<h4 class="text-slate-500 dark:text-[#92b7c9] text-xs font-bold uppercase tracking-wider px-2 py-3 mb-1">Hesap</h4>
+<div class="flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none divide-y divide-gray-100 dark:divide-white/5">
+<!-- Account Management -->
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-full bg-primary/10 shrink-0 size-10 transition-colors group-hover:bg-primary group-hover:text-white">
+<span class="material-symbols-outlined">manage_accounts</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal flex-1 truncate">Hesap Yönetimi</p>
+</div>
+<div class="shrink-0 text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<!-- Privacy Settings -->
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-full bg-primary/10 shrink-0 size-10 transition-colors group-hover:bg-primary group-hover:text-white">
+<span class="material-symbols-outlined">lock</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal flex-1 truncate">Gizlilik Ayarları</p>
+</div>
+<div class="shrink-0 text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: TERCİHLER -->
+<div class="px-4 mt-2">
+<h4 class="text-slate-500 dark:text-[#92b7c9] text-xs font-bold uppercase tracking-wider px-2 py-3 mb-1">Tercihler</h4>
+<div class="flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none divide-y divide-gray-100 dark:divide-white/5">
+<!-- Notifications -->
+<div class="flex items-center gap-4 px-4 py-4 justify-between group">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-full bg-primary/10 shrink-0 size-10">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<div class="flex flex-col">
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal flex-1 truncate">Bildirimler</p>
+<p class="text-slate-500 dark:text-gray-400 text-xs">İş alarmları ve mesajlar</p>
+</div>
+</div>
+<div class="shrink-0">
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+<!-- Language -->
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-full bg-primary/10 shrink-0 size-10 transition-colors group-hover:bg-primary group-hover:text-white">
+<span class="material-symbols-outlined">language</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal flex-1 truncate">Dil Seçimi</p>
+</div>
+<div class="shrink-0 flex items-center gap-2 text-gray-400 dark:text-gray-500">
+<span class="text-sm text-slate-500 dark:text-gray-400 font-medium">Türkçe</span>
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+<!-- Theme -->
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-full bg-primary/10 shrink-0 size-10 transition-colors group-hover:bg-primary group-hover:text-white">
+<span class="material-symbols-outlined">dark_mode</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal flex-1 truncate">Görünüm</p>
+</div>
+<div class="shrink-0 flex items-center gap-2 text-gray-400 dark:text-gray-500">
+<span class="text-sm text-slate-500 dark:text-gray-400 font-medium">Karanlık</span>
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: DESTEK & YASAL -->
+<div class="px-4 mt-2">
+<h4 class="text-slate-500 dark:text-[#92b7c9] text-xs font-bold uppercase tracking-wider px-2 py-3 mb-1">Destek &amp; Yasal</h4>
+<div class="flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-white/5 shadow-sm dark:shadow-none divide-y divide-gray-100 dark:divide-white/5">
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-full bg-primary/10 shrink-0 size-10 transition-colors group-hover:bg-primary group-hover:text-white">
+<span class="material-symbols-outlined">help_center</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal flex-1 truncate">Yardım Merkezi</p>
+</div>
+<div class="shrink-0 text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined">open_in_new</span>
+</div>
+</div>
+<div class="flex items-center gap-4 px-4 py-4 justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-4">
+<div class="text-primary flex items-center justify-center rounded-full bg-primary/10 shrink-0 size-10 transition-colors group-hover:bg-primary group-hover:text-white">
+<span class="material-symbols-outlined">description</span>
+</div>
+<p class="text-slate-900 dark:text-white text-base font-medium leading-normal flex-1 truncate">Kullanım Koşulları</p>
+</div>
+<div class="shrink-0 text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="p-4 mt-6 flex flex-col items-center gap-4">
+<button class="w-full rounded-2xl bg-white dark:bg-surface-dark border border-red-100 dark:border-red-900/30 p-4 flex items-center justify-center gap-2 group active:scale-95 transition-all">
+<span class="material-symbols-outlined text-red-500 group-hover:text-red-600">logout</span>
+<span class="text-red-500 group-hover:text-red-600 font-bold text-base">Çıkış Yap</span>
+</button>
+<div class="text-center">
+<p class="text-slate-400 dark:text-gray-600 text-xs font-medium">v4.2.0 (Build 302)</p>
+</div>
+</div>
+<div class="h-6"></div> <!-- Safe area spacing -->
+</div>
+</body></html>

@@ -4,6 +4,8 @@ import { useSession } from '@collabswipe/auth/client';
 import { ArrowLeft, Clock, MoreHorizontal, Send as SendIcon, Trash2, Heart, MessageSquare, Repeat2, Share2, ThumbsUp } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
+import { MentionTextarea } from '@/components/MentionTextarea';
+import { FormattedText } from '@/components/FormattedText';
 
 function EditPostModal({ post, isOpen, onClose }: { post: any; isOpen: boolean; onClose: () => void }) {
   const [content, setContent] = useState(post?.content || '');
@@ -326,7 +328,7 @@ function PostDetailPage() {
         <div className="space-y-4 mb-6">
           {contentToRender && (
             <p className="text-foreground text-[15px] leading-relaxed whitespace-pre-line">
-              {showSeeMore ? `${contentToRender.slice(0, textLimit)}...` : contentToRender}
+              <FormattedText text={showSeeMore ? `${contentToRender.slice(0, textLimit)}...` : contentToRender} />
               {showSeeMore && (
                 <button onClick={() => setIsExpanded(true)} className="text-primary hover:underline font-semibold ml-2 inline-block focus:outline-none">
                   Devamını oku
@@ -357,7 +359,7 @@ function PostDetailPage() {
                 </div>
               </div>
               <p className="text-foreground/90 text-sm leading-relaxed mb-3">
-                {post.originalPost?.content}
+                <FormattedText text={post.originalPost?.content || ''} />
               </p>
               {post.originalPost?.mediaUrl && (
                 <div className="rounded-xl overflow-hidden border border-border/40 max-h-80 bg-muted/10">
@@ -425,9 +427,9 @@ function PostDetailPage() {
               />
             </div>
             <div className="flex-1 flex flex-col gap-2">
-              <textarea 
+              <MentionTextarea 
                 value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
+                onChange={(val) => setCommentText(val)}
                 placeholder="Yorum ekle..."
                 className="w-full bg-muted/40 border border-border/60 hover:border-border/80 focus:border-primary/80 focus:outline-none px-4 py-3 rounded-2xl text-sm transition-colors resize-none min-h-[80px]"
               />

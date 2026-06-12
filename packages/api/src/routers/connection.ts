@@ -300,7 +300,7 @@ export const connectionRouter = createTRPCRouter({
       ctx.prisma.follows.findMany({
         where: { followingId: input.userId, isAccepted: true },
         include: {
-          follower: { select: { id: true, name: true, surname: true, image: true, username: true } },
+          follower: { select: { id: true, name: true, surname: true, image: true, } },
         },
       })
     ),
@@ -311,7 +311,7 @@ export const connectionRouter = createTRPCRouter({
       ctx.prisma.follows.findMany({
         where: { followerId: input.userId, isAccepted: true },
         include: {
-          following: { select: { id: true, name: true, surname: true, image: true, username: true } },
+          following: { select: { id: true, name: true, surname: true, image: true, } },
         },
       })
     ),
@@ -323,7 +323,7 @@ export const connectionRouter = createTRPCRouter({
       ctx.prisma.follows.findMany({
         where: { followingId: input.userId, isAccepted: false },
         include: {
-          follower: { select: { id: true, name: true, surname: true, image: true, username: true } },
+          follower: { select: { id: true, name: true, surname: true, image: true, } },
         },
       })
     ),

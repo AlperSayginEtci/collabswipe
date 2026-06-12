@@ -87,7 +87,6 @@ function NetworkPage() {
           <h1 className="font-black text-xl text-foreground">
             {profile?.user?.name} {profile?.user?.surname}
           </h1>
-          <p className="text-sm text-muted-foreground">@{profile?.user?.username}</p>
         </div>
       </div>
 
@@ -151,7 +150,6 @@ function NetworkPage() {
               </div>
               <div className="min-w-0">
                 <h4 className="font-bold text-sm text-foreground truncate hover:underline">{item.follower.name} {item.follower.surname}</h4>
-                <p className="text-xs text-muted-foreground truncate">@{item.follower.name?.toLowerCase()}</p>
               </div>
             </Link>
             {loggedInUserId !== item.follower.id && (
@@ -181,7 +179,6 @@ function NetworkPage() {
               </div>
               <div className="min-w-0">
                 <h4 className="font-bold text-sm text-foreground truncate hover:underline">{item.following.name} {item.following.surname}</h4>
-                <p className="text-xs text-muted-foreground truncate">@{item.following.name?.toLowerCase()}</p>
               </div>
             </Link>
             {loggedInUserId !== item.following.id && (
@@ -210,7 +207,6 @@ function NetworkPage() {
               </div>
               <div className="min-w-0">
                 <h4 className="font-bold text-sm text-foreground truncate hover:underline">{item.follower.name} {item.follower.surname}</h4>
-                <p className="text-xs text-muted-foreground truncate">@{item.follower.name?.toLowerCase()}</p>
               </div>
             </Link>
             <div className="flex items-center gap-2 ml-2">
@@ -250,7 +246,6 @@ function NetworkPage() {
                 </div>
                 <div className="min-w-0">
                   <h4 className="font-bold text-sm text-foreground truncate hover:underline">{user.name} {user.surname}</h4>
-                  <p className="text-xs text-muted-foreground truncate">@{user.username || user.name?.toLowerCase()}</p>
                 </div>
               </Link>
             </div>
@@ -273,7 +268,6 @@ function NetworkPage() {
               </div>
               <div className="min-w-0">
                 <h4 className="font-bold text-sm text-foreground truncate hover:underline">{item.requester.name} {item.requester.surname}</h4>
-                <p className="text-xs text-muted-foreground truncate">@{item.requester.username || item.requester.name?.toLowerCase()}</p>
               </div>
             </Link>
             <div className="flex items-center gap-2 ml-2">

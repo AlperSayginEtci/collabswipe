@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
-import { X, Heart, Code, MapPin, Sparkles, Briefcase, User, Filter, RotateCcw } from 'lucide-react';
+import { X, Heart, Code, MapPin, Sparkles, Briefcase, User, Filter, RotateCcw, ChevronDown } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { useSession } from '@collabswipe/auth/client';
 import toast from 'react-hot-toast';
@@ -492,7 +492,7 @@ function DiscoverPage() {
                 <ScrollContainer className={`flex-1 overflow-y-auto relative no-scrollbar ${isTop ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                   {/* Image/Header Area (Swipeable) */}
                   <div
-                    className={`relative w-full h-[65%] flex-shrink-0 ${isTop ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                    className={`relative w-full h-[70%] flex-shrink-0 ${isTop ? 'cursor-grab active:cursor-grabbing' : ''}`}
                     onMouseDown={isTop ? (e) => handleDragStart(e.clientX, e.clientY) : undefined}
                     onMouseMove={isTop ? (e) => {
                       if (e.buttons !== 1) return;
@@ -526,7 +526,7 @@ function DiscoverPage() {
                         alt="Banner"
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/10 to-black/90 z-10" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent z-10" />
                     </div>
 
                     {/* Like/Nope Overlays */}
@@ -540,19 +540,6 @@ function DiscoverPage() {
                         GEÇ
                       </div>
                     )}
-
-                    {/* Location or Type Badge */}
-                    <div className="absolute top-6 right-6 z-20 bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-full text-xs font-bold text-white flex items-center gap-1.5 border border-white/20">
-                      {isProfiles ? (
-                        <>
-                          <MapPin className="w-4 h-4 text-primary" /> {currentItem.profile?.location || 'Türkiye'}
-                        </>
-                      ) : (
-                        <>
-                          <Briefcase className="w-4 h-4 text-primary" /> {currentItem.type}
-                        </>
-                      )}
-                    </div>
                     
                     {/* Basic Info at bottom of image */}
                     <div className="absolute bottom-6 left-6 right-6 z-20 pointer-events-none text-white">
@@ -562,15 +549,39 @@ function DiscoverPage() {
                           : currentItem.title}
                       </h2>
                       {!isProfiles && (
-                        <h3 className="text-primary font-bold text-base drop-shadow-sm">
+                        <h3 className="text-primary font-bold text-base drop-shadow-sm mb-1">
                           {`${currentItem.publisher?.name || 'Şirket'} ${currentItem.publisher?.surname || ''}`}
                         </h3>
                       )}
+                      
+                      <div className="flex items-center gap-1.5 text-sm font-bold text-gray-200 mt-1 mb-3">
+                        {isProfiles ? (
+                          <>
+                            <MapPin className="w-4 h-4 text-gray-300" /> {currentItem.profile?.location || 'Türkiye'}
+                          </>
+                        ) : (
+                          <>
+                            <Briefcase className="w-4 h-4 text-gray-300" /> {currentItem.type}
+                          </>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {(isProfiles ? (currentItem.profile?.skills?.map((s:any) => s.skill.skillName) || []) : (currentItem.requirements?.map((r:any) => r.skillName) || [])).slice(0, 3).map((s: string) => (
+                          <span key={s} className="bg-white/20 text-white border border-white/10 px-3 py-1 rounded-xl text-xs font-bold shadow-sm backdrop-blur-sm">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex justify-center w-full mt-4 opacity-60">
+                        <ChevronDown className="w-8 h-8 text-white" />
+                      </div>
                     </div>
                   </div>
 
                   {/* Scrollable Details */}
-                  <div className="relative bg-card min-h-[60%] rounded-t-[2.5rem] -mt-6 p-6 pt-8 z-20 pb-8">
+                  <div className="relative bg-white min-h-[60%] rounded-t-[32px] -mt-5 p-6 pt-7 z-20 pb-8">
                     <ScrollableCardDetails currentItem={currentItem} isProfiles={isProfiles} />
                   </div>
                 </ScrollContainer>
@@ -607,55 +618,39 @@ function ScrollableCardDetails({ currentItem, isProfiles }: { currentItem: any, 
   
   const bio = isProfiles 
     ? (currentItem.profile?.bio || 'Bu kullanıcı henüz bir biyografi eklememiş.')
-    : (currentItem.description);
+    : (currentItem.description || 'Detaylı bir açıklama girilmemiş.');
   
   const isBioLong = bio.length > 150;
   
   const skills = isProfiles ? (currentItem.profile?.skills?.map((s:any) => s.skill.skillName) || []) : (currentItem.requirements?.map((r:any) => r.skillName) || []);
-  const displaySkills = skills.slice(0, 5);
-  const remainingSkills = skills.slice(5);
 
   return (
     <div className="flex flex-col gap-6">
       {/* Bio */}
       <div>
-        <h3 className="font-bold text-lg mb-2">Hakkında</h3>
-        <p className={`text-muted-foreground text-sm leading-relaxed ${!bioExpanded && isBioLong ? 'line-clamp-3' : ''}`}>
+        <h3 className="font-bold text-lg text-black mb-2">Hakkında</h3>
+        <p className={`text-[#444] text-[14px] leading-relaxed ${!bioExpanded && isBioLong ? 'line-clamp-4' : ''}`}>
           {bio}
         </p>
-        {isBioLong && (
-          <button onClick={() => setBioExpanded(!bioExpanded)} className="text-primary text-sm font-bold mt-1 hover:underline">
-            {bioExpanded ? 'Daha az göster' : '...devamını oku'}
+        {isBioLong && !bioExpanded && (
+          <button onClick={() => setBioExpanded(true)} className="text-[#666] text-[14px] font-bold mt-1">
+            ...devam et
           </button>
         )}
       </div>
 
-      {/* Top Skills */}
-      {displaySkills.length > 0 && (
+      {/* All Skills */}
+      {skills.length > 3 && (
         <div>
-           <h3 className="font-bold text-lg mb-2">Yetenekler</h3>
+           <h3 className="font-bold text-lg text-black mb-2">Tüm Yetenekler</h3>
            <div className="flex flex-wrap gap-2">
              {(!isProfiles && (currentItem as any).matchScore > 0) && (
-                <span className="bg-yellow-500/10 text-yellow-600 border border-yellow-400/50 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                <span className="bg-yellow-500/10 text-yellow-600 border border-yellow-400/50 px-3 py-1.5 rounded-[20px] text-[13px] font-semibold flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5" /> Önerilen
                 </span>
              )}
-             {displaySkills.map((s: string) => (
-               <span key={s} className="bg-secondary text-secondary-foreground px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
-                 <Code className="w-3.5 h-3.5" /> {s}
-               </span>
-             ))}
-           </div>
-        </div>
-      )}
-
-      {/* All Skills */}
-      {remainingSkills.length > 0 && (
-        <div>
-           <h3 className="font-bold text-lg mb-2">Tüm Yetenekler</h3>
-           <div className="flex flex-wrap gap-2">
              {skills.map((s: string) => (
-               <span key={`all-${s}`} className="bg-secondary/50 text-secondary-foreground px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
+               <span key={s} className="bg-black/5 border border-black/5 text-[#333] px-3 py-1.5 rounded-[20px] text-[13px] font-semibold">
                  {s}
                </span>
              ))}
@@ -666,16 +661,16 @@ function ScrollableCardDetails({ currentItem, isProfiles }: { currentItem: any, 
       {/* Experiences */}
       {isProfiles && currentItem.profile?.experiences?.length > 0 && (
         <div>
-           <h3 className="font-bold text-lg mb-3">Deneyimler</h3>
-           <div className="flex flex-col gap-4">
+           <h3 className="font-bold text-lg text-black mb-2">Deneyimler</h3>
+           <div className="flex flex-col">
              {currentItem.profile.experiences.map((exp: any) => (
-               <div key={exp.expId} className="flex flex-col border-l-2 border-border pl-3 ml-1">
-                 <span className="font-bold text-foreground">{exp.title}</span>
-                 <span className="text-sm text-muted-foreground">{exp.corp}</span>
-                 <span className="text-xs text-muted-foreground/70 mb-1">
+               <div key={exp.expId} className="flex flex-col mb-4 pb-4 border-b border-black/5">
+                 <span className="font-bold text-[16px] text-black mb-1">{exp.title}</span>
+                 <span className="text-[15px] text-[#666] mb-1">{exp.corp}</span>
+                 <span className="text-[13px] text-[#999] mb-1.5">
                    {new Date(exp.startDate).getFullYear()} - {exp.endDate ? new Date(exp.endDate).getFullYear() : 'Devam Ediyor'}
                  </span>
-                 {exp.desc && <span className="text-sm text-muted-foreground mt-1">{exp.desc}</span>}
+                 {exp.desc && <span className="text-[14px] text-[#444] leading-[20px]">{exp.desc}</span>}
                </div>
              ))}
            </div>
@@ -685,13 +680,13 @@ function ScrollableCardDetails({ currentItem, isProfiles }: { currentItem: any, 
       {/* Educations */}
       {isProfiles && currentItem.profile?.educations?.length > 0 && (
         <div>
-           <h3 className="font-bold text-lg mb-3">Eğitim</h3>
-           <div className="flex flex-col gap-4">
+           <h3 className="font-bold text-lg text-black mb-2">Eğitim</h3>
+           <div className="flex flex-col">
              {currentItem.profile.educations.map((edu: any) => (
-               <div key={edu.eduId} className="flex flex-col border-l-2 border-border pl-3 ml-1">
-                 <span className="font-bold text-foreground">{edu.instName}</span>
-                 <span className="text-sm text-muted-foreground">{edu.instProgram} • {edu.instDegree}</span>
-                 <span className="text-xs text-muted-foreground/70">
+               <div key={edu.eduId} className="flex flex-col mb-4 pb-4 border-b border-black/5">
+                 <span className="font-bold text-[16px] text-black mb-1">{edu.instName}</span>
+                 <span className="text-[15px] text-[#666] mb-1">{edu.instProgram} • {edu.instDegree}</span>
+                 <span className="text-[13px] text-[#999] mb-1.5">
                    {new Date(edu.startDate).getFullYear()} - {edu.endDate ? new Date(edu.endDate).getFullYear() : 'Devam Ediyor'}
                  </span>
                </div>
@@ -703,13 +698,13 @@ function ScrollableCardDetails({ currentItem, isProfiles }: { currentItem: any, 
       {/* Certificates */}
       {isProfiles && currentItem.profile?.certificates?.length > 0 && (
         <div>
-           <h3 className="font-bold text-lg mb-3">Sertifikalar</h3>
-           <div className="flex flex-col gap-4">
+           <h3 className="font-bold text-lg text-black mb-2">Sertifikalar</h3>
+           <div className="flex flex-col">
              {currentItem.profile.certificates.map((cert: any) => (
-               <div key={cert.cerId} className="flex flex-col border-l-2 border-border pl-3 ml-1">
-                 <span className="font-bold text-foreground">{cert.title}</span>
-                 <span className="text-sm text-muted-foreground">{cert.org}</span>
-                 <span className="text-xs text-muted-foreground/70">
+               <div key={cert.cerId} className="flex flex-col mb-4 pb-4 border-b border-black/5">
+                 <span className="font-bold text-[16px] text-black mb-1">{cert.title}</span>
+                 <span className="text-[15px] text-[#666] mb-1">{cert.org}</span>
+                 <span className="text-[13px] text-[#999] mb-1.5">
                    {new Date(cert.startDate).getFullYear()}
                  </span>
                </div>

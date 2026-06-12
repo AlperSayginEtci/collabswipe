@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Beğenilerim - Collab Swipe</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13a4ec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101c22",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased overflow-hidden">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto shadow-2xl overflow-hidden border-x border-slate-200 dark:border-slate-800">
+<header class="flex items-center px-4 py-4 justify-between bg-background-light dark:bg-background-dark z-10">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" style="font-size: 24px;">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Beğenilerim</h2>
+</header>
+<div class="px-4 pb-4 bg-background-light dark:bg-background-dark z-10 sticky top-0">
+<div class="flex h-12 w-full items-center justify-center rounded-full bg-slate-200 dark:bg-[#1c2e36] p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-4 has-[:checked]:bg-white dark:has-[:checked]:bg-[#2c404b] has-[:checked]:shadow-sm has-[:checked]:text-primary text-slate-500 dark:text-[#92b7c9] text-sm font-semibold transition-all duration-200">
+<span class="truncate">İş İlanları</span>
+<input checked="" class="invisible w-0 absolute" name="view-toggle" type="radio" value="jobs"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-4 has-[:checked]:bg-white dark:has-[:checked]:bg-[#2c404b] has-[:checked]:shadow-sm has-[:checked]:text-primary text-slate-500 dark:text-[#92b7c9] text-sm font-semibold transition-all duration-200">
+<span class="truncate">Adaylar</span>
+<input class="invisible w-0 absolute" name="view-toggle" type="radio" value="candidates"/>
+</label>
+</div>
+</div>
+<main class="flex-1 overflow-y-auto no-scrollbar pb-24 px-4 space-y-3">
+<div class="group relative flex items-center gap-4 bg-white dark:bg-[#182830] p-3 rounded-[1.5rem] shadow-sm active:scale-[0.98] transition-all cursor-pointer">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-[64px] border border-slate-100 dark:border-slate-700" data-alt="Modern tech company logo with abstract blue geometric shapes" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDnt_QM2lpC04HH81BAOZdJKTwB35GcngWSYeEPG8NwYx4BhgfW2fSVN8igzsDOOgYaR7g8gnlPZfcnhUvg_2ITuHKG6yOZafokK2SfHC_cGwXrljoZRMODyqpwXegkOosB724XhX0bluMecIxYm6bohbBD2XdnctLHJs_QNwGBHeB23_DnEyIREStr4mDEOxq5GAekhWKyNjbvvrUrelMQ6uaePI3HO_RYumfLB1I5lwPJvBJIylv0d5DLd9XEKldiFRhukpN12wFn");'></div>
+<div class="absolute -bottom-1 -right-1 bg-white dark:bg-[#182830] rounded-full p-1">
+<span class="material-symbols-outlined text-primary" style="font-size: 16px;">verified</span>
+</div>
+</div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex justify-between items-start">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight truncate pr-2">TechSolutions Ltd.</p>
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">2s önce</span>
+</div>
+<p class="text-primary text-sm font-medium leading-normal truncate">Frontend Developer</p>
+<div class="flex items-center gap-1 mt-1 text-slate-500 dark:text-[#92b7c9]">
+<span class="material-symbols-outlined text-[14px]">work</span>
+<p class="text-xs font-normal leading-normal truncate">Remote • React Native • Mid-Level</p>
+</div>
+</div>
+<div class="shrink-0 pr-1">
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600" style="font-size: 24px;">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center gap-4 bg-white dark:bg-[#182830] p-3 rounded-[1.5rem] shadow-sm active:scale-[0.98] transition-all cursor-pointer">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-[64px] border border-slate-100 dark:border-slate-700" data-alt="Minimalist design agency logo black and white" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAKhaH5LF7r4U6ffVCnNlDgSHLU4IeRWndre0OwySDuoQeuPpja2zwu6VlWZp-RRhPQuD-gEZOZJW49s-U_PphrEzhc6RGG_ox9ajDm0OPHGTopgn8KA38tFeGh8nLdWSzRPC2LTnEcyZVe6tC7cYo9CS9NxuCS9U1M03VIqSriSYj7R0MVLRY505UX6h0Vokg_mkjLjdaJpI2HHUhNhd2lkqHLcVRCeZ1reXDF2x_e5Vv5vImNJCAJ_HC55biy-N6sGt5bOELdwcgm");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex justify-between items-start">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight truncate pr-2">Creative Agency</p>
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">Dün</span>
+</div>
+<p class="text-primary text-sm font-medium leading-normal truncate">Senior UX Designer</p>
+<div class="flex items-center gap-1 mt-1 text-slate-500 dark:text-[#92b7c9]">
+<span class="material-symbols-outlined text-[14px]">location_on</span>
+<p class="text-xs font-normal leading-normal truncate">Istanbul • Hybrid • 5+ years exp</p>
+</div>
+</div>
+<div class="shrink-0 pr-1">
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600" style="font-size: 24px;">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center gap-4 bg-white dark:bg-[#182830] p-3 rounded-[1.5rem] shadow-sm active:scale-[0.98] transition-all cursor-pointer">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-[64px] border border-slate-100 dark:border-slate-700" data-alt="Startup rocket colorful logo illustration" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCbcOPPzDDJEj8g9JdPbcvktCRaId_AsiHbFsxU0uEXRCNHrfwKRYnH9UULRW5UdNq3L0LuX7gSiGEuWrSjDM2Ak6fsmT-isLlfIzD5U9p_MHR30E-tF-NbDbqKhqiBZ7smyJN9PpY5cx_jJa9kToNI_8oakdoQ73il0hybZ03wgCMeHZnjpEFaWSaFsWpyXAwmQPoD3ngDyN2OMql11EIGBYyjVZgiog7LZEb0kwoJAzjS2HDQm4YWkMXERrB2Pyoe6USLDfLNfbOL");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex justify-between items-start">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight truncate pr-2">StartUp Inc.</p>
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">3 gün</span>
+</div>
+<p class="text-primary text-sm font-medium leading-normal truncate">Product Manager</p>
+<div class="flex items-center gap-1 mt-1 text-slate-500 dark:text-[#92b7c9]">
+<span class="material-symbols-outlined text-[14px]">payments</span>
+<p class="text-xs font-normal leading-normal truncate">Ankara • Equity offered</p>
+</div>
+</div>
+<div class="shrink-0 pr-1">
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600" style="font-size: 24px;">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center gap-4 bg-white dark:bg-[#182830] p-3 rounded-[1.5rem] shadow-sm active:scale-[0.98] transition-all cursor-pointer">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-[64px] border border-slate-100 dark:border-slate-700" data-alt="Green leaf eco friendly company logo" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBsEAz1yqm2B6vLn6IlNmpMLM_ej43Yd2mYm6twpUsbsG13Z1-iq3X3g_xTOEEdUXzcyctF647gb5yHOHXRDvEd4dGFWn1VHm0_x85QPenLxG0Eb_tNB2eoXCX9HWC8k5fcSa-f3Lbayg329dPw9PxFq93TR3Bua0bcMzlI1xfLIhIXDZXKxNgnCptvE2xX9O2USnmAa4sh4TpLftUZj4eNzO8wvLRaSezDi-Q7_blPm1NUN8KIxXk6eBX_fE126-lXzzE1Nsa_gHWF");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex justify-between items-start">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight truncate pr-2">EcoFuture</p>
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">1 hafta</span>
+</div>
+<p class="text-primary text-sm font-medium leading-normal truncate">Marketing Lead</p>
+<div class="flex items-center gap-1 mt-1 text-slate-500 dark:text-[#92b7c9]">
+<span class="material-symbols-outlined text-[14px]">campaign</span>
+<p class="text-xs font-normal leading-normal truncate">Izmir • On-site • Full-time</p>
+</div>
+</div>
+<div class="shrink-0 pr-1">
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600" style="font-size: 24px;">chevron_right</span>
+</div>
+</div>
+<div class="group relative flex items-center gap-4 bg-white dark:bg-[#182830] p-3 rounded-[1.5rem] shadow-sm active:scale-[0.98] transition-all cursor-pointer opacity-70">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-[64px] border border-slate-100 dark:border-slate-700 grayscale" data-alt="Abstract polygon geometric logo design" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAPGDK-vrEBL0VuY3g1Xxt-JhnJy4bQnWxvuTqMaRcqTNPweWxE_RwlCU2Jwm7P9-npli1hrxZbo2dWvRe1d-25Xh6_3mJ37_fHOQkCyppmdTl1nCLDEoc5VwQsJYWjjwxXftth53Vq_cB4L3fKCqM5JT_ba9LhCMpkyIVsMDSA1fsx1lcnCFCFPeCEO4BIPGSD9HZZcsKsznMyos_DRQf7kxaGWUrCYaAJ8xlganbcAe691T5uUW8g6GggatWOpU4TqUJItTjD9FLc");'></div>
+</div>
+<div class="flex flex-1 flex-col justify-center min-w-0">
+<div class="flex justify-between items-start">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight truncate pr-2">PolyCorp</p>
+<span class="text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">Kapandı</span>
+</div>
+<p class="text-primary text-sm font-medium leading-normal truncate">Data Scientist</p>
+<div class="flex items-center gap-1 mt-1 text-slate-500 dark:text-[#92b7c9]">
+<span class="material-symbols-outlined text-[14px]">block</span>
+<p class="text-xs font-normal leading-normal truncate">Başvuruya kapandı</p>
+</div>
+</div>
+<div class="shrink-0 pr-1">
+<span class="material-symbols-outlined text-slate-300 dark:text-slate-600" style="font-size: 24px;">chevron_right</span>
+</div>
+</div>
+</main>
+<nav class="absolute bottom-0 w-full bg-white dark:bg-[#101c22] border-t border-slate-200 dark:border-[#1c2e36] px-6 py-4 flex justify-between items-center z-20">
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[26px]">home</span>
+<span class="text-[10px] font-medium">Ana Sayfa</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="text-[10px] font-medium">Network</span>
+</button>
+<div class="relative -top-6">
+<button class="flex items-center justify-center size-14 bg-primary text-white rounded-full shadow-lg shadow-primary/40 hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[32px]">bolt</span>
+</button>
+</div>
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[26px]">chat_bubble</span>
+<span class="text-[10px] font-medium">Mesajlar</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[26px]">person</span>
+<span class="text-[10px] font-medium">Profil</span>
+</button>
+</nav>
+</div>
+<script>
+    // No JS logic as per instructions, only Tailwind config and HTML
+</script>
+
+</body></html>

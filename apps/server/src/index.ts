@@ -19,7 +19,7 @@ const port = process.env.PORT || 3001;
 
 // Better Auth requires proper CORS with credentials: true to share cookies with Vite app
 app.use(cors({ 
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://192.168.0.22:5173', 'http://192.168.0.22:3000', 'http://192.168.0.22:8081', 'exp://192.168.0.22:8081'], 
+  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://192.168.0.22:5173', 'http://192.168.0.22:3000', 'http://192.168.0.22:8081', 'exp://192.168.0.22:8081', 'http://localhost:8082', 'http://192.168.0.22:8082'], 
   credentials: true 
 }));
 app.use(express.json({ limit: '50mb' }));
@@ -123,3 +123,5 @@ process.on('SIGTERM', () => {
   wss.close();
 });
 // Trigger restart
+
+// Trigger nodemon restart

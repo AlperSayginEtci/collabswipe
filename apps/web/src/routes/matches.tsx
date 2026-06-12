@@ -109,7 +109,6 @@ function MatchesPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-sm truncate text-foreground">{nameText}</h4>
-                        {item.username && <p className="text-xs text-muted-foreground truncate">@{item.username}</p>}
                       </div>
                     </div>
                   );

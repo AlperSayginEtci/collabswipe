@@ -1,4 +1,6 @@
 import { createAuthClient } from "better-auth/react"
+import { inferAdditionalFields } from "better-auth/client/plugins"
+import type { auth } from "./index"
 
 /**
  * Tarayıcı tarafı auth client.
@@ -10,6 +12,9 @@ import { createAuthClient } from "better-auth/react"
  */
 export const authClient = createAuthClient({
   baseURL: "http://localhost:3001",
+  plugins: [
+    inferAdditionalFields<typeof auth>()
+  ]
 })
 
 export type Session = typeof authClient.$Infer.Session

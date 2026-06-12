@@ -11,7 +11,7 @@ import {
   Image,
   Modal,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Redirect } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { trpc } from '../../lib/trpc';
@@ -26,6 +26,10 @@ export default function ChatScreen() {
   const [actionMenuVisible, setActionMenuVisible] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
   const utils = trpc.useUtils();
+
+  if (!userId) {
+    return <Redirect href="/auth" />;
+  }
 
   const convId = typeof conversationId === 'string' ? conversationId : conversationId?.[0];
 
@@ -46,7 +50,7 @@ export default function ChatScreen() {
               ...oldData,
               pages: oldData.pages.map((page, index) => {
                 if (index === 0) {
-                  return { ...page, items: [msg, ...page.items] };
+                  return { ...page, items: [{ ...msg, reactions: [] }, ...page.items] };
                 }
                 return page;
               }),
@@ -101,6 +105,8 @@ export default function ChatScreen() {
         senderId: userId!,
         content: newMsg.content,
         isDeleted: false,
+        isEdited: false,
+        reactions: [],
         createdAt: new Date(),
       };
 
@@ -169,7 +175,7 @@ export default function ChatScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/matches')} style={styles.backButton}>
             <MaterialCommunityIcons name="chevron-left" size={32} color="#333" />
           </TouchableOpacity>
           <View style={styles.headerUserInfo}>
@@ -467,9 +473,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
     gap: 8,
   },
-  messageTime: {
-    fontSize: 11,
-  },
+
   messageEdited: {
     fontSize: 10,
   },
