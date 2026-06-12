@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { createFileRoute } from '@tanstack/react-router';
-import { Mail, Briefcase, GraduationCap, LinkIcon, Edit2, Plus, X, Globe, Camera, Award, ExternalLink, UserPlus, UserCheck, Users, Check, Clock as ClockIcon } from 'lucide-react';
+import { Mail, Briefcase, GraduationCap, LinkIcon, Edit2, Plus, X, Globe, Camera, Award, ExternalLink, UserPlus, UserCheck, Users, Check, Clock as ClockIcon, FileWarning } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useSession, authClient } from '@collabswipe/auth/client';
 import { trpc } from '@/lib/trpc';
+import toast from 'react-hot-toast';
+import { ReportModal } from '@/components/ReportModal';
 import { Country, State } from 'country-state-city';
-
 
 export const Route = createFileRoute('/profile')({
   validateSearch: (search: Record<string, unknown>): { userId?: string } => {
@@ -34,6 +35,8 @@ function ProfilePage() {
   const today = new Date().toISOString().split('T')[0];
 
   const [isEditing, setIsEditing] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportTarget, setReportTarget] = useState<{ type: 'USER', id: string } | null>(null);
   
   const [editName, setEditName] = useState('');
   const [editSurname, setEditSurname] = useState('');
@@ -667,6 +670,17 @@ function ProfilePage() {
                     <><UserPlus className="w-4 h-4" /> Bağlantı Kur</>
                   )}
                 </button>
+
+                <button 
+                  onClick={() => {
+                    setReportTarget({ type: 'USER', id: userId });
+                    setReportModalOpen(true);
+                  }}
+                  className="flex-none px-4 py-2 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm transition-all duration-200 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20"
+                  title="Kullanıcıyı Şikayet Et"
+                >
+                  <FileWarning className="w-4 h-4" />
+                </button>
               </div>
             )}
             
@@ -1119,6 +1133,12 @@ function ProfilePage() {
         </div>
       </div>
 
+      <ReportModal 
+        isOpen={reportModalOpen} 
+        onClose={() => setReportModalOpen(false)} 
+        targetType="USER"
+        targetId={reportTarget?.id || ''} 
+      />
     </div>
   );
 }

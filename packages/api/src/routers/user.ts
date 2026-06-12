@@ -230,4 +230,24 @@ export const userRouter = createTRPCRouter({
         throw new Error(err.message || "Kayıt sırasında bir hata oluştu.");
       }
     }),
+
+  // Şikayet oluştur (Kullanıcı, Post, Job vb.)
+  createReport: protectedProcedure
+    .input(
+      z.object({
+        targetType: z.enum(["USER", "POST", "COMMENT", "JOB"]),
+        targetId: z.string(),
+        reason: z.string().min(5),
+      })
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.prisma.report.create({
+        data: {
+          reporterId: ctx.session.user.id,
+          targetType: input.targetType,
+          targetId: input.targetId,
+          reason: input.reason,
+        },
+      })
+    ),
 })
