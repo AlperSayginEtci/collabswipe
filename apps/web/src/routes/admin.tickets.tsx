@@ -8,6 +8,9 @@ export const Route = createFileRoute('/admin/tickets')({
   component: AdminTicketsPage,
 });
 
+const getSafeImageSrc = (url: string) =>
+  /^(https?:|blob:|data:image\/)/i.test(url) ? url : '';
+
 function AdminTicketsPage() {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [replyMessage, setReplyMessage] = useState('');
@@ -157,7 +160,7 @@ function AdminTicketsPage() {
                                 {url.match(/\.(mp4|webm|ogg)\?/) ? (
                                   <video src={url} controls className="w-full h-full object-cover" />
                                 ) : (
-                                  <img src={url.replace('dl=0', 'raw=1')} alt="attachment" className="w-full h-full object-cover max-h-[300px]" />
+                                  <img src={getSafeImageSrc(url.replace('dl=0', 'raw=1'))} alt="attachment" className="w-full h-full object-cover max-h-[300px]" />
                                 )}
                               </div>
                             ))}
@@ -175,9 +178,11 @@ function AdminTicketsPage() {
                   <div className="p-4 border-t border-border bg-background flex flex-col gap-2">
                     {replyMediaPreviewUrls.length > 0 && (
                       <div className="flex gap-2 flex-wrap self-start">
-                        {replyMediaPreviewUrls.map((url, idx) => (
+                        {replyMediaPreviewUrls.map((_, idx) => (
                           <div key={idx} className="relative inline-block">
-                            <img src={url} alt="Preview" className="h-20 w-20 rounded-lg object-cover border border-border/50" />
+                            <div className="h-20 w-20 rounded-lg border border-border/50 bg-muted/40 flex items-center justify-center text-muted-foreground">
+                              <ImageIcon className="w-5 h-5" />
+                            </div>
                             <button onClick={() => removePreview(idx)} className="absolute -top-2 -right-2 bg-foreground text-background rounded-full p-1 shadow-lg hover:scale-110 transition-transform">
                               <X className="w-3 h-3" />
                             </button>
