@@ -89,7 +89,7 @@ function AdminUsers() {
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
       const fullName = `${user.name} ${user.surname}`.toLowerCase();
-      const username = user.username?.toLowerCase() || '';
+      const username = '';
       const email = user.email.toLowerCase();
       
       if (!fullName.includes(query) && !username.includes(query) && !email.includes(query)) {
@@ -162,7 +162,7 @@ function AdminUsers() {
           <tbody>
             {filteredUsers?.map(user => (
               <tr key={user.id} className="border-b border-border hover:bg-secondary/20 transition-colors">
-                <td className="p-3 font-medium">{user.name} {user.surname} <span className="text-muted-foreground text-xs block">@{user.username}</span></td>
+                <td className="p-3 font-medium">{user.name} {user.surname} </td>
                 <td className="p-3 text-muted-foreground">{user.email}</td>
                 <td className="p-3">
                   <span className={`px-2 py-1 rounded-full text-xs font-bold ${user.role === 'admin' ? 'bg-red-500/10 text-red-500' : user.role === 'company' ? 'bg-blue-500/10 text-blue-500' : 'bg-secondary text-foreground'}`}>
@@ -232,7 +232,7 @@ function AdminUsers() {
               <div>
                 <label className="text-sm font-semibold text-foreground mb-1.5 block">Kullanıcı</label>
                 <div className="bg-muted/50 border border-border p-3 rounded-lg text-sm text-muted-foreground">
-                  <span className="font-bold text-foreground">{banTargetUser.name} {banTargetUser.surname}</span> (@{banTargetUser.username})
+                  <span className="font-bold text-foreground">{banTargetUser.name} {banTargetUser.surname}</span>
                 </div>
               </div>
 

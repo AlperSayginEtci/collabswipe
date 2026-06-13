@@ -64,7 +64,7 @@ function UserLikes() {
   
   const { data: pendingRequests, isLoading } = trpc.connection.getPendingRequests.useQuery(
     { userId: session?.user?.id || '' },
-    { enabled: !!session?.user?.id }
+    { enabled: !!session?.user?.id, refetchInterval: 3000 }
   );
 
   const respondMutation = trpc.connection.respond.useMutation({
@@ -237,7 +237,7 @@ function UserOutgoing() {
 }
 
 function CompanyApplicants() {
-  const { data: applications, isLoading } = trpc.job.getCompanyApplications.useQuery();
+  const { data: applications, isLoading } = trpc.job.getCompanyApplications.useQuery(undefined, { refetchInterval: 3000 });
   const utils = trpc.useUtils();
 
   const updateStatus = trpc.job.updateApplicationStatus.useMutation({

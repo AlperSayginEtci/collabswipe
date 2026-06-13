@@ -13,6 +13,7 @@ function MatchesPage() {
   const userId = session?.user?.id;
   const [selectedConvId, setSelectedConvId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'inbox' | 'requests'>('inbox');
   const utils = trpc.useUtils();
   
   // Search users
@@ -41,6 +42,9 @@ function MatchesPage() {
   });
   
   const conversations = conversationsData?.items || [];
+  const inboxChats = conversations.filter((c: any) => !c.isRequest);
+  const requestChats = conversations.filter((c: any) => c.isRequest);
+
   const selectedConv = conversations.find(c => c.id === selectedConvId);
 
   const handleMatchClick = (matchedUser: any) => {
@@ -52,8 +56,11 @@ function MatchesPage() {
 
     if (existingConv) {
       setSelectedConvId(existingConv.id);
+      // Auto-switch to inbox if we start a match chat, unless it's a request (though matches won't be requests)
+      setViewMode('inbox');
     } else {
       createConversation.mutate({ participantIds: [userId, matchedUser.id] });
+      setViewMode('inbox');
     }
   };
 
@@ -94,7 +101,7 @@ function MatchesPage() {
               ) : (
                 searchResults?.map((item: any) => {
                   const nameText = `${item.name} ${item.surname || ''}`.trim();
-                  const avatarUrl = item.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${nameText}`;
+                  const avatarUrl = item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
                   return (
                     <div 
                       key={item.id} 
@@ -126,7 +133,7 @@ function MatchesPage() {
                   <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                     {matches.map((item: any) => {
                       const nameText = item.name || 'Kullanıcı';
-                      const avatarUrl = item.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${nameText}`;
+                      const avatarUrl = item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
                       return (
                         <div 
                           key={item.id} 
@@ -147,18 +154,33 @@ function MatchesPage() {
               </div>
 
               {/* Conversations */}
-              <div className="p-4 pb-2">
-                <h3 className="text-sm font-semibold text-foreground">Sohbetler</h3>
+              <div className="p-4 pb-2 border-b border-border flex justify-between items-center bg-card">
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setViewMode('inbox')}
+                    className={`text-sm font-semibold transition-colors ${viewMode === 'inbox' ? 'text-foreground border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    Sohbetler
+                  </button>
+                  <button 
+                    onClick={() => setViewMode('requests')}
+                    className={`text-sm font-semibold transition-colors flex items-center gap-1 ${viewMode === 'requests' ? 'text-foreground border-b-2 border-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    İstekler {requestChats.length > 0 && <span className="bg-secondary text-foreground text-[10px] px-1.5 py-0.5 rounded-full">{requestChats.length}</span>}
+                    {requestChats.some((c: any) => c.hasUnread) && <div className="w-2 h-2 bg-red-500 rounded-full" />}
+                  </button>
+                </div>
               </div>
               {isLoading ? (
                 <div className="p-8 text-center text-muted-foreground">Yükleniyor...</div>
-              ) : conversations.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground">Henüz bir sohbetiniz yok. Eşleşmelerinizden biriyle mesajlaşmaya başlayın!</div>
-              ) : (
-                conversations.map((conv) => {
-                  const otherUser = conv.otherUser;
+              ) : viewMode === 'inbox' ? (
+                inboxChats.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground">Henüz bir sohbetiniz yok. Eşleşmelerinizden biriyle mesajlaşmaya başlayın!</div>
+                ) : (
+                  inboxChats.map((conv) => {
+                    const otherUser = conv.otherUser;
                   const nameText = otherUser ? `${otherUser.name} ${otherUser.surname || ''}` : 'Sohbet';
-                  const avatarUrl = otherUser?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${nameText}`;
+                  const avatarUrl = otherUser?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
                   const lastMessage = conv.lastMessage;
                   
                   return (
@@ -191,6 +213,50 @@ function MatchesPage() {
                     </div>
                   );
                 })
+              )) : (
+                requestChats.length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground flex flex-col items-center gap-2">
+                    <span className="text-3xl opacity-50">📬</span>
+                    Bekleyen mesaj isteği yok.
+                  </div>
+                ) : (
+                  requestChats.map((conv) => {
+                    const otherUser = conv.otherUser;
+                    const nameText = otherUser ? `${otherUser.name} ${otherUser.surname || ''}` : 'Sohbet';
+                    const avatarUrl = otherUser?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
+                    const lastMessage = conv.lastMessage;
+                    
+                    return (
+                      <div 
+                        key={conv.id} 
+                        onClick={() => setSelectedConvId(conv.id)}
+                        className={`flex items-center gap-3 p-4 border-b border-border cursor-pointer transition-colors ${selectedConvId === conv.id ? 'bg-secondary' : 'hover:bg-secondary/50'}`}
+                      >
+                        <div className="w-12 h-12 rounded-full bg-primary/20 shrink-0 overflow-hidden relative">
+                          <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                          {conv.hasUnread && (
+                            <div className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-card" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex justify-between items-baseline mb-1">
+                            <h4 className={`font-semibold truncate ${conv.hasUnread ? 'text-foreground' : 'text-foreground/80'}`}>
+                              {nameText}
+                            </h4>
+                            {lastMessage && (
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            )}
+                          </div>
+                          <p className={`text-sm truncate ${conv.hasUnread ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                            {lastMessage ? lastMessage.content : 'Henüz mesaj yok'}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )
               )}
             </>
           )}
@@ -221,7 +287,15 @@ function ChatView({ conversationId, otherUser, currentUserId }: { conversationId
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const utils = trpc.useUtils();
+  
+  useEffect(() => {
+    // Focus the input automatically when entering a chat or switching conversations
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [conversationId]);
   
   // Realtime subscription
   trpc.chat.onMessage.useSubscription(
@@ -239,7 +313,7 @@ function ChatView({ conversationId, otherUser, currentUserId }: { conversationId
               ...oldData,
               pages: oldData.pages.map((page, index) => {
                 if (index === 0) {
-                  return { ...page, items: [msg, ...page.items] };
+                  return { ...page, items: [{ ...msg, reactions: [] }, ...page.items] };
                 }
                 return page;
               }),
@@ -290,7 +364,9 @@ function ChatView({ conversationId, otherUser, currentUserId }: { conversationId
         senderId: currentUserId,
         content: newMsg.content,
         isDeleted: false,
+        isEdited: false,
         createdAt: new Date(),
+        reactions: [],
       };
 
       utils.chat.getMessages.setInfiniteData({ conversationId }, (oldData) => {
@@ -375,7 +451,7 @@ function ChatView({ conversationId, otherUser, currentUserId }: { conversationId
   };
 
   const nameText = otherUser ? `${otherUser.name} ${otherUser.surname || ''}` : 'Sohbet';
-  const avatarUrl = otherUser?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${nameText}`;
+  const avatarUrl = otherUser?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
 
   return (
     <div className="flex flex-col h-full w-full">
@@ -482,6 +558,7 @@ function ChatView({ conversationId, otherUser, currentUserId }: { conversationId
       {/* Input Area */}
       <form onSubmit={handleSend} className="p-4 border-t border-border bg-card shrink-0 flex gap-2">
         <input
+          ref={inputRef}
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}

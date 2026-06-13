@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Image, FlatList, StyleSheet, TextInputProps } from 'react-native';
-import { trpc } from '../utils/trpc';
+import { trpc } from '../lib/trpc';
 
 interface MentionTextInputProps extends TextInputProps {
   value: string;
@@ -84,7 +84,7 @@ export function MentionTextInput({ value, onChangeText, containerStyle, ...props
                   onPress={() => handleSelectMention(item)}
                 >
                   <Image 
-                    source={{ uri: item.image || `https://api.dicebear.com/7.x/notionists/png?seed=${item.name}` }} 
+                    source={{ uri: item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
                     style={styles.mentionAvatar}
                   />
                   <Text style={styles.mentionName} numberOfLines={1}>

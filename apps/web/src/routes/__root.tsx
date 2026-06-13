@@ -35,8 +35,23 @@ function RootLayout() {
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const { data: pendingRequests } = trpc.connection.getPendingRequests.useQuery(
+    { userId: session?.user?.id || '' },
+    { enabled: !!session?.user?.id && (session?.user as any)?.role !== 'company', refetchInterval: 3000 }
+  );
+
+  const { data: companyApps } = trpc.job.getCompanyApplications.useQuery(
+    undefined,
+    { enabled: !!session?.user?.id && (session?.user as any)?.role === 'company', refetchInterval: 3000 }
+  );
+
+  const likesCount = (session?.user as any)?.role === 'company' 
+    ? (companyApps?.filter(a => a.status === 'PENDING').length || 0) 
+    : (pendingRequests?.length || 0);
+
   useEffect(() => {
-    if (!isPending && !session && location.pathname !== '/login') {
+    const publicPaths = ['/', '/login'];
+    if (!isPending && !session && !publicPaths.includes(location.pathname)) {
       navigate({ to: '/login' });
     }
   }, [session, isPending, location.pathname, navigate]);
@@ -60,15 +75,25 @@ function RootLayout() {
 
   const isLoginPage = location.pathname === '/login';
 
-  // If not logged in and not on login page, show nothing while redirecting
-  if (!session && !isLoginPage) {
+  // If not logged in and not on a public page, show nothing while redirecting
+  const isPublicPage = location.pathname === '/' || location.pathname === '/login';
+  if (!session && !isPublicPage) {
     return null;
   }
 
-  // If it's the login page, render it cleanly without sidebars/headers
+  // If it's the login page, render cleanly without sidebars/headers and center it
   if (isLoginPage) {
     return (
       <div className="min-h-screen bg-background text-foreground font-sans flex items-center justify-center">
+        <Outlet />
+      </div>
+    );
+  }
+
+  // If it's the public landing page, render cleanly without sidebars/headers
+  if (!session && location.pathname === '/') {
+    return (
+      <div className="min-h-screen bg-background text-foreground font-sans flex flex-col">
         <Outlet />
       </div>
     );
@@ -133,7 +158,14 @@ function RootLayout() {
             )}
           </div>
           <Link to="/likes" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
-            {((session?.user as any)?.role === 'company') ? <Inbox className="w-5 h-5" /> : <Heart className="w-5 h-5" />}
+            <div className="relative">
+              {((session?.user as any)?.role === 'company') ? <Inbox className="w-5 h-5" /> : <Heart className="w-5 h-5" />}
+              {likesCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold px-1 min-w-[16px] h-4 rounded-full flex items-center justify-center">
+                  {likesCount > 99 ? '99+' : likesCount}
+                </span>
+              )}
+            </div>
             {((session?.user as any)?.role === 'company') ? 'Başvuranlar' : 'Beğeniler'}
           </Link>
           <Link to="/matches" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
@@ -234,9 +266,16 @@ function RootLayout() {
           <Compass className="w-6 h-6" />
           <span className="text-[10px] font-medium">Keşfet</span>
         </Link>
-        <Link to="/likes" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground">
-          {((session?.user as any)?.role === 'company') ? <Inbox className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
-          <span className="text-[10px] font-medium">{((session?.user as any)?.role === 'company') ? 'Başvuranlar' : 'Beğeniler'}</span>
+        <Link to="/likes" className="flex flex-col items-center p-2 text-muted-foreground [&.active]:text-foreground transition-colors relative">
+          <div className="relative">
+            {((session?.user as any)?.role === 'company') ? <Inbox className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
+            {likesCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold px-1 min-w-[16px] h-4 rounded-full flex items-center justify-center">
+                {likesCount > 99 ? '99+' : likesCount}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] mt-1 font-medium">{((session?.user as any)?.role === 'company') ? 'Başvuranlar' : 'Beğeniler'}</span>
         </Link>
         <Link to="/notifications" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground relative">
           <div className="relative">

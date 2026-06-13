@@ -70,6 +70,7 @@ export const profileRouter = createTRPCRouter({
         location: z.string().optional(),
         banner: z.string().optional(),
         isPrivate: z.boolean().optional(),
+        workingFields: z.array(z.string()).optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -250,17 +251,25 @@ export const profileRouter = createTRPCRouter({
       ctx.prisma.certificate.delete({ where: { cerId: input.cerId } })
     ),
 
-  // Skill ekle (sadece var olan standart yetenekler eklenebilir)
+  // Skill ekle (Yetenek yoksa oluşturur)
   addSkill: publicProcedure
     .input(z.object({ profileId: z.string(), skillName: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const skill = await ctx.prisma.skill.findUnique({
+      let skill = await ctx.prisma.skill.findUnique({
         where: { skillName: input.skillName },
       });
       
       if (!skill) {
-        throw new Error("Sadece sistemde tanımlı standart yetenekler eklenebilir.");
+        skill = await ctx.prisma.skill.create({
+          data: { skillName: input.skillName },
+        });
       }
+
+      // Varsa tekrar eklemeyi önle
+      const existing = await ctx.prisma.userSkill.findUnique({
+        where: { profileId_skillId: { profileId: input.profileId, skillId: skill.skillId } }
+      });
+      if (existing) return existing;
 
       return ctx.prisma.userSkill.create({
         data: { profileId: input.profileId, skillId: skill.skillId },
@@ -277,4 +286,112 @@ export const profileRouter = createTRPCRouter({
         },
       })
     ),
+
+  // Sihirbazın tüm verilerini tek seferde kaydet
+  completeOnboarding: publicProcedure
+    .input(z.object({
+      userId: z.string(),
+      image: z.string().optional(), // Base64
+      bio: z.string().optional(),
+      workingFields: z.array(z.string()).optional(),
+      skills: z.array(z.string()).optional(),
+      experiences: z.array(z.object({
+        type: z.enum(["INTERNSHIP", "WORK"]),
+        title: z.string(),
+        corp: z.string(),
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date().optional(),
+        location: z.string().optional(),
+        locType: z.enum(["REMOTE", "ONSITE", "HYBRID"]).optional(),
+        desc: z.string().optional(),
+      })).optional(),
+      educations: z.array(z.object({
+        instName: z.string(),
+        instDegree: z.string().optional(),
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date().optional(),
+        instProgram: z.string().optional(),
+        instEvents: z.string().optional(),
+        instDesc: z.string().optional(),
+      })).optional(),
+      certificates: z.array(z.object({
+        title: z.string(),
+        org: z.string(),
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date().optional(),
+        competencyId: z.string().optional(),
+        competencyURL: z.string().url().or(z.string().length(0)).optional(),
+      })).optional()
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { userId, image, bio, workingFields, skills, experiences, educations, certificates } = input;
+
+      // Update User image
+      if (image) {
+        await ctx.prisma.user.update({
+          where: { id: userId },
+          data: { image },
+        });
+      }
+
+      // Upsert Profile
+      const profile = await ctx.prisma.profile.upsert({
+        where: { userId },
+        create: {
+          userId,
+          bio,
+          workingFields: workingFields || [],
+        },
+        update: {
+          bio,
+          workingFields: workingFields || [],
+        },
+      });
+
+      // Add custom skills
+      if (skills && skills.length > 0) {
+        for (const skillName of skills) {
+          let skill = await ctx.prisma.skill.findUnique({ where: { skillName } });
+          if (!skill) {
+            skill = await ctx.prisma.skill.create({ data: { skillName } });
+          }
+          const existing = await ctx.prisma.userSkill.findUnique({
+            where: { profileId_skillId: { profileId: profile.id, skillId: skill.skillId } }
+          });
+          if (!existing) {
+            await ctx.prisma.userSkill.create({
+              data: { profileId: profile.id, skillId: skill.skillId },
+            });
+          }
+        }
+      }
+
+      // Create Experiences
+      if (experiences && experiences.length > 0) {
+        await ctx.prisma.experience.createMany({
+          data: experiences.map(exp => ({ ...exp, profileId: profile.id })),
+        });
+      }
+
+      // Create Educations
+      if (educations && educations.length > 0) {
+        await ctx.prisma.education.createMany({
+          data: educations.map(edu => ({ ...edu, profileId: profile.id })),
+        });
+      }
+
+      // Create Certificates
+      if (certificates && certificates.length > 0) {
+        const cleanedCerts = certificates.map(cert => ({
+          ...cert,
+          competencyURL: cert.competencyURL && cert.competencyURL.trim() !== '' ? cert.competencyURL : undefined,
+          profileId: profile.id,
+        }));
+        await ctx.prisma.certificate.createMany({
+          data: cleanedCerts,
+        });
+      }
+
+      return profile;
+    }),
 })

@@ -156,6 +156,11 @@ function ProfilePage() {
   const [certCompetencyId, setCertCompetencyId] = useState('');
   const [certCompetencyURL, setCertCompetencyURL] = useState('');
 
+  // Devam Ediyor States
+  const [expIsCurrent, setExpIsCurrent] = useState(true);
+  const [eduIsCurrent, setEduIsCurrent] = useState(true);
+  const [certIsCurrent, setCertIsCurrent] = useState(true);
+
   // Fetch true profile data
   const { data: profile, isLoading } = trpc.profile.getByUserId.useQuery(
     { userId: userId || '' },
@@ -167,9 +172,9 @@ function ProfilePage() {
           setEditLocation(data.location || '');
           setEditLinks(data.links || []);
           setEditBanner(data.banner || '');
-          setEditName(session.user.name || '');
-          setEditSurname((session.user as any).surname || '');
-          setEditImage(session.user.image || '');
+          setEditName(data.user?.name || session.user.name || '');
+          setEditSurname((data.user as any)?.surname || (session.user as any).surname || '');
+          setEditImage(data.user?.image || session.user.image || '');
           setEditIsPrivate(data.isPrivate || false);
         }
       }
@@ -351,17 +356,17 @@ function ProfilePage() {
 
   const resetExpForm = () => {
     setEditingExpId(null);
-    setExpTitle(''); setExpCorp(''); setExpStartDate(''); setExpEndDate(''); setExpDesc('');
+    setExpTitle(''); setExpCorp(''); setExpStartDate(''); setExpEndDate(''); setExpDesc(''); setExpIsCurrent(true);
   };
 
   const resetEduForm = () => {
     setEditingEduId(null);
-    setEduInstName(''); setEduDegree(''); setEduStartDate(''); setEduEndDate(''); setEduProgram(''); setEduDesc('');
+    setEduInstName(''); setEduDegree(''); setEduStartDate(''); setEduEndDate(''); setEduProgram(''); setEduDesc(''); setEduIsCurrent(true);
   };
 
   const resetCertForm = () => {
     setEditingCertId(null);
-    setCertTitle(''); setCertOrg(''); setCertStartDate(''); setCertEndDate(''); setCertCompetencyId(''); setCertCompetencyURL('');
+    setCertTitle(''); setCertOrg(''); setCertStartDate(''); setCertEndDate(''); setCertCompetencyId(''); setCertCompetencyURL(''); setCertIsCurrent(true);
   };
 
   const handleSaveExp = () => {
@@ -376,7 +381,7 @@ function ProfilePage() {
       type: expType,
       locType: expLocType,
       startDate: new Date(expStartDate),
-      endDate: expEndDate ? new Date(expEndDate) : undefined,
+      endDate: expIsCurrent ? undefined : (expEndDate ? new Date(expEndDate) : undefined),
       desc: expDesc,
     };
     
@@ -395,7 +400,13 @@ function ProfilePage() {
     setExpType(exp.type);
     setExpLocType(exp.locType || 'ONSITE');
     setExpStartDate(new Date(exp.startDate).toISOString().split('T')[0]);
-    setExpEndDate(exp.endDate ? new Date(exp.endDate).toISOString().split('T')[0] : '');
+    if (exp.endDate) {
+      setExpEndDate(new Date(exp.endDate).toISOString().split('T')[0]);
+      setExpIsCurrent(false);
+    } else {
+      setExpEndDate('');
+      setExpIsCurrent(true);
+    }
     setExpDesc(exp.desc || '');
   };
 
@@ -410,7 +421,7 @@ function ProfilePage() {
       instDegree: eduDegree,
       instProgram: eduProgram,
       startDate: new Date(eduStartDate),
-      endDate: eduEndDate ? new Date(eduEndDate) : undefined,
+      endDate: eduIsCurrent ? undefined : (eduEndDate ? new Date(eduEndDate) : undefined),
       instDesc: eduDesc,
     };
     
@@ -428,7 +439,13 @@ function ProfilePage() {
     setEduDegree(edu.instDegree || '');
     setEduProgram(edu.instProgram || '');
     setEduStartDate(new Date(edu.startDate).toISOString().split('T')[0]);
-    setEduEndDate(edu.endDate ? new Date(edu.endDate).toISOString().split('T')[0] : '');
+    if (edu.endDate) {
+      setEduEndDate(new Date(edu.endDate).toISOString().split('T')[0]);
+      setEduIsCurrent(false);
+    } else {
+      setEduEndDate('');
+      setEduIsCurrent(true);
+    }
     setEduDesc(edu.instDesc || '');
   };
 
@@ -450,7 +467,7 @@ function ProfilePage() {
       title: certTitle,
       org: certOrg,
       startDate: new Date(certStartDate),
-      endDate: certEndDate ? new Date(certEndDate) : undefined,
+      endDate: certIsCurrent ? undefined : (certEndDate ? new Date(certEndDate) : undefined),
       competencyId: certCompetencyId,
       competencyURL: urlToSave,
     };
@@ -468,7 +485,13 @@ function ProfilePage() {
     setCertTitle(cert.title);
     setCertOrg(cert.org);
     setCertStartDate(new Date(cert.startDate).toISOString().split('T')[0]);
-    setCertEndDate(cert.endDate ? new Date(cert.endDate).toISOString().split('T')[0] : '');
+    if (cert.endDate) {
+      setCertEndDate(new Date(cert.endDate).toISOString().split('T')[0]);
+      setCertIsCurrent(false);
+    } else {
+      setCertEndDate('');
+      setCertIsCurrent(true);
+    }
     setCertCompetencyId(cert.competencyId || '');
     setCertCompetencyURL(cert.competencyURL || '');
   };
@@ -500,7 +523,7 @@ function ProfilePage() {
                {...(isEditing ? getAvatarRootProps() : {})}
                className={`-mt-12 sm:-mt-16 w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-card bg-secondary overflow-hidden shadow-lg shrink-0 z-10 relative group ${isEditing ? 'cursor-pointer' : ''} ${isAvatarDragActive ? 'border-primary border-dashed' : ''}`}
             >
-               <img src={(isEditing ? editImage : (isOwnProfile ? session?.user?.image : profile?.user?.image)) || `https://api.dicebear.com/7.x/notionists/svg?seed=${isOwnProfile ? session?.user?.name : profile?.user?.name}`} alt="User Profile" className="w-full h-full object-cover" />
+               <img src={(isEditing ? editImage : (isOwnProfile ? session?.user?.image : profile?.user?.image)) || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} alt="User Profile" className="w-full h-full object-cover" />
                {isEditing && <input {...getAvatarInputProps()} />}
                {isEditing && (
                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
@@ -864,15 +887,21 @@ function ProfilePage() {
                     <option value="HYBRID">Hibrit</option>
                   </select>
                 </div>
-                <div className="flex gap-3">
-                   <div className="flex-1">
-                     <label className="text-xs text-muted-foreground">Başlangıç</label>
-                     <input type="date" max={today} value={expStartDate} onChange={e => setExpStartDate(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
-                   </div>
-                   <div className="flex-1">
-                     <label className="text-xs text-muted-foreground">Bitiş (Boş ise devam ediyor)</label>
-                     <input type="date" max={today} value={expEndDate} onChange={e => setExpEndDate(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
-                   </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-3">
+                     <div className="flex-1">
+                       <label className="text-xs text-muted-foreground">Başlangıç</label>
+                       <input type="date" max={today} value={expStartDate} onChange={e => setExpStartDate(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
+                     </div>
+                     <div className="flex-1">
+                       <label className="text-xs text-muted-foreground">Bitiş</label>
+                       <input type="date" max={today} value={expEndDate} disabled={expIsCurrent} onChange={e => setExpEndDate(e.target.value)} className={`w-full bg-background border border-border rounded px-3 py-2 text-sm ${expIsCurrent ? 'opacity-50' : ''}`} />
+                     </div>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer w-fit px-1">
+                    <input type="checkbox" checked={expIsCurrent} onChange={(e) => setExpIsCurrent(e.target.checked)} className="rounded border-border accent-primary w-4 h-4" />
+                    Devam Ediyor
+                  </label>
                 </div>
                 <textarea placeholder="Açıklama..." value={expDesc} onChange={e => setExpDesc(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm h-20" />
                 <button 
@@ -946,15 +975,21 @@ function ProfilePage() {
                   <input type="text" placeholder="Derece (örn. Lisans)" value={eduDegree} onChange={e => setEduDegree(e.target.value)} className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm" />
                   <input type="text" placeholder="Bölüm" value={eduProgram} onChange={e => setEduProgram(e.target.value)} className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm" />
                 </div>
-                <div className="flex gap-3">
-                   <div className="flex-1">
-                     <label className="text-xs text-muted-foreground">Başlangıç</label>
-                     <input type="date" max={today} value={eduStartDate} onChange={e => setEduStartDate(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
-                   </div>
-                   <div className="flex-1">
-                     <label className="text-xs text-muted-foreground">Bitiş (Boş ise devam ediyor)</label>
-                     <input type="date" max={today} value={eduEndDate} onChange={e => setEduEndDate(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
-                   </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-3">
+                     <div className="flex-1">
+                       <label className="text-xs text-muted-foreground">Başlangıç</label>
+                       <input type="date" max={today} value={eduStartDate} onChange={e => setEduStartDate(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
+                     </div>
+                     <div className="flex-1">
+                       <label className="text-xs text-muted-foreground">Bitiş</label>
+                       <input type="date" max={today} value={eduEndDate} disabled={eduIsCurrent} onChange={e => setEduEndDate(e.target.value)} className={`w-full bg-background border border-border rounded px-3 py-2 text-sm ${eduIsCurrent ? 'opacity-50' : ''}`} />
+                     </div>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer w-fit px-1">
+                    <input type="checkbox" checked={eduIsCurrent} onChange={(e) => setEduIsCurrent(e.target.checked)} className="rounded border-border accent-primary w-4 h-4" />
+                    Devam Ediyor
+                  </label>
                 </div>
                 <textarea placeholder="Açıklama (Projeler, başarılar)..." value={eduDesc} onChange={e => setEduDesc(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm h-20" />
                 <button 
@@ -1062,15 +1097,21 @@ function ProfilePage() {
               <div className="mb-6 p-4 border border-primary/30 bg-primary/5 rounded-xl space-y-3 shadow-inner">
                 <input type="text" placeholder="Sertifika / Başarı Adı" value={certTitle} onChange={e => setCertTitle(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
                 <input type="text" placeholder="Veren Kurum (örn. Google, Udemy)" value={certOrg} onChange={e => setCertOrg(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
-                <div className="flex gap-3">
-                   <div className="flex-1">
-                     <label className="text-xs text-muted-foreground">Veriliş Tarihi</label>
-                     <input type="date" max={today} value={certStartDate} onChange={e => setCertStartDate(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
-                   </div>
-                   <div className="flex-1">
-                     <label className="text-xs text-muted-foreground">Geçerlilik (Süresiz ise boş bırakın)</label>
-                     <input type="date" value={certEndDate} onChange={e => setCertEndDate(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
-                   </div>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-3">
+                     <div className="flex-1">
+                       <label className="text-xs text-muted-foreground">Veriliş Tarihi</label>
+                       <input type="date" max={today} value={certStartDate} onChange={e => setCertStartDate(e.target.value)} className="w-full bg-background border border-border rounded px-3 py-2 text-sm" />
+                     </div>
+                     <div className="flex-1">
+                       <label className="text-xs text-muted-foreground">Geçerlilik Bitiş</label>
+                       <input type="date" value={certEndDate} disabled={certIsCurrent} onChange={e => setCertEndDate(e.target.value)} className={`w-full bg-background border border-border rounded px-3 py-2 text-sm ${certIsCurrent ? 'opacity-50' : ''}`} />
+                     </div>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-foreground cursor-pointer w-fit px-1">
+                    <input type="checkbox" checked={certIsCurrent} onChange={(e) => setCertIsCurrent(e.target.checked)} className="rounded border-border accent-primary w-4 h-4" />
+                    Geçerliliği Devam Ediyor
+                  </label>
                 </div>
                 <div className="flex gap-3">
                   <input type="text" placeholder="Sertifika ID (İsteğe Bağlı)" value={certCompetencyId} onChange={e => setCertCompetencyId(e.target.value)} className="flex-1 bg-background border border-border rounded px-3 py-2 text-sm" />

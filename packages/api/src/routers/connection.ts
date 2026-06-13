@@ -48,9 +48,9 @@ export const connectionRouter = createTRPCRouter({
         // Notify original requester
         const addresseeUser = await ctx.prisma.user.findUnique({
           where: { id: input.requesterId },
-          select: { name: true, surname: true, username: true }
+          select: { name: true, surname: true, }
         });
-        const addresseeName = addresseeUser?.name ? `${addresseeUser.name} ${addresseeUser.surname}` : (addresseeUser?.username || "Birisi");
+        const addresseeName = addresseeUser?.name ? `${addresseeUser.name} ${addresseeUser.surname}` : "Birisi";
         
         await ctx.prisma.notification.create({
           data: {
@@ -76,9 +76,9 @@ export const connectionRouter = createTRPCRouter({
       if (input.requesterId !== input.addresseeId) {
         const requesterUser = await ctx.prisma.user.findUnique({
           where: { id: input.requesterId },
-          select: { name: true, surname: true, username: true }
+          select: { name: true, surname: true, }
         });
-        const requesterName = requesterUser?.name ? `${requesterUser.name} ${requesterUser.surname}` : (requesterUser?.username || "Birisi");
+        const requesterName = requesterUser?.name ? `${requesterUser.name} ${requesterUser.surname}` : "Birisi";
         
         await ctx.prisma.notification.create({
           data: {
@@ -181,9 +181,9 @@ export const connectionRouter = createTRPCRouter({
         if (input.requesterId !== input.addresseeId) {
           const addresseeUser = await ctx.prisma.user.findUnique({
             where: { id: input.addresseeId },
-            select: { name: true, surname: true, username: true }
+            select: { name: true, surname: true, }
           });
-          const addresseeName = addresseeUser?.name ? `${addresseeUser.name} ${addresseeUser.surname}` : (addresseeUser?.username || "Birisi");
+          const addresseeName = addresseeUser?.name ? `${addresseeUser.name} ${addresseeUser.surname}` : "Birisi";
 
           await ctx.prisma.notification.create({
             data: {
@@ -260,9 +260,9 @@ export const connectionRouter = createTRPCRouter({
       if (input.followerId !== input.followingId) {
         const followerUser = await ctx.prisma.user.findUnique({
           where: { id: input.followerId },
-          select: { name: true, surname: true, username: true }
+          select: { name: true, surname: true, }
         });
-        const followerName = followerUser?.name ? `${followerUser.name} ${followerUser.surname}` : (followerUser?.username || "Birisi");
+        const followerName = followerUser?.name ? `${followerUser.name} ${followerUser.surname}` : "Birisi";
 
         await ctx.prisma.notification.create({
           data: {

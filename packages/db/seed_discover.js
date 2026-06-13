@@ -8,7 +8,7 @@ const MOCK_PROFILES = [
     email: "felix@collabswipe.com",
     name: "Felix",
     surname: "L.",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Felix",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Frontend developer transitioning to fullstack. I love building smooth React Native and Next.js applications.",
     location: "Istanbul, Turkey",
     skills: ["React Native", "Next.js", "TypeScript", "Tailwind CSS"]
@@ -18,7 +18,7 @@ const MOCK_PROFILES = [
     email: "sarah@collabswipe.com",
     name: "Sarah",
     surname: "Connor",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Sarah",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "DevOps specialist who loves automation and high-availability infrastructure. I eat YAML for breakfast.",
     location: "Izmir, Turkey",
     skills: ["Docker", "Kubernetes", "AWS", "CI/CD"]
@@ -28,7 +28,7 @@ const MOCK_PROFILES = [
     email: "alex@collabswipe.com",
     name: "Alex",
     surname: "Mercer",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Alex",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "High performance systems and APIs. Experienced with Go, GraphQL, Redis, and WebSockets.",
     location: "Ankara, Turkey",
     skills: ["Go", "Node.js", "PostgreSQL", "Redis"]
@@ -38,7 +38,7 @@ const MOCK_PROFILES = [
     email: "lily@collabswipe.com",
     name: "Lily",
     surname: "Evans",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Lily",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Creating delightful and stunning user interfaces. Specializing in component-driven design systems and Figma prototyping.",
     location: "Istanbul, Turkey",
     skills: ["Figma", "UI/UX", "Tailwind CSS", "React"]
@@ -48,7 +48,7 @@ const MOCK_PROFILES = [
     email: "john@collabswipe.com",
     name: "John",
     surname: "Doe",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=John",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Bridging the gap between code and business value. Product manager with an engineering background.",
     location: "Istanbul, Turkey",
     skills: ["Agile", "Scrum", "Product Management", "Analytics"]

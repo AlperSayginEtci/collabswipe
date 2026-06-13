@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { 
   Image as ImageIcon, Video, Calendar, FileText, 
-  MessageSquare, Repeat2, Send as SendIcon, ThumbsUp, MoreHorizontal, 
+  MessageSquare, Repeat2, Send, ThumbsUp, MoreHorizontal, 
   Trash2, X, Globe, Clock, AlertCircle, UserPlus, Users, FileWarning, Edit3
 } from 'lucide-react';
 import { MentionTextarea } from '@/components/MentionTextarea';
@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { useSession } from '@collabswipe/auth/client';
 import toast from 'react-hot-toast';
 import { ReportModal } from '@/components/ReportModal';
+import { LandingPage } from '@/components/LandingPage';
 
 export const Route = createFileRoute('/')({
   component: HomeFeed,
@@ -109,6 +110,16 @@ interface CommentCtx {
 
 // ─── Recursive comment component ────────────────────────────────────────────
 
+function getAuthorSubtitle(author: any) {
+  if (!author) return 'CollabSwipe Üyesi';
+  if (author.role === 'company') return author.sector || 'Şirket';
+  const activeExp = author.profile?.experiences?.[0];
+  if (activeExp) return `${activeExp.corp} - ${activeExp.title}`;
+  const activeEdu = author.profile?.educations?.[0];
+  if (activeEdu) return `${activeEdu.instName}${activeEdu.instProgram ? ` - ${activeEdu.instProgram}` : ''}`;
+  return 'CollabSwipe Üyesi';
+}
+
 function CommentNode({ comment, depth = 0, ctx }: { comment: any; depth?: number; ctx: CommentCtx }) {
   const {
     postId, currentUserId,
@@ -141,7 +152,7 @@ function CommentNode({ comment, depth = 0, ctx }: { comment: any; depth?: number
       <div className="flex gap-2.5 items-start">
         <Link to="/profile" search={{ userId: comment.authorId }} className={`${avatarCls} bg-secondary overflow-hidden shrink-0 border border-border/40 block hover:opacity-80 transition-opacity`}>
           <img
-            src={comment.author?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${comment.author?.name || 'user'}`}
+            src={comment.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}`}
             alt={comment.author?.name || 'avatar'}
             className="w-full h-full object-cover"
           />
@@ -158,7 +169,7 @@ function CommentNode({ comment, depth = 0, ctx }: { comment: any; depth?: number
                   </h6>
                 </Link>
                 <p className="text-[9px] text-muted-foreground truncate">
-                  {comment.author?.profile?.bio || 'CollabSwipe Üyesi'}
+                  {getAuthorSubtitle(comment.author)}
                 </p>
               </div>
               {isAuthor && (
@@ -298,7 +309,7 @@ function HomeFeed() {
   const [expandedPosts, setExpandedPosts] = useState<Record<string, boolean>>({});
   const [hoveredPostId, setHoveredPostId] = useState<string | null>(null);
   const [openMenuPostId, setOpenMenuPostId] = useState<string | null>(null);
-  const [editingPost, setEditingPost] = useState<any>(null);
+  const [_editingPost, setEditingPost] = useState<any>(null);
   const [hoverTimeout, setHoverTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Comment replies states
@@ -314,7 +325,6 @@ function HomeFeed() {
   // Comment/reply emoji picker hover state
   const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
   const [commentHoverTimeout, setCommentHoverTimeout] = useState<NodeJS.Timeout | null>(null);
-  const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null);
   
   // Optimistic UI for following
   const [optimisticFollows, setOptimisticFollows] = useState<Set<string>>(new Set());
@@ -581,7 +591,7 @@ function HomeFeed() {
     if (!feedData?.items) return [];
     const items = [...feedData.items];
     if (sortBy === 'top') {
-      return items.sort((a, b) => (b._count?.likes || 0) - (a._count?.likes || 0));
+      return items.sort((a: any, b: any) => (b._count?.likes || 0) - (a._count?.likes || 0));
     }
     return items;
   };
@@ -593,6 +603,10 @@ function HomeFeed() {
   const surname = (session?.user as any)?.surname || '';
   const initials = (name[0] + (surname[0] || '')).toUpperCase();
   const headline = profile?.bio || ((session?.user as any)?.role === 'company' ? `${(session?.user as any)?.sector || 'Şirket'}` : 'CollabSwipe Üyesi');
+
+  if (!session) {
+    return <LandingPage />;
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full pb-20 md:pb-10">
@@ -681,7 +695,7 @@ function HomeFeed() {
               <span className="text-sm text-muted-foreground">Gönderiler yükleniyor...</span>
             </div>
           ) : sortedFeed.length > 0 ? (
-            sortedFeed.map((post) => {
+            sortedFeed.map((post: any) => {
               const isLiked = post.likes && post.likes.length > 0;
               const hasOriginal = !!post.originalPost;
               const isAuthor = post.authorId === currentUserId;
@@ -698,7 +712,7 @@ function HomeFeed() {
                     <div className="flex items-center gap-3">
                       <Link to="/profile" search={{ userId: post.authorId }} className="w-11 h-11 rounded-xl bg-secondary overflow-hidden shrink-0 border border-border/40 block hover:opacity-80 transition-opacity">
                         <img 
-                          src={post.author?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${post.author?.name || 'user'}`} 
+                          src={post.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}`} 
                           alt="avatar" 
                           className="w-full h-full object-cover" 
                         />
@@ -720,7 +734,7 @@ function HomeFeed() {
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground line-clamp-1">
-                          {post.author?.profile?.bio || (post.author?.role === 'company' ? `${post.author?.sector || 'Şirket'}` : 'CollabSwipe Üyesi')}
+                          {getAuthorSubtitle(post.author)}
                         </p>
                         <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-0.5">
                           <Clock className="w-3 h-3" />
@@ -771,7 +785,7 @@ function HomeFeed() {
                             }}
                             className="w-full px-4 py-2 text-left text-xs hover:bg-muted font-medium flex items-center gap-2 transition-colors"
                           >
-                            <SendIcon className="w-4 h-4" /> Bağlantıyı Kopyala
+                            <Send className="w-4 h-4" /> Bağlantıyı Kopyala
                           </button>
                           {!isAuthor && (
                             <button 
@@ -827,7 +841,7 @@ function HomeFeed() {
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-lg bg-secondary overflow-hidden shrink-0 border border-border/40">
                             <img 
-                              src={post.originalPost?.author?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${post.originalPost?.author?.name || 'user'}`} 
+                              src={post.originalPost?.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}`} 
                               alt="avatar" 
                               className="w-full h-full object-cover" 
                             />
@@ -837,7 +851,7 @@ function HomeFeed() {
                               {post.originalPost?.author?.name} {post.originalPost?.author?.surname}
                             </h5>
                             <p className="text-[10px] text-muted-foreground line-clamp-1">
-                              {post.originalPost?.author?.profile?.bio || (post.originalPost?.author?.role === 'company' ? `${post.originalPost?.author?.sector || 'Şirket'}` : 'CollabSwipe Üyesi')}
+                              {getAuthorSubtitle(post.originalPost?.author)}
                             </p>
                           </div>
                         </div>
@@ -983,7 +997,7 @@ function HomeFeed() {
                       }}
                       className="flex-1 py-2.5 rounded-xl hover:bg-muted/80 flex items-center justify-center gap-2 hover:text-foreground transition-colors"
                     >
-                      <SendIcon className="w-4 h-4" />
+                      <Send className="w-4 h-4" />
                       <span>Gönder</span>
                     </button>
                   </div>
@@ -1082,7 +1096,7 @@ function HomeFeed() {
                 <Link to="/profile" search={{ userId: user.id }} className="flex items-center gap-2 min-w-0 flex-1">
                   <div className="w-9 h-9 rounded-full bg-secondary overflow-hidden shrink-0 border border-border/40">
                     <img 
-                      src={user.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.name}`} 
+                      src={user.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} 
                       alt={user.name || 'User'} 
                       className="w-full h-full object-cover" 
                     />
@@ -1156,7 +1170,7 @@ function HomeFeed() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-secondary overflow-hidden shrink-0 border border-border/40">
                   <img 
-                    src={session?.user?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${name}`} 
+                    src={session?.user?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} 
                     alt="avatar" 
                     className="w-full h-full object-cover" 
                   />
@@ -1203,7 +1217,7 @@ function HomeFeed() {
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded bg-secondary overflow-hidden shrink-0 border border-border/40">
                       <img 
-                        src={repostTarget.author?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${repostTarget.author?.name}`} 
+                        src={repostTarget.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} 
                         alt="avatar" 
                         className="w-full h-full object-cover" 
                       />
@@ -1213,7 +1227,7 @@ function HomeFeed() {
                         {repostTarget.author?.name} {repostTarget.author?.surname}
                       </h5>
                       <p className="text-[9px] text-muted-foreground line-clamp-1">
-                        {repostTarget.author?.profile?.bio || 'CollabSwipe Üyesi'}
+                        {getAuthorSubtitle(repostTarget.author)}
                       </p>
                     </div>
                   </div>

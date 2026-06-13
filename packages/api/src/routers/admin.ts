@@ -7,7 +7,7 @@ export const adminRouter = createTRPCRouter({
   getUsers: adminProcedure.query(({ ctx }) =>
     ctx.prisma.user.findMany({
       orderBy: { createdAt: "desc" },
-      select: { id: true, name: true, surname: true, username: true, email: true, role: true, banned: true, banReason: true }
+      select: { id: true, name: true, surname: true, email: true, role: true, banned: true, banReason: true }
     })
   ),
 
@@ -235,7 +235,7 @@ export const adminRouter = createTRPCRouter({
     const reports = await ctx.prisma.report.findMany({
       orderBy: { createdAt: "desc" },
       include: {
-        reporter: { select: { id: true, name: true, surname: true, username: true, image: true } }
+        reporter: { select: { id: true, name: true, surname: true, image: true } }
       }
     });
 

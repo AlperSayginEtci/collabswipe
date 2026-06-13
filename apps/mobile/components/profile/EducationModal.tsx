@@ -9,8 +9,10 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert
+  Alert,
+  Switch
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export interface EducationData {
@@ -34,8 +36,11 @@ export default function EducationModal({ visible, onClose, onSave, initialData }
   const [instName, setInstName] = useState('');
   const [instDegree, setInstDegree] = useState('');
   const [instProgram, setInstProgram] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [isCurrent, setIsCurrent] = useState(true);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
   const [instDesc, setInstDesc] = useState('');
 
   useEffect(() => {
@@ -43,8 +48,14 @@ export default function EducationModal({ visible, onClose, onSave, initialData }
       setInstName(initialData.instName);
       setInstDegree(initialData.instDegree);
       setInstProgram(initialData.instProgram);
-      setStartDate(initialData.startDate.split('T')[0]);
-      setEndDate(initialData.endDate ? initialData.endDate.split('T')[0] : '');
+      setStartDate(new Date(initialData.startDate));
+      if (initialData.endDate) {
+        setEndDate(new Date(initialData.endDate));
+        setIsCurrent(false);
+      } else {
+        setEndDate(new Date());
+        setIsCurrent(true);
+      }
       setInstDesc(initialData.instDesc || '');
     } else {
       resetForm();
@@ -55,8 +66,9 @@ export default function EducationModal({ visible, onClose, onSave, initialData }
     setInstName('');
     setInstDegree('');
     setInstProgram('');
-    setStartDate('');
-    setEndDate('');
+    setStartDate(new Date());
+    setEndDate(new Date());
+    setIsCurrent(true);
     setInstDesc('');
   };
 
@@ -70,8 +82,8 @@ export default function EducationModal({ visible, onClose, onSave, initialData }
       instName,
       instDegree,
       instProgram,
-      startDate: new Date(startDate).toISOString(),
-      endDate: endDate ? new Date(endDate).toISOString() : undefined,
+      startDate: startDate.toISOString(),
+      endDate: isCurrent ? undefined : endDate.toISOString(),
       instDesc
     });
   };
@@ -105,14 +117,48 @@ export default function EducationModal({ visible, onClose, onSave, initialData }
 
             <View style={styles.row}>
               <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                <Text style={styles.label}>Başlangıç (YYYY-AA-GG) *</Text>
-                <TextInput style={styles.input} value={startDate} onChangeText={setStartDate} placeholder="2019-09-15" />
+                <Text style={styles.label}>Başlangıç *</Text>
+                <TouchableOpacity style={[styles.input, { justifyContent: 'center' }]} onPress={() => setShowStartPicker(true)}>
+                  <Text style={{ color: '#333' }}>{startDate.toLocaleDateString('tr-TR')}</Text>
+                </TouchableOpacity>
               </View>
-              <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                <Text style={styles.label}>Bitiş (Devam ediyorsa boş)</Text>
-                <TextInput style={styles.input} value={endDate} onChangeText={setEndDate} placeholder="2023-06-20" />
-              </View>
+              {!isCurrent && (
+                <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
+                  <Text style={styles.label}>Bitiş</Text>
+                  <TouchableOpacity style={[styles.input, { justifyContent: 'center' }]} onPress={() => setShowEndPicker(true)}>
+                    <Text style={{ color: '#333' }}>{endDate.toLocaleDateString('tr-TR')}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <Text style={{ fontSize: 13, color: '#555', fontWeight: '600' }}>Devam Ediyor</Text>
+              <Switch value={isCurrent} onValueChange={setIsCurrent} trackColor={{ true: '#000', false: '#CCC' }} thumbColor="#FFF" />
+            </View>
+
+            {showStartPicker && (
+              <DateTimePicker
+                value={startDate}
+                mode="date"
+                display="default"
+                onChange={(event, date) => {
+                  if (Platform.OS !== 'ios') setShowStartPicker(false);
+                  if (date) setStartDate(date);
+                }}
+              />
+            )}
+            {showEndPicker && (
+              <DateTimePicker
+                value={endDate}
+                mode="date"
+                display="default"
+                onChange={(event, date) => {
+                  if (Platform.OS !== 'ios') setShowEndPicker(false);
+                  if (date) setEndDate(date);
+                }}
+              />
+            )}
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Açıklama</Text>
@@ -195,7 +241,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#EEE',
   },
   saveBtn: {
-    backgroundColor: '#4ECDC4',
+    backgroundColor: '#000000',
     borderRadius: 12,
     height: 50,
     justifyContent: 'center',

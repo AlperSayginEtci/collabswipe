@@ -98,11 +98,11 @@ export const postRouter = createTRPCRouter({
       const post = await ctx.prisma.post.findUnique({
         where: { id: input.postId },
         include: {
-          author: { select: { id: true, name: true, surname: true, image: true, role: true, sector: true, profile: { select: { bio: true } } } },
+          author: { select: { id: true, name: true, surname: true, image: true, role: true, sector: true, profile: { select: { bio: true, experiences: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { corp: true, title: true } }, educations: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { instName: true, instProgram: true } } } } } },
           likes: { select: { userId: true, type: true } },
           originalPost: {
             include: {
-              author: { select: { id: true, name: true, surname: true, image: true, role: true, sector: true, profile: { select: { bio: true } } } },
+              author: { select: { id: true, name: true, surname: true, image: true, role: true, sector: true, profile: { select: { bio: true, experiences: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { corp: true, title: true } }, educations: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { instName: true, instProgram: true } } } } } },
             },
           },
           comments: {
@@ -111,7 +111,7 @@ export const postRouter = createTRPCRouter({
                 select: {
                   id: true, name: true, surname: true, image: true,
                   role: true, sector: true,
-                  profile: { select: { bio: true } },
+                  profile: { select: { bio: true, experiences: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { corp: true, title: true } }, educations: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { instName: true, instProgram: true } } } },
                 },
               },
               likes: { select: { userId: true, type: true } },
@@ -175,11 +175,11 @@ export const postRouter = createTRPCRouter({
         take: input.limit + 1,
         cursor: input.cursor ? { id: input.cursor } : undefined,
         include: {
-          author: { select: { id: true, name: true, surname: true, image: true, role: true, sector: true, profile: { select: { bio: true } } } },
+          author: { select: { id: true, name: true, surname: true, image: true, role: true, sector: true, profile: { select: { bio: true, experiences: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { corp: true, title: true } }, educations: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { instName: true, instProgram: true } } } } } },
           likes: { select: { userId: true, type: true } },
           originalPost: {
             include: {
-              author: { select: { id: true, name: true, surname: true, image: true, role: true, sector: true, profile: { select: { bio: true } } } },
+              author: { select: { id: true, name: true, surname: true, image: true, role: true, sector: true, profile: { select: { bio: true, experiences: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { corp: true, title: true } }, educations: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { instName: true, instProgram: true } } } } } },
             },
           },
           // Fetch ALL comments flat — tree built in mapping below
@@ -189,7 +189,7 @@ export const postRouter = createTRPCRouter({
                 select: {
                   id: true, name: true, surname: true, image: true,
                   role: true, sector: true,
-                  profile: { select: { bio: true } },
+                  profile: { select: { bio: true, experiences: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { corp: true, title: true } }, educations: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { instName: true, instProgram: true } } } },
                 },
               },
               likes: { select: { userId: true, type: true } },
@@ -238,9 +238,9 @@ export const postRouter = createTRPCRouter({
         console.log(`LIKE MUTATION: Notification should be created for post.authorId=${post.authorId}`);
         const user = await ctx.prisma.user.findUnique({
           where: { id: input.userId },
-          select: { name: true, surname: true, username: true }
+          select: { name: true, surname: true, }
         });
-        const userName = user?.name ? `${user.name} ${user.surname}` : (user?.username || "Birisi");
+        const userName = user?.name ? `${user.name} ${user.surname}` : "Birisi";
 
         try {
           await ctx.prisma.notification.create({
@@ -283,14 +283,14 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       // Mute kontrolü
-      const user = await ctx.prisma.user.findUnique({ where: { id: input.authorId }, select: { muteExpires: true, name: true, surname: true, username: true } });
+      const user = await ctx.prisma.user.findUnique({ where: { id: input.authorId }, select: { muteExpires: true, name: true, surname: true, } });
       if (user?.muteExpires && user.muteExpires > new Date()) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Hesabınız geçici olarak susturulmuştur." });
       }
 
       const newComment = await ctx.prisma.comment.create({ data: input });
 
-      const userName = user?.name ? `${user.name} ${user.surname}` : (user?.username || "Birisi");
+      const userName = user?.name ? `${user.name} ${user.surname}` : "Birisi";
 
       if (input.parentCommentId) {
         // Bu bir yoruma yanıt
@@ -349,9 +349,9 @@ export const postRouter = createTRPCRouter({
       if (comment && comment.authorId !== input.userId) {
         const user = await ctx.prisma.user.findUnique({
           where: { id: input.userId },
-          select: { name: true, surname: true, username: true }
+          select: { name: true, surname: true, }
         });
-        const userName = user?.name ? `${user.name} ${user.surname}` : (user?.username || "Birisi");
+        const userName = user?.name ? `${user.name} ${user.surname}` : "Birisi";
 
         await ctx.prisma.notification.create({
           data: {

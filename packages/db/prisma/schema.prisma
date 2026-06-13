@@ -105,6 +105,7 @@ model Profile {
   profileName String?
   bio         String?
   links       String[] @default([])
+  workingFields String[] @default([])
   location    String?
   age         Int?
   banner      String?  // Image URL

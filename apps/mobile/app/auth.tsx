@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,12 +11,14 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { trpc } from '../lib/trpc';
 import { useUser } from '../context/UserContext';
 import { Redirect } from 'expo-router';
+import { RegisterWizard } from '../components/auth/RegisterWizard';
 
 const { width } = Dimensions.get('window');
 
@@ -26,9 +28,21 @@ export default function AuthScreen() {
   const [isLoginTab, setIsLoginTab] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [surname, setSurname] = useState('');
-  const [role, setRole] = useState('user'); // 'user' | 'employer'
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
   const loginMutation = trpc.user.login.useMutation({
     onSuccess: (data) => {
@@ -39,22 +53,6 @@ export default function AuthScreen() {
     },
   });
 
-  const registerMutation = trpc.user.register.useMutation({
-    onSuccess: (data) => {
-      Alert.alert('Başarılı', 'Hesabınız oluşturuldu! Şimdi giriş yapabilirsiniz.', [
-        {
-          text: 'Tamam',
-          onPress: () => {
-            setIsLoginTab(true);
-            setEmail(data.email);
-          },
-        },
-      ]);
-    },
-    onError: (err) => {
-      Alert.alert('Kayıt Hatası', err.message || 'Bir hata oluştu.');
-    },
-  });
 
   if (isLoading) {
     return (
@@ -84,38 +82,30 @@ export default function AuthScreen() {
         email: email.trim().toLowerCase(),
         password: password,
       });
-    } else {
-      if (!name.trim() || !surname.trim()) {
-        Alert.alert('Eksik Bilgi', 'Lütfen adınızı ve soyadınızı girin.');
-        return;
-      }
-      registerMutation.mutate({
-        email: email.trim().toLowerCase(),
-        password: password,
-        name: name.trim(),
-        surname: surname.trim(),
-        role,
-      });
     }
   };
 
-  const isSubmitting = loginMutation.isLoading || registerMutation.isLoading;
+  const isSubmitting = loginMutation.isLoading;
 
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <ScrollView 
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]} 
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           {/* Logo & Brand */}
-          <View style={styles.logoContainer}>
-            <View style={styles.logoBadge}>
-              <MaterialCommunityIcons name="cards-heart" size={42} color="#FFF" />
+          {!isKeyboardVisible && (
+            <View style={styles.logoContainer}>
+              <Text style={styles.brandName}>CollabSwipe</Text>
+              <Text style={styles.brandSubtitle}>Yazılımcı & Ortak Bulma Platformu</Text>
             </View>
-            <Text style={styles.brandName}>CollabSwipe</Text>
-            <Text style={styles.brandSubtitle}>Yazılımcı & Ortak Bulma Platformu</Text>
-          </View>
+          )}
 
           {/* Tab Selector */}
           <View style={styles.tabContainer}>
@@ -137,95 +127,51 @@ export default function AuthScreen() {
 
           {/* Form Container */}
           <View style={styles.formCard}>
-            {!isLoginTab && (
+            {!isLoginTab ? (
+              <RegisterWizard onCancel={() => setIsLoginTab(true)} />
+            ) : (
               <>
                 <View style={styles.inputWrapper}>
-                  <MaterialCommunityIcons name="account-outline" size={20} color="#888" style={styles.inputIcon} />
+                  <MaterialCommunityIcons name="email-outline" size={20} color="#888" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
-                    placeholder="Adınız"
+                    placeholder="E-posta Adresiniz"
                     placeholderTextColor="#AAA"
-                    value={name}
-                    onChangeText={setName}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    value={email}
+                    onChangeText={setEmail}
                     editable={!isSubmitting}
                   />
                 </View>
 
                 <View style={styles.inputWrapper}>
-                  <MaterialCommunityIcons name="account-outline" size={20} color="#888" style={styles.inputIcon} />
+                  <MaterialCommunityIcons name="lock-outline" size={20} color="#888" style={styles.inputIcon} />
                   <TextInput
                     style={styles.input}
-                    placeholder="Soyadınız"
+                    placeholder="Şifreniz"
                     placeholderTextColor="#AAA"
-                    value={surname}
-                    onChangeText={setSurname}
+                    secureTextEntry
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    value={password}
+                    onChangeText={setPassword}
                     editable={!isSubmitting}
                   />
                 </View>
 
-                {/* Role Selector */}
-                <Text style={styles.roleLabel}>Hesap Tipi</Text>
-                <View style={styles.roleContainer}>
-                  <TouchableOpacity
-                    style={[styles.roleButton, role === 'user' && styles.activeRoleButton]}
-                    onPress={() => setRole('user')}
-                    disabled={isSubmitting}
-                  >
-                    <MaterialCommunityIcons name="xml" size={20} color={role === 'user' ? '#FFF' : '#000000'} />
-                    <Text style={[styles.roleButtonText, role === 'user' && styles.activeRoleButtonText]}>Yazılımcı</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={[styles.roleButton, role === 'employer' && styles.activeRoleButton]}
-                    onPress={() => setRole('employer')}
-                    disabled={isSubmitting}
-                  >
-                    <MaterialCommunityIcons name="briefcase-outline" size={20} color={role === 'employer' ? '#FFF' : '#000000'} />
-                    <Text style={[styles.roleButtonText, role === 'employer' && styles.activeRoleButtonText]}>İlan Veren</Text>
-                  </TouchableOpacity>
-                </View>
+                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <ActivityIndicator size="small" color="#FFF" />
+                  ) : (
+                    <Text style={styles.submitButtonText}>
+                      Giriş Yap
+                    </Text>
+                  )}
+                </TouchableOpacity>
               </>
             )}
-
-            <View style={styles.inputWrapper}>
-              <MaterialCommunityIcons name="email-outline" size={20} color="#888" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="E-posta Adresiniz"
-                placeholderTextColor="#AAA"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                value={email}
-                onChangeText={setEmail}
-                editable={!isSubmitting}
-              />
-            </View>
-
-            <View style={styles.inputWrapper}>
-              <MaterialCommunityIcons name="lock-outline" size={20} color="#888" style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                placeholder="Şifreniz"
-                placeholderTextColor="#AAA"
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                value={password}
-                onChangeText={setPassword}
-                editable={!isSubmitting}
-              />
-            </View>
-
-            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting ? (
-                <ActivityIndicator size="small" color="#FFF" />
-              ) : (
-                <Text style={styles.submitButtonText}>
-                  {isLoginTab ? 'Giriş Yap' : 'Kayıt Ol'}
-                </Text>
-              )}
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -365,12 +311,12 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   submitButton: {
-    backgroundColor: '#4ECDC4',
+    backgroundColor: '#000000',
     borderRadius: 16,
     height: 56,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#4ECDC4',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
     shadowRadius: 8,

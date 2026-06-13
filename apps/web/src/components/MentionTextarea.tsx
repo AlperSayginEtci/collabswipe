@@ -103,7 +103,7 @@ export function MentionTextarea({ value, onChange, placeholder, className, autoF
                 >
                   <div className="w-8 h-8 rounded-full bg-secondary shrink-0 overflow-hidden border border-border/40">
                     <img 
-                      src={user.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.name}`} 
+                      src={user.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} 
                       alt={user.name || ''} 
                       className="w-full h-full object-cover" 
                     />

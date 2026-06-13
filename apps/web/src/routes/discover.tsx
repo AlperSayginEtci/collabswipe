@@ -492,7 +492,7 @@ function DiscoverPage() {
                 <ScrollContainer className={`flex-1 overflow-y-auto relative no-scrollbar ${isTop ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                   {/* Image/Header Area (Swipeable) */}
                   <div
-                    className={`relative w-full h-[70%] flex-shrink-0 ${isTop ? 'cursor-grab active:cursor-grabbing' : ''}`}
+                    className={`relative w-full h-[85%] flex-shrink-0 ${isTop ? 'cursor-grab active:cursor-grabbing' : ''}`}
                     onMouseDown={isTop ? (e) => handleDragStart(e.clientX, e.clientY) : undefined}
                     onMouseMove={isTop ? (e) => {
                       if (e.buttons !== 1) return;
@@ -516,11 +516,8 @@ function DiscoverPage() {
                       <img
                         src={(() => {
                           let url = isProfiles
-                            ? (currentItem.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${currentItem.name}`)
-                            : (currentItem.publisher?.image || `https://api.dicebear.com/7.x/shapes/svg?seed=${currentItem.id}`);
-                          if (url && url.includes('dicebear.com') && !url.includes('size=')) {
-                            url += url.includes('?') ? '&size=512' : '?size=512';
-                          }
+                            ? (currentItem.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`)
+                            : (currentItem.publisher?.image || `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024`);
                           return url;
                         })()}
                         alt="Banner"
@@ -542,8 +539,8 @@ function DiscoverPage() {
                     )}
                     
                     {/* Basic Info at bottom of image */}
-                    <div className="absolute bottom-6 left-6 right-6 z-20 pointer-events-none text-white">
-                      <h2 className="text-4xl font-black mb-1 drop-shadow-md">
+                    <div className="absolute bottom-10 left-6 right-6 z-20 pointer-events-none text-white">
+                      <h2 className="text-3xl font-black mb-1 drop-shadow-md">
                         {isProfiles
                           ? `${currentItem.name} ${currentItem.surname}`
                           : currentItem.title}
@@ -574,9 +571,6 @@ function DiscoverPage() {
                         ))}
                       </div>
 
-                      <div className="flex justify-center w-full mt-4 opacity-60">
-                        <ChevronDown className="w-8 h-8 text-white" />
-                      </div>
                     </div>
                   </div>
 

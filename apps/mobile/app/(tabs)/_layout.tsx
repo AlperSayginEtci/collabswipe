@@ -3,10 +3,25 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { View, ActivityIndicator } from 'react-native';
 import { useUser } from '../../context/UserContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { trpc } from '../../lib/trpc';
 
 export default function TabLayout() {
   const { userId, user, isLoading } = useUser();
   const insets = useSafeAreaInsets();
+
+  const { data: pendingRequests } = trpc.connection.getPendingRequests.useQuery(
+    { userId: userId || '' },
+    { enabled: !!userId && user?.role !== 'company', refetchInterval: 3000 }
+  );
+
+  const { data: companyApps } = trpc.job.getCompanyApplications.useQuery(
+    undefined,
+    { enabled: !!userId && user?.role === 'company', refetchInterval: 3000 }
+  );
+
+  const likesCount = user?.role === 'company' 
+    ? (companyApps?.filter(a => a.status === 'PENDING').length || 0) 
+    : (pendingRequests?.length || 0);
 
   if (isLoading) {
     return (
@@ -53,6 +68,7 @@ export default function TabLayout() {
         name="likes"
         options={{
           title: user?.role === 'company' ? 'Başvuranlar' : 'Beğeniler',
+          tabBarBadge: likesCount > 0 ? likesCount : undefined,
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons 
               name={user?.role === 'company' ? 'inbox' : 'heart'} 

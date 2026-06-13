@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useParams } from '@tanstack/react-router';
 import { trpc } from '@/lib/trpc';
 import { useSession } from '@collabswipe/auth/client';
-import { ArrowLeft, Clock, MoreHorizontal, Send as SendIcon, Trash2, Heart, MessageSquare, Repeat2, Share2, ThumbsUp } from 'lucide-react';
+import { ArrowLeft, Clock, MoreHorizontal, Send, Trash2, Heart, MessageSquare, Repeat2, Share2, ThumbsUp, Edit3 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import { MentionTextarea } from '@/components/MentionTextarea';
@@ -67,6 +67,16 @@ const EMOJI_TO_TYPE: Record<string, string> = {
 };
 
 // ─── Comment Node (Simplified for Post Detail) ─────────────────────────────
+function getAuthorSubtitle(author: any) {
+  if (!author) return 'CollabSwipe Üyesi';
+  if (author.role === 'company') return author.sector || 'Şirket';
+  const activeExp = author.profile?.experiences?.[0];
+  if (activeExp) return `${activeExp.corp} - ${activeExp.title}`;
+  const activeEdu = author.profile?.educations?.[0];
+  if (activeEdu) return `${activeEdu.instName}${activeEdu.instProgram ? ` - ${activeEdu.instProgram}` : ''}`;
+  return 'CollabSwipe Üyesi';
+}
+
 function CommentNode({ comment, depth = 0, ctx }: { comment: any; depth?: number; ctx: any }) {
   const {
     currentUserId,
@@ -91,7 +101,7 @@ function CommentNode({ comment, depth = 0, ctx }: { comment: any; depth?: number
       <div className="flex gap-2.5 items-start">
         <Link to="/profile" search={{ userId: comment.authorId }} className={`${avatarCls} bg-secondary overflow-hidden shrink-0 border border-border/40 block hover:opacity-80 transition-opacity`}>
           <img
-            src={comment.author?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${comment.author?.name || 'user'}`}
+            src={comment.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}`}
             alt={comment.author?.name || 'avatar'}
             className="w-full h-full object-cover"
           />
@@ -107,7 +117,7 @@ function CommentNode({ comment, depth = 0, ctx }: { comment: any; depth?: number
                   </h6>
                 </Link>
                 <p className="text-[9px] text-muted-foreground truncate">
-                  {comment.author?.profile?.bio || 'CollabSwipe Üyesi'}
+                  {getAuthorSubtitle(comment.author)}
                 </p>
               </div>
               {isAuthor && (
@@ -255,7 +265,7 @@ function PostDetailPage() {
           <div className="flex items-center gap-4">
             <Link to="/profile" search={{ userId: post.authorId }} className="w-14 h-14 rounded-2xl bg-secondary overflow-hidden shrink-0 border border-border/50 shadow-sm block hover:opacity-80 transition-opacity">
               <img 
-                src={post.author?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${post.author?.name || 'user'}`} 
+                src={post.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}`} 
                 alt="avatar" 
                 className="w-full h-full object-cover" 
               />
@@ -267,7 +277,7 @@ function PostDetailPage() {
                 </h4>
               </Link>
               <p className="text-sm text-muted-foreground">
-                {post.author?.profile?.bio || (post.author?.role === 'company' ? `${post.author?.sector || 'Şirket'}` : 'CollabSwipe Üyesi')}
+                {getAuthorSubtitle(post.author)}
               </p>
               <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
                 <Clock className="w-3 h-3" />
@@ -317,7 +327,7 @@ function PostDetailPage() {
                   }}
                   className="w-full px-4 py-2.5 text-left text-sm hover:bg-muted font-medium flex items-center gap-2 transition-colors"
                 >
-                  <SendIcon className="w-4 h-4" /> Bağlantıyı Kopyala
+                  <Send className="w-4 h-4" /> Bağlantıyı Kopyala
                 </button>
               </div>
             )}
@@ -347,14 +357,14 @@ function PostDetailPage() {
             <div className="border-2 border-border/60 bg-muted/5 rounded-2xl p-5 mt-4">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-secondary overflow-hidden shrink-0 border border-border/40">
-                  <img src={post.originalPost?.author?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${post.originalPost?.author?.name}`} alt="avatar" className="w-full h-full object-cover" />
+                  <img src={post.originalPost?.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} alt="avatar" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <h5 className="font-bold text-foreground text-sm hover:underline cursor-pointer">
                     {post.originalPost?.author?.name} {post.originalPost?.author?.surname}
                   </h5>
                   <p className="text-xs text-muted-foreground">
-                    {post.originalPost?.author?.profile?.bio || 'CollabSwipe Üyesi'}
+                    {getAuthorSubtitle(post.originalPost?.author)}
                   </p>
                 </div>
               </div>
@@ -421,7 +431,7 @@ function PostDetailPage() {
           <div className="flex gap-3 items-start mb-6">
             <div className="w-10 h-10 rounded-xl bg-secondary overflow-hidden shrink-0 border border-border/40">
               <img 
-                src={session?.user?.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${currentUserId}`} 
+                src={session?.user?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} 
                 alt="you" 
                 className="w-full h-full object-cover" 
               />
