@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Alert, ActivityIndicator } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Alert, ActivityIndicator, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useUser } from '../../context/UserContext';
@@ -9,13 +9,20 @@ export default function LikesScreen() {
   const { user } = useUser();
   const isCompany = user?.role === 'company';
   const [tab, setTab] = useState<'incoming' | 'outgoing'>('incoming');
+  const scrollViewRef = useRef<ScrollView>(null);
+  const { width } = Dimensions.get('window');
+
+  const handleTabChange = (newTab: 'incoming' | 'outgoing') => {
+    setTab(newTab);
+    scrollViewRef.current?.scrollTo({ x: newTab === 'incoming' ? 0 : width, animated: true });
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerTitleRow}>
-          <View style={[styles.iconWrapper, { backgroundColor: isCompany ? 'rgba(78, 205, 196, 0.1)' : 'rgba(255, 107, 107, 0.1)' }]}>
-            <MaterialCommunityIcons name={isCompany ? "inbox" : "heart"} size={28} color={isCompany ? "#4ECDC4" : "#000000"} />
+          <View style={[styles.iconWrapper, { backgroundColor: isCompany ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 107, 107, 0.1)' }]}>
+            <MaterialCommunityIcons name={isCompany ? "inbox" : "heart"} size={28} color={isCompany ? "#000000" : "#000000"} />
           </View>
           <View>
             <Text style={styles.headerTitle}>{isCompany ? 'Başvurular' : 'Beğeniler'}</Text>
@@ -28,25 +35,41 @@ export default function LikesScreen() {
         <View style={styles.tabContainer}>
           <TouchableOpacity 
             style={[styles.tabButton, tab === 'incoming' && styles.activeTab]}
-            onPress={() => setTab('incoming')}
+            onPress={() => handleTabChange('incoming')}
           >
             <Text style={[styles.tabText, tab === 'incoming' && styles.activeTabText]}>Gelenler</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.tabButton, tab === 'outgoing' && styles.activeTab]}
-            onPress={() => setTab('outgoing')}
+            onPress={() => handleTabChange('outgoing')}
           >
             <Text style={[styles.tabText, tab === 'outgoing' && styles.activeTabText]}>Gönderilenler</Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 40 }}>
-        {isCompany ? (
-           tab === 'incoming' ? <CompanyApplicants /> : <CompanyOutgoing />
-        ) : (
-           tab === 'incoming' ? <UserLikes /> : <UserOutgoing />
-        )}
+      <ScrollView 
+        ref={scrollViewRef}
+        horizontal 
+        pagingEnabled 
+        showsHorizontalScrollIndicator={false}
+        onMomentumScrollEnd={(e) => {
+          const offsetX = e.nativeEvent.contentOffset.x;
+          const index = Math.round(offsetX / width);
+          setTab(index === 0 ? 'incoming' : 'outgoing');
+        }}
+        style={{ flex: 1 }}
+      >
+        <View style={{ width }}>
+          <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 40 }}>
+            {isCompany ? <CompanyApplicants /> : <UserLikes />}
+          </ScrollView>
+        </View>
+        <View style={{ width }}>
+          <ScrollView style={styles.content} contentContainerStyle={{ paddingBottom: 40 }}>
+            {isCompany ? <CompanyOutgoing /> : <UserOutgoing />}
+          </ScrollView>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -58,7 +81,7 @@ function UserLikes() {
   
   const { data: pendingRequests, isLoading } = trpc.connection.getPendingRequests.useQuery(
     { userId: userId || '' },
-    { enabled: !!userId }
+    { enabled: !!userId, refetchInterval: 3000 }
   );
 
   const respondMutation = trpc.connection.respond.useMutation({
@@ -84,7 +107,7 @@ function UserLikes() {
       {pendingRequests.map(req => (
         <View key={req.requester.id} style={styles.card}>
           <Image 
-            source={{ uri: req.requester.image || `https://api.dicebear.com/7.x/notionists/png?seed=${req.requester.name}` }} 
+            source={{ uri: req.requester.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
             style={styles.avatar} 
           />
           <View style={styles.cardInfo}>
@@ -93,10 +116,10 @@ function UserLikes() {
           </View>
           <View style={styles.actions}>
             <TouchableOpacity 
-              style={[styles.actionBtn, { backgroundColor: 'rgba(78, 205, 196, 0.1)' }]}
+              style={[styles.actionBtn, { backgroundColor: 'rgba(0, 0, 0, 0.1)' }]}
               onPress={() => respondMutation.mutate({ requesterId: req.requester.id, addresseeId: userId!, status: 'ACCEPTED' })}
             >
-              <MaterialCommunityIcons name="check" size={24} color="#4ECDC4" />
+              <MaterialCommunityIcons name="check" size={24} color="#000000" />
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.actionBtn, { backgroundColor: 'rgba(255, 107, 107, 0.1)' }]}
@@ -159,7 +182,7 @@ function UserOutgoing() {
           {sentRequests.map(req => (
             <View key={req.addressee.id} style={styles.card}>
               <Image 
-                source={{ uri: req.addressee.image || `https://api.dicebear.com/7.x/notionists/png?seed=${req.addressee.name}` }} 
+                source={{ uri: req.addressee.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
                 style={styles.avatar} 
               />
               <View style={styles.cardInfo}>
@@ -183,7 +206,7 @@ function UserOutgoing() {
           {myApps.map(app => (
             <View key={app.id} style={styles.card}>
               <Image 
-                source={{ uri: app.job.publisher?.image || `https://api.dicebear.com/7.x/shapes/png?seed=${app.job.id}` }} 
+                source={{ uri: app.job.publisher?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
                 style={styles.avatar} 
               />
               <View style={styles.cardInfo}>
@@ -205,11 +228,8 @@ function UserOutgoing() {
 }
 
 function CompanyApplicants() {
-  const { userId } = useUser();
+  const { data: apps, isLoading } = trpc.job.getCompanyApplications.useQuery(undefined, { refetchInterval: 3000 });
   const utils = trpc.useUtils();
-  
-  const { data: apps, isLoading } = trpc.job.getCompanyApplications.useQuery();
-
   const updateStatus = trpc.job.updateApplicationStatus.useMutation({
     onSuccess: () => {
       utils.job.getCompanyApplications.invalidate();
@@ -217,7 +237,7 @@ function CompanyApplicants() {
     }
   });
 
-  if (isLoading) return <ActivityIndicator size="large" color="#4ECDC4" style={{ marginTop: 50 }} />;
+  if (isLoading) return <ActivityIndicator size="large" color="#000000" style={{ marginTop: 50 }} />;
 
   if (!apps || apps.length === 0) {
     return (
@@ -234,7 +254,7 @@ function CompanyApplicants() {
         <View key={app.id} style={[styles.card, { flexDirection: 'column', alignItems: 'stretch' }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
             <Image 
-              source={{ uri: app.applicant.image || `https://api.dicebear.com/7.x/notionists/png?seed=${app.applicant.name}` }} 
+              source={{ uri: app.applicant.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
               style={styles.avatar} 
             />
             <View style={styles.cardInfo}>
@@ -252,14 +272,14 @@ function CompanyApplicants() {
                 <Text style={{ color: '#000000', fontWeight: 'bold' }}>Reddet</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.btn, { backgroundColor: '#4ECDC4' }]}
+                style={[styles.btn, { backgroundColor: '#000000' }]}
                 onPress={() => updateStatus.mutate({ applicationId: app.id, status: 'ACCEPTED' })}
               >
                 <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Kabul Et</Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <Text style={{ textAlign: 'right', fontWeight: 'bold', color: app.status === 'ACCEPTED' ? '#4ECDC4' : '#000000' }}>
+            <Text style={{ textAlign: 'right', fontWeight: 'bold', color: app.status === 'ACCEPTED' ? '#000000' : '#000000' }}>
               {app.status === 'ACCEPTED' ? 'Kabul Edildi' : 'Reddedildi'}
             </Text>
           )}
@@ -284,7 +304,7 @@ function CompanyOutgoing() {
     }
   });
 
-  if (isLoading) return <ActivityIndicator size="large" color="#4ECDC4" style={{ marginTop: 50 }} />;
+  if (isLoading) return <ActivityIndicator size="large" color="#000000" style={{ marginTop: 50 }} />;
 
   if (!sentRequests || sentRequests.length === 0) {
     return (
@@ -300,7 +320,7 @@ function CompanyOutgoing() {
       {sentRequests.map(req => (
         <View key={req.addressee.id} style={styles.card}>
           <Image 
-            source={{ uri: req.addressee.image || `https://api.dicebear.com/7.x/notionists/png?seed=${req.addressee.name}` }} 
+            source={{ uri: req.addressee.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
             style={styles.avatar} 
           />
           <View style={styles.cardInfo}>

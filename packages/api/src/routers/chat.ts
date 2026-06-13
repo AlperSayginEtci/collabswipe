@@ -43,6 +43,13 @@ export const chatRouter = createTRPCRouter({
             orderBy: { createdAt: "desc" },
             take: 1, // Only get the last message for preview
           },
+          _count: {
+            select: {
+              messages: {
+                where: { senderId: input.userId },
+              },
+            },
+          },
         },
       });
 
@@ -51,6 +58,22 @@ export const chatRouter = createTRPCRouter({
         const nextItem = items.pop();
         nextCursor = nextItem!.id;
       }
+
+      // Fetch user's accepted connections (matches) to determine message requests
+      const connections = await ctx.prisma.connection.findMany({
+        where: {
+          status: 'ACCEPTED',
+          OR: [
+            { requesterId: input.userId },
+            { addresseeId: input.userId },
+          ],
+        },
+      });
+      const matchedUserIds = new Set(
+        connections.map((c) =>
+          c.requesterId === input.userId ? c.addresseeId : c.requesterId
+        )
+      );
 
       // Format response to easily identify "other user" and calculate unread count
       const formatted = items.map((conv) => {
@@ -68,11 +91,16 @@ export const chatRouter = createTRPCRouter({
           && (!me?.lastReadAt || lastMessage.createdAt > me.lastReadAt) 
           && lastMessage.senderId !== input.userId;
 
+        const isMatch = otherParticipant ? matchedUserIds.has(otherParticipant.userId) : false;
+        const myMessageCount = conv._count.messages;
+        const isRequest = !isMatch && myMessageCount === 0 && lastMessage?.senderId !== input.userId;
+
         return {
           ...conv,
           otherUser: otherParticipant?.user,
           lastMessage,
           hasUnread,
+          isRequest,
         };
       });
 

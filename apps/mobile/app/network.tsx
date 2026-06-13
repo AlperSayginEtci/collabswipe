@@ -86,7 +86,7 @@ export default function NetworkScreen() {
   const data = getListData();
 
   const renderItem = ({ item }: { item: any }) => {
-    const avatarUrl = item.image || `https://api.dicebear.com/7.x/notionists/png?seed=${item.name || 'User'}`;
+    const avatarUrl = item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'User'}`;
     const displayName = `${item.name || ''} ${item.surname || ''}`.trim();
     
     return (
@@ -182,7 +182,7 @@ export default function NetworkScreen() {
 
       {isLoading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#4ECDC4" />
+          <ActivityIndicator size="large" color="#000000" />
         </View>
       ) : data.length === 0 ? (
         <View style={styles.centerContainer}>
@@ -209,9 +209,9 @@ const styles = StyleSheet.create({
   tabsWrapper: { backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#EFEFEF' },
   tabsContainer: { paddingHorizontal: 16 },
   tab: { paddingVertical: 14, paddingHorizontal: 12, alignItems: 'center', borderBottomWidth: 2, borderBottomColor: 'transparent' },
-  activeTab: { borderBottomColor: '#4ECDC4' },
+  activeTab: { borderBottomColor: '#000000' },
   tabText: { fontSize: 14, fontWeight: '600', color: '#888' },
-  activeTabText: { color: '#4ECDC4', fontWeight: '800' },
+  activeTabText: { color: '#000000', fontWeight: '800' },
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   emptyText: { fontSize: 15, color: '#888', fontWeight: '500' },
   listContent: { padding: 16, gap: 12 },
@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
   profileBtn: { padding: 4 },
   actions: { flexDirection: 'row', gap: 6, marginLeft: 8 },
   actionBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, justifyContent: 'center', alignItems: 'center' },
-  acceptBtn: { backgroundColor: '#4ECDC4' },
+  acceptBtn: { backgroundColor: '#000000' },
   rejectBtn: { backgroundColor: '#F5F5F5' },
   actionBtnText: { fontSize: 12, fontWeight: '700', color: '#FFF' },
   rejectBtnText: { color: '#555' }

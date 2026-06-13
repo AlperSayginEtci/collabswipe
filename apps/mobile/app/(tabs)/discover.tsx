@@ -17,6 +17,7 @@ import { GestureDetector, Gesture, ScrollView } from 'react-native-gesture-handl
 const AnimatedGHScrollView = Animated.createAnimatedComponent(ScrollView);
 import { trpc } from '../../lib/trpc';
 import { useUser } from '../../context/UserContext';
+import { Country, State, City } from 'country-state-city';
 
 const { width, height } = Dimensions.get('window');
 const SWIPE_THRESHOLD = width * 0.3;
@@ -123,17 +124,9 @@ function SwipeCard({ item, isFirst, isProfiles, onSwipeKey }: { item: any; isFir
     : (item.requirements?.map((req: any) => req.skillName) ?? []);
     
   let imageUrl = isProfiles 
-    ? (item.image || `https://api.dicebear.com/7.x/notionists/png?seed=${encodeURIComponent(item.name || item.id)}`)
-    : (item.publisher?.image || `https://api.dicebear.com/7.x/shapes/png?seed=${encodeURIComponent(item.id)}`);
+    ? (item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`)
+    : (item.publisher?.image || `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024`);
     
-  if (imageUrl && imageUrl.includes('dicebear.com')) {
-    if (imageUrl.includes('/svg')) {
-      imageUrl = imageUrl.replace('/svg', '/png');
-    }
-    if (!imageUrl.includes('size=')) {
-      imageUrl += imageUrl.includes('?') ? '&size=512' : '?size=512';
-    }
-  }
 
   const HERO_HEIGHT = height * 0.70;
 
@@ -466,7 +459,7 @@ export default function DiscoverScreen() {
       
       {isLoading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#4ECDC4" />
+          <ActivityIndicator size="large" color="#000000" />
           <Text style={styles.loadingText}>Yükleniyor...</Text>
         </View>
       ) : (
@@ -474,7 +467,7 @@ export default function DiscoverScreen() {
           <View style={styles.cardContainer}>
             {activeData.length === 0 ? (
               <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons name="creation" size={48} color="#4ECDC4" />
+                <MaterialCommunityIcons name="creation" size={48} color="#000000" />
                 <Text style={styles.noMore}>Harika İş! 🎉</Text>
                 <Text style={styles.noMoreSubtitle}>
                   {isProfiles ? 'Etrafındaki tüm adayları inceledin.' : 'Tüm iş ilanlarına göz attın.'}
@@ -505,7 +498,7 @@ export default function DiscoverScreen() {
                 <MaterialCommunityIcons name="close" size={32} color="#000000" />
               </TouchableOpacity>
               <TouchableOpacity style={styles.actionButton} onPress={handleButtonAccept} disabled={sendRequest.isLoading || applyJob.isLoading}>
-                <MaterialCommunityIcons name="heart" size={32} color="#4ECDC4" />
+                <MaterialCommunityIcons name="heart" size={32} color="#000000" />
               </TouchableOpacity>
             </View>
           )}
@@ -555,7 +548,7 @@ function FiltersModal(props: any) {
             {['any', 'remote', 'in-person'].map((type) => (
               <TouchableOpacity 
                 key={type}
-                style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: props.locationType === type ? '#4ECDC4' : '#F5F5F5' }}
+                style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: props.locationType === type ? '#000000' : '#F5F5F5' }}
                 onPress={() => props.setLocationType(type)}
               >
                 <Text style={{ color: props.locationType === type ? '#FFF' : '#333', fontWeight: '600' }}>
@@ -618,7 +611,7 @@ function FiltersModal(props: any) {
             </View>
           )}
         </ScrollView>
-        <TouchableOpacity style={{ backgroundColor: '#4ECDC4', margin: 16, padding: 16, borderRadius: 12, alignItems: 'center' }} onPress={props.onClose}>
+        <TouchableOpacity style={{ backgroundColor: '#000000', margin: 16, padding: 16, borderRadius: 12, alignItems: 'center' }} onPress={props.onClose}>
           <Text style={{ color: '#FFF', fontSize: 16, fontWeight: 'bold' }}>Sonuçları Göster</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -634,7 +627,7 @@ function FiltersModal(props: any) {
       <SelectionModal 
         visible={showCityModal}
         title="Şehir Seçin"
-        items={props.selectedCountry ? Array.from(new Set(City.getCitiesOfCountry(props.selectedCountry)!.map((c: any) => c.name))).sort().map(name => ({ label: name as string, value: name as string })) : []}
+        items={props.selectedCountry ? Array.from(new Set(State.getStatesOfCountry(props.selectedCountry)!.map((s: any) => s.name))).sort().map(name => ({ label: name as string, value: name as string })) : []}
         onSelect={(val) => { props.setSelectedCity(val); setShowCityModal(false); }}
         onClose={() => setShowCityModal(false)}
       />
@@ -737,7 +730,7 @@ const styles = StyleSheet.create({
   },
   likeBadge: {
     left: 40,
-    borderColor: '#4ECDC4',
+    borderColor: '#000000',
   },
   nopeBadge: {
     right: 40,
@@ -746,7 +739,7 @@ const styles = StyleSheet.create({
   badgeTextLike: {
     fontSize: 24,
     fontWeight: '900',
-    color: '#4ECDC4',
+    color: '#000000',
     letterSpacing: 2,
   },
   badgeTextNope: {

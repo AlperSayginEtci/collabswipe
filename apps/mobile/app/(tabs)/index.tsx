@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -36,6 +37,16 @@ const REACTION_LABELS: Record<string, string> = {
   FUNNY: 'Eğlenceli'
 };
 
+function getAuthorSubtitle(author: any) {
+  if (!author) return 'CollabSwipe Üyesi';
+  if (author.role === 'company') return author.sector || 'Şirket';
+  const activeExp = author.profile?.experiences?.[0];
+  if (activeExp) return `${activeExp.corp} - ${activeExp.title}`;
+  const activeEdu = author.profile?.educations?.[0];
+  if (activeEdu) return `${activeEdu.instName}${activeEdu.instProgram ? ` - ${activeEdu.instProgram}` : ''}`;
+  return 'CollabSwipe Üyesi';
+}
+
 export default function HomeFeedScreen() {
   const { userId, user } = useUser();
   const [content, setContent] = useState('');
@@ -50,14 +61,23 @@ export default function HomeFeedScreen() {
 
   const handlePickMedia = async () => {
     try {
-      const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaType.All,
+        allowsEditing: false,
+        quality: 0.8,
+        base64: true,
+      });
+
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const fileUri = result.assets[0].uri;
-        const base64 = await FileSystem.readAsStringAsync(fileUri, {
-          encoding: 'base64',
-        });
-        setMediaFileBase64(base64);
-        setMediaPreviewUrl(fileUri);
+        const asset = result.assets[0];
+        setMediaPreviewUrl(asset.uri);
+        
+        if (asset.base64) {
+          setMediaFileBase64(asset.base64);
+        } else {
+          const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: 'base64' });
+          setMediaFileBase64(base64);
+        }
       }
     } catch (e) {
       console.error('Media pick error', e);
@@ -211,7 +231,7 @@ export default function HomeFeedScreen() {
     <View style={styles.composerCard}>
       <View style={styles.composerHeader}>
         <Image
-          source={{ uri: (user as any)?.image || `https://api.dicebear.com/7.x/notionists/png?seed=${user?.name || 'user'}` }}
+          source={{ uri: (user as any)?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}` }}
           style={styles.composerAvatar}
         />
         <View style={{ flex: 1, zIndex: 1000 }}>
@@ -250,17 +270,17 @@ export default function HomeFeedScreen() {
           <MaterialCommunityIcons 
             name="image-plus" 
             size={22} 
-            color={mediaPreviewUrl ? '#4ECDC4' : '#666'} 
+            color={mediaPreviewUrl ? '#000000' : '#666'} 
           />
-          <Text style={[styles.composerMediaText, mediaPreviewUrl && { color: '#4ECDC4' }]}>{mediaPreviewUrl ? 'Değiştir' : 'Fotoğraf'}</Text>
+          <Text style={[styles.composerMediaText, mediaPreviewUrl && { color: '#000000' }]}>{mediaPreviewUrl ? 'Değiştir' : 'Fotoğraf'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.postButton, (!content.trim() && !mediaFileBase64 && createPost.isLoading) && styles.postButtonDisabled]}
           onPress={handlePost}
-          disabled={(!content.trim() && !mediaFileBase64) || createPost.isLoading}
+          disabled={(!content.trim() && !mediaFileBase64) || createPost.isPending}
         >
-          {createPost.isLoading ? (
+          {createPost.isPending ? (
             <ActivityIndicator size="small" color="#FFF" />
           ) : (
             <>
@@ -287,7 +307,7 @@ export default function HomeFeedScreen() {
         {/* Post Header */}
         <View style={styles.postHeader}>
           <Image
-            source={{ uri: item.author?.image || `https://api.dicebear.com/7.x/notionists/png?seed=${item.author?.name || 'user'}` }}
+            source={{ uri: item.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}` }}
             style={styles.postAvatar}
           />
           <View style={styles.postAuthorInfo}>
@@ -303,7 +323,7 @@ export default function HomeFeedScreen() {
             </View>
 
             <Text style={styles.postAuthorHeadline} numberOfLines={1}>
-              {item.author?.profile?.bio || (item.author?.role === 'company' ? `${item.author?.sector || 'Şirket'}` : 'CollabSwipe Üyesi')}
+              {getAuthorSubtitle(item.author)}
             </Text>
             <Text style={styles.postTime}>
               {new Date(item.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
@@ -326,7 +346,7 @@ export default function HomeFeedScreen() {
           <View style={styles.repostContainer}>
             <View style={styles.repostHeader}>
               <Image
-                source={{ uri: item.originalPost.author?.image || `https://api.dicebear.com/7.x/notionists/png?seed=${item.originalPost.author?.name || 'user'}` }}
+                source={{ uri: item.originalPost.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}` }}
                 style={styles.repostAvatar}
               />
               <View style={styles.repostAuthorInfo}>
@@ -334,11 +354,11 @@ export default function HomeFeedScreen() {
                   {item.originalPost.author?.name} {item.originalPost.author?.surname}
                 </Text>
                 <Text style={styles.repostAuthorHeadline} numberOfLines={1}>
-                  {item.originalPost.author?.profile?.bio || 'CollabSwipe Üyesi'}
+                  {getAuthorSubtitle(item.originalPost.author)}
                 </Text>
               </View>
             </View>
-            <FormattedText text={item.originalPost.content} style={styles.originalPostText} />
+            <FormattedText text={item.originalPost.content} style={styles.postContent} />
             {item.originalPost.mediaUrl && (
               <Image source={{ uri: item.originalPost.mediaUrl }} style={styles.repostMedia} resizeMode="cover" />
             )}
@@ -399,7 +419,7 @@ export default function HomeFeedScreen() {
             <MaterialCommunityIcons 
               name={showComments ? "comment" : "comment-outline"} 
               size={18} 
-              color={showComments ? "#4ECDC4" : "#666"} 
+              color={showComments ? "#000000" : "#666"} 
             />
             <Text style={[styles.actionText, showComments && styles.actionTextActive]}>Yorumla</Text>
           </TouchableOpacity>
@@ -443,7 +463,7 @@ export default function HomeFeedScreen() {
                   <View key={comment.id} style={{ marginBottom: 12 }}>
                     <View style={styles.commentBubbleContainer}>
                       <Image
-                        source={{ uri: comment.author?.image || `https://api.dicebear.com/7.x/notionists/png?seed=${comment.author?.name || 'user'}` }}
+                        source={{ uri: comment.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}` }}
                         style={styles.commentAvatar}
                       />
                       <View style={styles.commentBubble}>
@@ -467,7 +487,7 @@ export default function HomeFeedScreen() {
                     {comment.replies && comment.replies.map((reply: any) => (
                       <View key={reply.id} style={[styles.commentBubbleContainer, { marginLeft: 38, marginTop: 4 }]}>
                         <Image
-                          source={{ uri: reply.author?.image || `https://api.dicebear.com/7.x/notionists/png?seed=${reply.author?.name || 'user'}` }}
+                          source={{ uri: reply.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}` }}
                           style={[styles.commentAvatar, { width: 24, height: 24, borderRadius: 12 }]}
                         />
                         <View style={[styles.commentBubble, { backgroundColor: '#F8F9FA' }]}>
@@ -648,7 +668,7 @@ const styles = StyleSheet.create({
   postButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#4ECDC4',
+    backgroundColor: '#000000',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
@@ -820,7 +840,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   actionTextActive: {
-    color: '#4ECDC4',
+    color: '#000000',
   },
   commentsSection: {
     borderTopWidth: 1,
@@ -847,7 +867,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#4ECDC4',
+    backgroundColor: '#000000',
     justifyContent: 'center',
     alignItems: 'center',
   },

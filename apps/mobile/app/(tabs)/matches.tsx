@@ -38,6 +38,8 @@ export default function MatchesScreen() {
     trpc.chat.getConversations.useQuery({ userId: userId || '' }, { enabled: !!userId });
 
   const conversations = conversationsData?.items || [];
+  const inboxChats = conversations.filter((c: any) => !c.isRequest);
+  const requestChats = conversations.filter((c: any) => c.isRequest);
 
   // Mutation to create a new conversation
   const createConversation = trpc.conversation.create.useMutation({
@@ -136,7 +138,7 @@ export default function MatchesScreen() {
               contentContainerStyle={{ padding: 16 }}
               renderItem={({ item }) => {
                 const nameText = `${item.name} ${item.surname || ''}`.trim();
-                const avatarUrl = item.image || `https://api.dicebear.com/7.x/notionists/png?seed=${nameText}`;
+                const avatarUrl = item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
                 return (
                   <TouchableOpacity
                     style={styles.convItem}
@@ -148,7 +150,6 @@ export default function MatchesScreen() {
                     <Image source={{ uri: avatarUrl }} style={styles.convAvatar} />
                     <View style={styles.convInfo}>
                       <Text style={styles.convName}>{nameText}</Text>
-                      {item.username && <Text style={styles.convTime}>@{item.username}</Text>}
                     </View>
                   </TouchableOpacity>
                 );
@@ -171,7 +172,7 @@ export default function MatchesScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.matchesRow}>
                 {matches.map((item: any) => {
                   const nameText = item.name || 'User';
-                  const avatarUrl = item.image || `https://api.dicebear.com/7.x/notionists/png?seed=${item.name}`;
+                  const avatarUrl = item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
                   return (
                     <TouchableOpacity
                       key={item.id}
@@ -191,17 +192,28 @@ export default function MatchesScreen() {
 
           {/* Conversations List */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Sohbetler</Text>
-            {conversations?.filter((c: any) => c.lastMessage).length === 0 ? (
+            <View style={styles.conversationsHeader}>
+              <Text style={styles.sectionTitle}>Sohbetler</Text>
+              <TouchableOpacity 
+                style={styles.requestsButton} 
+                onPress={() => router.push('/chat/requests')}
+              >
+                <Text style={styles.requestsButtonText}>
+                  İstekler ({requestChats.length})
+                </Text>
+                {requestChats.some((c: any) => c.hasUnread) && <View style={styles.unreadDot} />}
+              </TouchableOpacity>
+            </View>
+            {inboxChats?.filter((c: any) => c.lastMessage).length === 0 ? (
               <View style={styles.emptyConversations}>
                 <MaterialCommunityIcons name="chat-outline" size={48} color="#CCC" />
                 <Text style={styles.emptyConversationsText}>Henüz mesajlaşma başlatılmadı.</Text>
               </View>
             ) : (
-              conversations?.filter((c: any) => c.lastMessage).map((item: any) => {
+              inboxChats?.filter((c: any) => c.lastMessage).map((item: any) => {
                 const otherUser = item.otherUser;
                 const lastMessage = item.lastMessage;
-                const avatarUrl = otherUser?.image || `https://api.dicebear.com/7.x/notionists/png?seed=${otherUser?.name || 'User'}`;
+                const avatarUrl = otherUser?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'User'}`;
 
                 return (
                   <TouchableOpacity
@@ -287,7 +299,34 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: '#333',
+  },
+  conversationsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
+  },
+  requestsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#EFEFEF',
+  },
+  requestsButtonText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#555',
+  },
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF6B6B',
+    marginLeft: 6,
   },
   matchesRow: {
     flexDirection: 'row',

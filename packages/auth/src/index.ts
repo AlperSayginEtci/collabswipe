@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma"
 import { prisma } from "@collabswipe/db"
 
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3001/api/auth",
   /**
    * Veritabanı adaptörü — mevcut Prisma instance'ını kullan
    */

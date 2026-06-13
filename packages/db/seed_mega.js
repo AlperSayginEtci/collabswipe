@@ -8,7 +8,7 @@ const CANDIDATES = [
     email: "can@collabswipe.com",
     name: "Can",
     surname: "Yılmaz",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Can",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "AI & Machine Learning Engineer with a deep passion for Neural Networks, NLP, and Computer Vision. Seeking co-founders or high-impact roles.",
     location: "Istanbul, Turkey",
     skills: ["Deep Learning", "Python", "PyTorch", "TensorFlow"]
@@ -18,7 +18,7 @@ const CANDIDATES = [
     email: "elif@collabswipe.com",
     name: "Elif",
     surname: "Demir",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Elif",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "UI/UX Designer who focuses on clean typography, accessible color palettes, and interactive Figma prototypes. 3+ years experience.",
     location: "Izmir, Turkey",
     skills: ["UI/UX", "Figma", "Tailwind CSS", "User Research"]
@@ -28,7 +28,7 @@ const CANDIDATES = [
     email: "mert@collabswipe.com",
     name: "Mert",
     surname: "Kaya",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Mert",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Go Backend Developer specializing in microservices architecture, gRPC, and high-concurrency systems. Fan of Docker and PostgreSQL.",
     location: "Ankara, Turkey",
     skills: ["Go", "Node.js", "PostgreSQL", "Redis"]
@@ -38,7 +38,7 @@ const CANDIDATES = [
     email: "zeynep@collabswipe.com",
     name: "Zeynep",
     surname: "Çelik",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Zeynep",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Fullstack Engineer comfortable writing React SPAs and scaling REST/GraphQL APIs with Node.js. 4 years of startup experience.",
     location: "Istanbul, Turkey",
     skills: ["React", "Node.js", "TypeScript", "GraphQL"]
@@ -48,7 +48,7 @@ const CANDIDATES = [
     email: "burak@collabswipe.com",
     name: "Burak",
     surname: "Öztürk",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Burak",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "DevOps & Infrastructure Lead. Passionate about automating Kubernetes deployments, writing declarative Terraform, and managing AWS costs.",
     location: "Istanbul, Turkey",
     skills: ["Docker", "Kubernetes", "AWS", "CI/CD"]
@@ -58,7 +58,7 @@ const CANDIDATES = [
     email: "selin@collabswipe.com",
     name: "Selin",
     surname: "Şahin",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Selin",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Native iOS Developer building high-performance Swift and SwiftUI apps. Focuses on local databases (CoreData/Realm) and fluid UI animations.",
     location: "Izmir, Turkey",
     skills: ["Swift", "React Native", "TypeScript", "User Research"]
@@ -68,7 +68,7 @@ const CANDIDATES = [
     email: "kaan@collabswipe.com",
     name: "Kaan",
     surname: "Arslan",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Kaan",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Cybersecurity Analyst and Ethical Hacker. Skilled in API vulnerability auditing, network scanning, and server hardening.",
     location: "Ankara, Turkey",
     skills: ["Penetration Testing", "Go", "PostgreSQL", "Docker"]
@@ -78,7 +78,7 @@ const CANDIDATES = [
     email: "asli@collabswipe.com",
     name: "Aslı",
     surname: "Yıldız",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Asli",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Technical Product Manager with a strong coding background. Bridging the gap between software engineers and product stakeholders.",
     location: "Istanbul, Turkey",
     skills: ["Product Management", "Agile", "Scrum", "Analytics"]
@@ -88,7 +88,7 @@ const CANDIDATES = [
     email: "kerem@collabswipe.com",
     name: "Kerem",
     surname: "Koç",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Kerem",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Frontend Specialist in Vue and Nuxt. Focuses on Jamstack, headless CMS integrations, and search engine optimization (SEO).",
     location: "Bursa, Turkey",
     skills: ["React", "Tailwind CSS", "TypeScript", "Next.js"]
@@ -98,7 +98,7 @@ const CANDIDATES = [
     email: "melis@collabswipe.com",
     name: "Melis",
     surname: "Aydın",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Melis",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Quality Assurance Engineer. Experienced in creating complete automated testing suites using Selenium, Cypress, and Jest.",
     location: "Istanbul, Turkey",
     skills: ["Cypress", "CI/CD", "TypeScript", "React"]
@@ -108,7 +108,7 @@ const CANDIDATES = [
     email: "ali@collabswipe.com",
     name: "Ali",
     surname: "Vefa",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Ali",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Data Scientist focusing on predictive modeling and big data analytics. Loves working with Pandas and Scikit-Learn.",
     location: "Ankara, Turkey",
     skills: ["Python", "Data Science", "Machine Learning"]
@@ -118,7 +118,7 @@ const CANDIDATES = [
     email: "ayse@collabswipe.com",
     name: "Ayşe",
     surname: "Yılmaz",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Ayse",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Creative Web Developer with an eye for stunning animations. Expert in Three.js and WebGL.",
     location: "Izmir, Turkey",
     skills: ["JavaScript", "Three.js", "WebGL", "CSS"]
@@ -128,7 +128,7 @@ const CANDIDATES = [
     email: "onur@collabswipe.com",
     name: "Onur",
     surname: "Tekin",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Onur",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Mobile Developer specializing in Flutter. Built over 10 cross-platform apps currently live on App Store and Play Store.",
     location: "Antalya, Turkey",
     skills: ["Flutter", "Dart", "Firebase"]
@@ -138,7 +138,7 @@ const CANDIDATES = [
     email: "deniz@collabswipe.com",
     name: "Deniz",
     surname: "Karakaya",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Deniz",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Game Developer working with Unity and C#. Passionate about indie games and virtual reality experiences.",
     location: "Eskişehir, Turkey",
     skills: ["Unity", "C#", "Game Design"]
@@ -148,7 +148,7 @@ const CANDIDATES = [
     email: "emre@collabswipe.com",
     name: "Emre",
     surname: "Çoban",
-    image: "https://api.dicebear.com/7.x/notionists/svg?seed=Emre",
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024",
     bio: "Blockchain Engineer with a focus on smart contracts and DeFi protocols. Solidity and Rust enthusiast.",
     location: "Istanbul, Turkey",
     skills: ["Solidity", "Rust", "Web3"]
@@ -161,56 +161,56 @@ const EMPLOYERS = [
     email: "stripe@collabswipe.com",
     name: "Stripe",
     surname: "Turkey",
-    image: "https://api.dicebear.com/7.x/initials/svg?seed=Stripe"
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024"
   },
   {
     id: "emp-vercel",
     email: "vercel@collabswipe.com",
     name: "Vercel",
     surname: "Inc.",
-    image: "https://api.dicebear.com/7.x/initials/svg?seed=Vercel"
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024"
   },
   {
     id: "emp-spotify",
     email: "spotify@collabswipe.com",
     name: "Spotify",
     surname: "AB",
-    image: "https://api.dicebear.com/7.x/initials/svg?seed=Spotify"
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024"
   },
   {
     id: "emp-netflix",
     email: "netflix@collabswipe.com",
     name: "Netflix",
     surname: "Tech",
-    image: "https://api.dicebear.com/7.x/initials/svg?seed=Netflix"
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024"
   },
   {
     id: "emp-slack",
     email: "slack@collabswipe.com",
     name: "Slack",
     surname: "Technologies",
-    image: "https://api.dicebear.com/7.x/initials/svg?seed=Slack"
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024"
   },
   {
     id: "emp-google",
     email: "google@collabswipe.com",
     name: "Google",
     surname: "LLC",
-    image: "https://api.dicebear.com/7.x/initials/svg?seed=Google"
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024"
   },
   {
     id: "emp-meta",
     email: "meta@collabswipe.com",
     name: "Meta",
     surname: "Platforms",
-    image: "https://api.dicebear.com/7.x/initials/svg?seed=Meta"
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024"
   },
   {
     id: "emp-amazon",
     email: "amazon@collabswipe.com",
     name: "Amazon",
     surname: "Web Services",
-    image: "https://api.dicebear.com/7.x/initials/svg?seed=Amazon"
+    image: "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024"
   }
 ];
 

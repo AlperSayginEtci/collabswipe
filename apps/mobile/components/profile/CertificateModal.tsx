@@ -9,8 +9,10 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert
+  Alert,
+  Switch
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export interface CertificateData {
@@ -33,8 +35,11 @@ interface CertificateModalProps {
 export default function CertificateModal({ visible, onClose, onSave, initialData }: CertificateModalProps) {
   const [title, setTitle] = useState('');
   const [org, setOrg] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [isCurrent, setIsCurrent] = useState(true);
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
   const [competencyId, setCompetencyId] = useState('');
   const [competencyURL, setCompetencyURL] = useState('');
 
@@ -42,8 +47,14 @@ export default function CertificateModal({ visible, onClose, onSave, initialData
     if (initialData) {
       setTitle(initialData.title);
       setOrg(initialData.org);
-      setStartDate(initialData.startDate.split('T')[0]);
-      setEndDate(initialData.endDate ? initialData.endDate.split('T')[0] : '');
+      setStartDate(new Date(initialData.startDate));
+      if (initialData.endDate) {
+        setEndDate(new Date(initialData.endDate));
+        setIsCurrent(false);
+      } else {
+        setEndDate(new Date());
+        setIsCurrent(true);
+      }
       setCompetencyId(initialData.competencyId || '');
       setCompetencyURL(initialData.competencyURL || '');
     } else {
@@ -54,8 +65,9 @@ export default function CertificateModal({ visible, onClose, onSave, initialData
   const resetForm = () => {
     setTitle('');
     setOrg('');
-    setStartDate('');
-    setEndDate('');
+    setStartDate(new Date());
+    setEndDate(new Date());
+    setIsCurrent(true);
     setCompetencyId('');
     setCompetencyURL('');
   };
@@ -75,8 +87,8 @@ export default function CertificateModal({ visible, onClose, onSave, initialData
       cerId: initialData?.cerId,
       title,
       org,
-      startDate: new Date(startDate).toISOString(),
-      endDate: endDate ? new Date(endDate).toISOString() : undefined,
+      startDate: startDate.toISOString(),
+      endDate: isCurrent ? undefined : endDate.toISOString(),
       competencyId,
       competencyURL: urlToSave
     });
@@ -106,14 +118,48 @@ export default function CertificateModal({ visible, onClose, onSave, initialData
 
             <View style={styles.row}>
               <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                <Text style={styles.label}>Veriliş (YYYY-AA-GG) *</Text>
-                <TextInput style={styles.input} value={startDate} onChangeText={setStartDate} placeholder="2022-10-01" />
+                <Text style={styles.label}>Veriliş Tarihi *</Text>
+                <TouchableOpacity style={[styles.input, { justifyContent: 'center' }]} onPress={() => setShowStartPicker(true)}>
+                  <Text style={{ color: '#333' }}>{startDate.toLocaleDateString('tr-TR')}</Text>
+                </TouchableOpacity>
               </View>
-              <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                <Text style={styles.label}>Geçerlilik Bitiş</Text>
-                <TextInput style={styles.input} value={endDate} onChangeText={setEndDate} placeholder="2025-10-01" />
-              </View>
+              {!isCurrent && (
+                <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
+                  <Text style={styles.label}>Geçerlilik Bitiş</Text>
+                  <TouchableOpacity style={[styles.input, { justifyContent: 'center' }]} onPress={() => setShowEndPicker(true)}>
+                    <Text style={{ color: '#333' }}>{endDate.toLocaleDateString('tr-TR')}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
+
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <Text style={{ fontSize: 13, color: '#555', fontWeight: '600' }}>Geçerliliği Devam Ediyor</Text>
+              <Switch value={isCurrent} onValueChange={setIsCurrent} trackColor={{ true: '#000', false: '#CCC' }} thumbColor="#FFF" />
+            </View>
+
+            {showStartPicker && (
+              <DateTimePicker
+                value={startDate}
+                mode="date"
+                display="default"
+                onChange={(event, date) => {
+                  if (Platform.OS !== 'ios') setShowStartPicker(false);
+                  if (date) setStartDate(date);
+                }}
+              />
+            )}
+            {showEndPicker && (
+              <DateTimePicker
+                value={endDate}
+                mode="date"
+                display="default"
+                onChange={(event, date) => {
+                  if (Platform.OS !== 'ios') setShowEndPicker(false);
+                  if (date) setEndDate(date);
+                }}
+              />
+            )}
 
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Yetkinlik / Sertifika Kimliği</Text>
@@ -196,7 +242,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#EEE',
   },
   saveBtn: {
-    backgroundColor: '#4ECDC4',
+    backgroundColor: '#000000',
     borderRadius: 12,
     height: 50,
     justifyContent: 'center',

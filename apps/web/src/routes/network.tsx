@@ -146,7 +146,7 @@ function NetworkPage() {
           <div key={item.follower.id} className="flex items-center justify-between p-3 hover:bg-muted/40 rounded-xl transition-colors">
             <Link to="/profile" search={{ userId: item.follower.id }} className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-12 h-12 rounded-full bg-secondary overflow-hidden shrink-0 border border-border/40">
-                <img src={item.follower.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${item.follower.name}`} alt={item.follower.name || ''} className="w-full h-full object-cover" />
+                <img src={item.follower.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} alt={item.follower.name || ''} className="w-full h-full object-cover" />
               </div>
               <div className="min-w-0">
                 <h4 className="font-bold text-sm text-foreground truncate hover:underline">{item.follower.name} {item.follower.surname}</h4>
@@ -175,7 +175,7 @@ function NetworkPage() {
           <div key={item.following.id} className="flex items-center justify-between p-3 hover:bg-muted/40 rounded-xl transition-colors">
             <Link to="/profile" search={{ userId: item.following.id }} className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-12 h-12 rounded-full bg-secondary overflow-hidden shrink-0 border border-border/40">
-                <img src={item.following.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${item.following.name}`} alt={item.following.name || ''} className="w-full h-full object-cover" />
+                <img src={item.following.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} alt={item.following.name || ''} className="w-full h-full object-cover" />
               </div>
               <div className="min-w-0">
                 <h4 className="font-bold text-sm text-foreground truncate hover:underline">{item.following.name} {item.following.surname}</h4>
@@ -203,7 +203,7 @@ function NetworkPage() {
           <div key={item.follower.id} className="flex items-center justify-between p-3 hover:bg-muted/40 rounded-xl transition-colors">
             <Link to="/profile" search={{ userId: item.follower.id }} className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-12 h-12 rounded-full bg-secondary overflow-hidden shrink-0 border border-border/40">
-                <img src={item.follower.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${item.follower.name}`} alt={item.follower.name || ''} className="w-full h-full object-cover" />
+                <img src={item.follower.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} alt={item.follower.name || ''} className="w-full h-full object-cover" />
               </div>
               <div className="min-w-0">
                 <h4 className="font-bold text-sm text-foreground truncate hover:underline">{item.follower.name} {item.follower.surname}</h4>
@@ -242,7 +242,7 @@ function NetworkPage() {
             <div key={user.id} className="flex items-center justify-between p-3 hover:bg-muted/40 rounded-xl transition-colors">
               <Link to="/profile" search={{ userId: user.id }} className="flex items-center gap-3 flex-1 min-w-0">
                 <div className="w-12 h-12 rounded-full bg-secondary overflow-hidden shrink-0 border border-border/40">
-                  <img src={user.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${user.name}`} alt={user.name || ''} className="w-full h-full object-cover" />
+                  <img src={user.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} alt={user.name || ''} className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
                   <h4 className="font-bold text-sm text-foreground truncate hover:underline">{user.name} {user.surname}</h4>
@@ -264,7 +264,7 @@ function NetworkPage() {
           <div key={item.requester.id} className="flex items-center justify-between p-3 hover:bg-muted/40 rounded-xl transition-colors">
             <Link to="/profile" search={{ userId: item.requester.id }} className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-12 h-12 rounded-full bg-secondary overflow-hidden shrink-0 border border-border/40">
-                <img src={item.requester.image || `https://api.dicebear.com/7.x/notionists/svg?seed=${item.requester.name}`} alt={item.requester.name || ''} className="w-full h-full object-cover" />
+                <img src={item.requester.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} alt={item.requester.name || ''} className="w-full h-full object-cover" />
               </div>
               <div className="min-w-0">
                 <h4 className="font-bold text-sm text-foreground truncate hover:underline">{item.requester.name} {item.requester.surname}</h4>

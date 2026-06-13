@@ -19,7 +19,7 @@ import { trpc } from '../../lib/trpc';
 import { useUser } from '../../context/UserContext';
 import * as ImagePicker from 'expo-image-picker';
 import { getBaseUrl } from '../../lib/trpc';
-import { Country, City } from 'country-state-city';
+import { Country, City, State } from 'country-state-city';
 
 // Components
 import ExperienceModal, { ExperienceData } from '../../components/profile/ExperienceModal';
@@ -32,7 +32,7 @@ const formatDate = (dateString: string) => {
 };
 
 export default function ProfileScreen() {
-  const { userId, user, logout } = useUser();
+  const { userId, user, login, logout } = useUser();
   const utils = trpc.useUtils();
   const router = useRouter();
 
@@ -40,7 +40,7 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [editSurname, setEditSurname] = useState('');
-  const [editUsername, setEditUsername] = useState('');
+  
   const [editBio, setEditBio] = useState('');
   const [editLocation, setEditLocation] = useState('');
   const [editImage, setEditImage] = useState('');
@@ -79,10 +79,10 @@ export default function ProfileScreen() {
       setEditLocation(profile.location || '');
       setEditBanner(profile.banner || '');
       setEditIsPrivate(profile.isPrivate || false);
-      setEditName(user.name || '');
-      setEditSurname(user.surname || '');
-      setEditUsername(user.username || '');
-      setEditImage(user.image || '');
+      setEditName(profile.user?.name || user.name || '');
+      setEditSurname(profile.user?.surname || user.surname || '');
+      
+      setEditImage(profile.user?.image || user.image || '');
 
       const locStr = profile.location || '';
       if (locStr) {
@@ -115,6 +115,16 @@ export default function ProfileScreen() {
     onSuccess: () => {
       utils.profile.getByUserId.invalidate({ userId: userId || '' });
       setIsEditing(false);
+      
+      // Context'teki kullanıcıyı da lokal olarak güncelle (Uygulamanın diğer yerlerinde de görünmesi için)
+      if (user) {
+        login({
+          ...user,
+          name: editName,
+          surname: editSurname,
+          image: editImage,
+        });
+      }
     },
     onError: (err) => Alert.alert('Hata', err.message),
   });
@@ -170,7 +180,7 @@ export default function ProfileScreen() {
   const pickImage = async (type: 'avatar' | 'banner') => {
     if (!isEditing) return;
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: type === 'avatar' ? [1, 1] : [16, 9],
       quality: 0.8,
@@ -199,7 +209,7 @@ export default function ProfileScreen() {
       userId,
       name: editName,
       surname: editSurname,
-      username: editUsername.trim() === '' ? undefined : editUsername.trim(),
+      
       bio: editBio,
       location: finalLoc,
       image: editImage,
@@ -216,9 +226,9 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const fallbackAvatar = `https://api.dicebear.com/7.x/notionists/png?seed=${user?.name || 'User'}`;
+  const fallbackAvatar = `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'User'}`;
   const bannerUri = isEditing ? editBanner : profile?.banner;
-  const avatarUri = isEditing ? editImage : (user?.image || fallbackAvatar);
+  const avatarUri = isEditing ? editImage : (profile?.user?.image || user?.image || fallbackAvatar);
 
   const filteredSkills = allSkills?.filter(s => s.skillName.toLowerCase().includes(skillSearch.toLowerCase()) && !profile?.skills.find((ps: any) => ps.skill.skillName === s.skillName)) || [];
 
@@ -285,16 +295,16 @@ export default function ProfileScreen() {
                 <TextInput style={[styles.input, { flex: 1, marginRight: 8 }]} value={editName} onChangeText={setEditName} placeholder="Ad" />
                 <TextInput style={[styles.input, { flex: 1 }]} value={editSurname} onChangeText={setEditSurname} placeholder="Soyad" />
               </View>
-              <TextInput style={styles.input} value={editUsername} onChangeText={setEditUsername} placeholder="Kullanıcı Adı" autoCapitalize="none" />
+              
               <View style={styles.switchRow}>
                 <Text style={styles.label}>Gizli Hesap</Text>
-                <Switch value={editIsPrivate} onValueChange={setEditIsPrivate} trackColor={{ true: '#4ECDC4', false: '#DDD' }} />
+                <Switch value={editIsPrivate} onValueChange={setEditIsPrivate} trackColor={{ true: '#000000', false: '#DDD' }} />
               </View>
             </View>
           ) : (
             <>
               <Text style={styles.userName}>{`${user?.name || ''} ${user?.surname || ''}`.trim()}</Text>
-              <Text style={styles.userUsername}>@{user?.username}</Text>
+              
               <View style={styles.statsRow}>
                 <TouchableOpacity onPress={() => router.push({ pathname: '/network', params: { userId: profile?.userId, tab: 'followers' } })}>
                   <Text style={styles.statText}><Text style={styles.statNumber}>{profile?.user?._count?.followers || 0}</Text> Takipçi</Text>
@@ -384,7 +394,7 @@ export default function ProfileScreen() {
             <Text style={styles.sectionTitle}>Deneyimler</Text>
             {isEditing && (
               <TouchableOpacity onPress={() => { setEditingExp(null); setShowExpModal(true); }}>
-                <MaterialCommunityIcons name="plus-circle" size={24} color="#4ECDC4" />
+                <MaterialCommunityIcons name="plus-circle" size={24} color="#000000" />
               </TouchableOpacity>
             )}
           </View>
@@ -412,7 +422,7 @@ export default function ProfileScreen() {
             <Text style={styles.sectionTitle}>Eğitim</Text>
             {isEditing && (
               <TouchableOpacity onPress={() => { setEditingEdu(null); setShowEduModal(true); }}>
-                <MaterialCommunityIcons name="plus-circle" size={24} color="#4ECDC4" />
+                <MaterialCommunityIcons name="plus-circle" size={24} color="#000000" />
               </TouchableOpacity>
             )}
           </View>
@@ -440,7 +450,7 @@ export default function ProfileScreen() {
             <Text style={styles.sectionTitle}>Sertifikalar</Text>
             {isEditing && (
               <TouchableOpacity onPress={() => { setEditingCert(null); setShowCertModal(true); }}>
-                <MaterialCommunityIcons name="plus-circle" size={24} color="#4ECDC4" />
+                <MaterialCommunityIcons name="plus-circle" size={24} color="#000000" />
               </TouchableOpacity>
             )}
           </View>
@@ -511,7 +521,7 @@ export default function ProfileScreen() {
       <SelectionModal 
         visible={showCityModal}
         title="Şehir Seçin"
-        items={editCountryCode ? Array.from(new Set(City.getCitiesOfCountry(editCountryCode)!.map((c: any) => c.name))).sort().map(name => ({ label: name as string, value: name as string })) : []}
+        items={editCountryCode ? Array.from(new Set(State.getStatesOfCountry(editCountryCode)!.map((s: any) => s.name))).sort().map(name => ({ label: name as string, value: name as string })) : []}
         onSelect={(val) => { setEditCityName(val); setShowCityModal(false); }}
         onClose={() => setShowCityModal(false)}
       />
@@ -553,20 +563,20 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FAFAFA' },
   centerContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   scrollContent: { paddingBottom: 40 },
-  banner: { height: 160, width: '100%', backgroundColor: '#4ECDC4' },
-  bannerPlaceholder: { backgroundColor: '#4ECDC4' },
+  banner: { height: 160, width: '100%', backgroundColor: '#000000' },
+  bannerPlaceholder: { backgroundColor: '#000000' },
   imageOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center' },
   profileHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingHorizontal: 20, marginTop: -40 },
   avatarContainer: { width: 90, height: 90, borderRadius: 45, borderWidth: 4, borderColor: '#FAFAFA', backgroundColor: '#EEE', overflow: 'hidden' },
   avatar: { width: '100%', height: '100%' },
   headerActions: { marginTop: 50, flexDirection: 'row', gap: 8 },
-  actionBtn: { backgroundColor: '#4ECDC4', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, flexDirection: 'row', alignItems: 'center', gap: 4 },
+  actionBtn: { backgroundColor: '#000000', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, flexDirection: 'row', alignItems: 'center', gap: 4 },
   actionBtnText: { color: '#FFF', fontWeight: '700', fontSize: 13 },
   cancelBtn: { backgroundColor: '#EFEFEF' },
   cancelBtnText: { color: '#333', fontWeight: '700', fontSize: 13 },
   infoContainer: { paddingHorizontal: 20, paddingTop: 12 },
   userName: { fontSize: 22, fontWeight: '900', color: '#1A1A1A' },
-  userUsername: { fontSize: 15, fontWeight: '700', color: '#4ECDC4', marginTop: 2 },
+  userUsername: { fontSize: 15, fontWeight: '700', color: '#000000', marginTop: 2 },
   statsRow: { flexDirection: 'row', gap: 16, marginTop: 12 },
   statText: { fontSize: 14, color: '#666' },
   statNumber: { fontWeight: '800', color: '#1A1A1A' },
@@ -594,7 +604,7 @@ const styles = StyleSheet.create({
   listItem: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#F5F5F5' },
   listContent: { flex: 1, paddingRight: 16 },
   listTitle: { fontSize: 16, fontWeight: '800', color: '#1A1A1A', marginBottom: 4 },
-  listSubtitle: { fontSize: 14, fontWeight: '600', color: '#4ECDC4', marginBottom: 4 },
+  listSubtitle: { fontSize: 14, fontWeight: '600', color: '#000000', marginBottom: 4 },
   listDate: { fontSize: 12, color: '#888', marginBottom: 4 },
   listDesc: { fontSize: 14, color: '#555', lineHeight: 20 },
   listActions: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
