@@ -445,7 +445,7 @@ export default function DiscoverScreen() {
             onPress={() => setActiveTab('PROFILES')}
           >
             <MaterialCommunityIcons name="account-group" size={20} color={isProfiles ? '#FFF' : '#666'} />
-            <Text style={[styles.tabText, isProfiles && styles.tabTextActive]}>Profiller</Text>
+            <Text style={[styles.tabText, isProfiles && styles.tabTextActive]}>İş Arkadaşları</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={[styles.tabButton, !isProfiles && styles.tabButtonActive]}

@@ -69,7 +69,12 @@ export default function NetworkScreen() {
     }
   });
 
-  const isLoading = loadingFollowers || loadingFollowing || loadingConnections || loadingRequests || loadingConnectionRequests;
+  const isLoading = 
+    (activeTab === 'followers' && loadingFollowers) ||
+    (activeTab === 'following' && loadingFollowing) ||
+    (activeTab === 'connections' && loadingConnections) ||
+    (activeTab === 'requests' && loadingRequests) ||
+    (activeTab === 'connectionRequests' && loadingConnectionRequests);
 
   const getListData = () => {
     if (activeTab === 'followers') return followers?.map((f: any) => f.follower) || [];

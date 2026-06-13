@@ -82,6 +82,7 @@ export const userRouter = createTRPCRouter({
         where: {
           id: { notIn: excludedIds },
           email: { not: "employer@collabswipe.com" },
+          role: "user",
           ...(location || includeRemote || skills || ageMin !== undefined || ageMax !== undefined ? {
             profile: {
               ...(location && !includeRemote && { location: { contains: location, mode: "insensitive" } }),
@@ -164,6 +165,15 @@ export const userRouter = createTRPCRouter({
           },
         });
 
+        // Debug: log full response shape to understand token location
+        console.log("[login] auth.api.signInEmail response keys:", Object.keys(response || {}));
+        console.log("[login] response.token:", response?.token ? `${String(response.token).substring(0, 15)}...` : "NULL/UNDEFINED");
+        console.log("[login] response.session:", response?.session ? JSON.stringify(Object.keys(response.session)) : "NULL");
+
+        // Better Auth may return the token inside session.token
+        const token = response?.token ?? (response?.session as any)?.token ?? null;
+        console.log("[login] resolved token:", token ? `${String(token).substring(0, 15)}...` : "NULL");
+
         const user = await ctx.prisma.user.findUnique({
           where: { id: response.user.id },
           include: {
@@ -175,7 +185,10 @@ export const userRouter = createTRPCRouter({
           throw new Error("Kullanıcı kaydı bulunamadı.");
         }
 
-        return user;
+        return {
+          user,
+          token,
+        };
       } catch (err: any) {
         console.error("Login error:", err);
         throw new Error(err.message || "Giriş yapılamadı. Bilgilerinizi kontrol edin.");
@@ -191,6 +204,7 @@ export const userRouter = createTRPCRouter({
         name: z.string(),
         surname: z.string(),
         role: z.string().default("user"),
+        sector: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -208,10 +222,11 @@ export const userRouter = createTRPCRouter({
           where: { id: response.user.id },
           data: {
             role: input.role,
+            sector: input.sector,
             profile: {
               upsert: {
                 create: {
-                  profileName: `${input.name} ${input.surname}`,
+                  profileName: `${input.name} ${input.surname}`.trim(),
                   bio: "Merhaba, ben CollabSwipe topluluğuna yeni katıldım!",
                   location: "Turkey",
                 },

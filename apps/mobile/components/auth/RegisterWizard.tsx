@@ -136,7 +136,7 @@ export function RegisterWizard({ onCancel }: RegisterWizardProps) {
         email: email.toLowerCase().trim(),
         password,
         name: name.trim(),
-        surname: isCompany ? undefined : surname.trim(),
+        surname: isCompany ? '' : surname.trim(),
         role: isCompany ? 'company' : 'user',
         sector: isCompany ? sector.trim() : undefined,
       });
@@ -160,8 +160,8 @@ export function RegisterWizard({ onCancel }: RegisterWizardProps) {
       });
 
       // Session context update
-      if (image) {
-        (logRes as any).image = image;
+      if (image && (logRes as any).user) {
+        (logRes as any).user.image = image;
       }
       login(logRes as any);
       

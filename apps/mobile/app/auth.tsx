@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { trpc } from '../lib/trpc';
+import { getBaseUrl } from '../lib/trpc';
 import { useUser } from '../context/UserContext';
 import { Redirect } from 'expo-router';
 import { RegisterWizard } from '../components/auth/RegisterWizard';
@@ -29,30 +29,22 @@ export default function AuthScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const showSubscription = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => {
-      setKeyboardVisible(true);
-    });
-    const hideSubscription = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => {
-      setKeyboardVisible(false);
-    });
-
+    const showSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      () => setKeyboardVisible(true)
+    );
+    const hideSubscription = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => setKeyboardVisible(false)
+    );
     return () => {
       showSubscription.remove();
       hideSubscription.remove();
     };
   }, []);
-
-  const loginMutation = trpc.user.login.useMutation({
-    onSuccess: (data) => {
-      login(data as any);
-    },
-    onError: (err) => {
-      Alert.alert('Giriş Hatası', err.message || 'Bir hata oluştu.');
-    },
-  });
-
 
   if (isLoading) {
     return (
@@ -66,26 +58,52 @@ export default function AuthScreen() {
     return <Redirect href="/(tabs)" />;
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!email || !email.includes('@')) {
       Alert.alert('Geçersiz Bilgi', 'Lütfen geçerli bir e-posta adresi girin.');
       return;
     }
-
     if (!password || password.length < 6) {
       Alert.alert('Geçersiz Bilgi', 'Şifreniz en az 6 karakter uzunluğunda olmalıdır.');
       return;
     }
+    if (!isLoginTab) return;
 
-    if (isLoginTab) {
-      loginMutation.mutate({
-        email: email.trim().toLowerCase(),
-        password: password,
+    setIsSubmitting(true);
+    try {
+      const baseUrl = getBaseUrl();
+
+      // Better Auth HTTP endpoint döndürür: { token, user, session }
+      // Bearer plugin ile token field'ı response body'de gelir
+      const authRes = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
       });
+
+      const authData = await authRes.json();
+      console.log('[Login] status:', authRes.status, '| keys:', Object.keys(authData || {}));
+
+      if (!authRes.ok) {
+        throw new Error(authData?.message || 'Giriş yapılamadı. Bilgilerinizi kontrol edin.');
+      }
+
+      const token = authData?.token ?? authData?.session?.token ?? null;
+      console.log('[Login] token:', token ? `${String(token).substring(0, 15)}...` : 'NULL — bearer plugin eksik olabilir');
+
+      if (!token) {
+        throw new Error('Oturum tokeni alınamadı. Lütfen tekrar deneyin.');
+      }
+
+      login({ user: authData.user, token });
+
+    } catch (err: any) {
+      console.error('[Login] Error:', err);
+      Alert.alert('Giriş Hatası', err.message || 'Bir hata oluştu.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  const isSubmitting = loginMutation.isLoading;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -94,8 +112,8 @@ export default function AuthScreen() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 20 : 0}
         style={{ flex: 1 }}
       >
-        <ScrollView 
-          contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]} 
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -165,9 +183,7 @@ export default function AuthScreen() {
                   {isSubmitting ? (
                     <ActivityIndicator size="small" color="#FFF" />
                   ) : (
-                    <Text style={styles.submitButtonText}>
-                      Giriş Yap
-                    </Text>
+                    <Text style={styles.submitButtonText}>Giriş Yap</Text>
                   )}
                 </TouchableOpacity>
               </>
@@ -192,19 +208,6 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     marginBottom: 40,
-  },
-  logoBadge: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#000000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
   },
   brandName: {
     fontSize: 32,
@@ -275,40 +278,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: '#333',
-  },
-  roleLabel: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#666',
-    marginBottom: 10,
-    marginLeft: 4,
-  },
-  roleContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 20,
-  },
-  roleButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    borderWidth: 1,
-    borderColor: '#000000',
-    borderRadius: 16,
-    height: 48,
-  },
-  activeRoleButton: {
-    backgroundColor: '#000000',
-  },
-  roleButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#000000',
-  },
-  activeRoleButtonText: {
-    color: '#FFF',
   },
   submitButton: {
     backgroundColor: '#000000',

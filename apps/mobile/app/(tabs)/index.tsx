@@ -13,7 +13,6 @@ import {
   Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { trpc } from '../../lib/trpc';
@@ -50,9 +49,10 @@ function getAuthorSubtitle(author: any) {
 export default function HomeFeedScreen() {
   const { userId, user } = useUser();
   const [content, setContent] = useState('');
-  // New media handling using base64 upload to Dropbox
-  const [mediaFileBase64, setMediaFileBase64] = useState('');
+  // Uploaded media URL (from /api/upload)
+  const [mediaUrl, setMediaUrl] = useState('');
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState('');
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const [showMediaInput, setShowMediaInput] = useState(false);
   const [activeCommentsPostId, setActiveCommentsPostId] = useState<string | null>(null);
   const [activeReactionPostId, setActiveReactionPostId] = useState<string | null>(null);
@@ -62,21 +62,34 @@ export default function HomeFeedScreen() {
   const handlePickMedia = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaType.All,
+        mediaTypes: ['images'],
         allowsEditing: false,
         quality: 0.8,
-        base64: true,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const asset = result.assets[0];
         setMediaPreviewUrl(asset.uri);
-        
-        if (asset.base64) {
-          setMediaFileBase64(asset.base64);
-        } else {
-          const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: 'base64' });
-          setMediaFileBase64(base64);
+        setIsUploadingMedia(true);
+        try {
+          // Upload directly to server /api/upload using multipart/form-data
+          const baseUrl = (await import('../../lib/trpc')).getBaseUrl();
+          const formData = new FormData();
+          const filename = asset.uri.split('/').pop() || 'photo.jpg';
+          const match = /\.([^.]+)$/.exec(filename);
+          const type = match ? `image/${match[1]}` : 'image/jpeg';
+          formData.append('file', { uri: asset.uri, name: filename, type } as any);
+          const res = await fetch(`${baseUrl}/api/upload`, { method: 'POST', body: formData });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data?.error || 'Upload failed');
+          setMediaUrl(data.url);
+        } catch (uploadErr) {
+          console.error('Upload error:', uploadErr);
+          Alert.alert('Hata', 'Medya yüklenemedi.');
+          setMediaPreviewUrl('');
+          setMediaUrl('');
+        } finally {
+          setIsUploadingMedia(false);
         }
       }
     } catch (e) {
@@ -94,7 +107,7 @@ export default function HomeFeedScreen() {
   const createPost = trpc.post.create.useMutation({
     onSuccess: () => {
       setContent('');
-      setMediaFileBase64('');
+      setMediaUrl('');
       setMediaPreviewUrl('');
       setShowMediaInput(false);
       utils.post.getFeed.invalidate();
@@ -159,11 +172,12 @@ export default function HomeFeedScreen() {
   // Action handlers
   const handlePost = () => {
     if (!userId) return;
-    if (!content.trim() && !mediaFileBase64) return;
+    if (!content.trim() && !mediaUrl) return;
+    if (isUploadingMedia) { Alert.alert('Bekleyin', 'Medya yükleniyor...'); return; }
     createPost.mutate({ 
       authorId: userId, 
       content: content.trim(),
-      mediaFile: mediaFileBase64 || undefined
+      mediaUrl: mediaUrl || undefined
     });
   };
 
@@ -251,7 +265,7 @@ export default function HomeFeedScreen() {
               <TouchableOpacity 
                 style={styles.composerMediaRemoveBtn}
                 onPress={() => {
-                  setMediaFileBase64('');
+                  setMediaUrl('');
                   setMediaPreviewUrl('');
                 }}
               >
@@ -276,9 +290,9 @@ export default function HomeFeedScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.postButton, (!content.trim() && !mediaFileBase64 && createPost.isLoading) && styles.postButtonDisabled]}
+          style={[styles.postButton, (!content.trim() && !mediaUrl && createPost.isLoading) && styles.postButtonDisabled]}
           onPress={handlePost}
-          disabled={(!content.trim() && !mediaFileBase64) || createPost.isPending}
+          disabled={(!content.trim() && !mediaUrl) || createPost.isPending || isUploadingMedia}
         >
           {createPost.isPending ? (
             <ActivityIndicator size="small" color="#FFF" />

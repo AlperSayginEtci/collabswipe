@@ -471,6 +471,12 @@ export default function ProfileScreen() {
           ))}
         </View>
 
+        {/* Support Button */}
+        <TouchableOpacity style={styles.supportButton} onPress={() => router.push('/support')}>
+          <MaterialCommunityIcons name="lifebuoy" size={20} color="#000000" />
+          <Text style={styles.supportButtonText}>Destek Al</Text>
+        </TouchableOpacity>
+
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <MaterialCommunityIcons name="logout" size={20} color="#000000" />
@@ -608,6 +614,8 @@ const styles = StyleSheet.create({
   listDate: { fontSize: 12, color: '#888', marginBottom: 4 },
   listDesc: { fontSize: 14, color: '#555', lineHeight: 20 },
   listActions: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
-  logoutButton: { flexDirection: 'row', backgroundColor: '#FFF', borderWidth: 1, borderColor: '#FFE5EC', borderRadius: 16, height: 52, justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 32, marginHorizontal: 16 },
+  supportButton: { flexDirection: 'row', backgroundColor: '#FFF', borderWidth: 1, borderColor: '#EFEFEF', borderRadius: 16, height: 52, justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 32, marginHorizontal: 16 },
+  supportButtonText: { color: '#000000', fontSize: 16, fontWeight: '700' },
+  logoutButton: { flexDirection: 'row', backgroundColor: '#FFF', borderWidth: 1, borderColor: '#FFE5EC', borderRadius: 16, height: 52, justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 12, marginHorizontal: 16 },
   logoutButtonText: { color: '#000000', fontSize: 16, fontWeight: '700' },
 });
