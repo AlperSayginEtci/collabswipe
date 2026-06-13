@@ -294,11 +294,35 @@ function HomeFeed() {
 
   // States
   const [content, setContent] = useState('');
-  // Base64 string of selected media file for upload to Dropbox
-  const [mediaFileBase64, setMediaFileBase64] = useState('');
+  // Uploaded media URL (from /api/upload)
+  const [mediaUrl, setMediaUrl] = useState('');
   // Object URL for previewing selected media before upload
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState('');
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const safeMediaPreviewUrl = toSafeImageUrl(mediaPreviewUrl);
+  const SERVER_URL = 'http://localhost:3001';
+
+  const handleUploadFile = async (file: File) => {
+    setIsUploadingMedia(true);
+    try {
+      const preview = URL.createObjectURL(file);
+      setMediaPreviewUrl(preview);
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch(`${SERVER_URL}/api/upload`, { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Upload failed');
+      setMediaUrl(data.url);
+      console.log('[Upload] Success, url:', data.url);
+    } catch (e) {
+      console.error('Upload error:', e);
+      toast.error('Medya yüklenemedi.');
+      setMediaPreviewUrl('');
+      setMediaUrl('');
+    } finally {
+      setIsUploadingMedia(false);
+    }
+  };
   const [sortBy, setSortBy] = useState<'recent' | 'top'>('recent');
   const [isComposerOpen, setIsComposerOpen] = useState(false);
   const [repostTarget, setRepostTarget] = useState<any | null>(null);
@@ -368,16 +392,7 @@ function HomeFeed() {
      setIsDragging(false);
      const files = e.dataTransfer.files;
      if (files && files.length > 0) {
-       const file = files[0];
-       const preview = URL.createObjectURL(file);
-       setMediaPreviewUrl(preview);
-       const reader = new FileReader();
-       reader.onload = () => {
-         const result = reader.result as string;
-         const base64 = result.split(',')[1] || result;
-         setMediaFileBase64(base64);
-       };
-       reader.readAsDataURL(file);
+       handleUploadFile(files[0]);
        setIsComposerOpen(true);
      }
    };
@@ -413,7 +428,7 @@ function HomeFeed() {
     onSuccess: () => {
       toast.success('Gönderi paylaşıldı!');
       setContent('');
-      setMediaFileBase64('');
+      setMediaUrl('');
       setMediaPreviewUrl('');
       setRepostTarget(null);
       setIsComposerOpen(false);
@@ -507,11 +522,11 @@ function HomeFeed() {
   // Actions handlers
   const handleCreatePost = () => {
     if (!currentUserId) return;
+    if (isUploadingMedia) { toast.error('Medya yükleniyor, lütfen bekleyin.'); return; }
     createPost.mutate({
       authorId: currentUserId,
       content,
-      // Send base64 media file; server will upload to Dropbox and return a mediaUrl
-      mediaFile: mediaFileBase64 || undefined,
+      mediaUrl: mediaUrl || undefined,
       originalPostId: repostTarget?.id || undefined
     });
   };
@@ -652,15 +667,7 @@ function HomeFeed() {
       onChange={e => {
         const file = e.target.files?.[0];
         if (!file) return;
-        const preview = URL.createObjectURL(file);
-        setMediaPreviewUrl(preview);
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          const base64 = result.split(',')[1] || result;
-          setMediaFileBase64(base64);
-        };
-        reader.readAsDataURL(file);
+        handleUploadFile(file);
       }}
     />
   </div>
@@ -1201,7 +1208,7 @@ function HomeFeed() {
                     <button 
                       onClick={() => {
                         setMediaPreviewUrl('');
-                        setMediaFileBase64('');
+                        setMediaUrl('');
                       }}
                       className="absolute top-2 right-2 p-1 bg-black/60 hover:bg-black/80 text-white rounded-full transition-colors"
                     >

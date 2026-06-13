@@ -21,7 +21,9 @@ export const postRouter = createTRPCRouter({
       z.object({
           authorId: z.string(),
           content: z.string().default(""),
-          // Base64-encoded media file (image/video) to be uploaded to Dropbox
+          // URL of already-uploaded media (uploaded via /api/upload endpoint)
+          mediaUrl: z.string().optional(),
+          // Legacy base64 field kept for backwards compatibility (ignored now)
           mediaFile: z.string().optional(),
           originalPostId: z.string().optional(),
         })
@@ -33,29 +35,20 @@ export const postRouter = createTRPCRouter({
             throw new TRPCError({ code: "FORBIDDEN", message: "Hesabınız geçici olarak susturulmuştur." });
           }
 
-          // Create post without mediaUrl first
+          // Validate: at least content or mediaUrl must be present
+          if (!input.content?.trim() && !input.mediaUrl) {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Gönderi içeriği veya medya dosyası gereklidir." });
+          }
+
+          console.log('[post.create] authorId:', input.authorId, '| content len:', input.content?.length, '| mediaUrl:', input.mediaUrl ? input.mediaUrl.substring(0, 40) + '...' : 'null');
+
           const { mediaFile, ...postData } = input;
           const createdPost = await ctx.prisma.post.create({ data: postData });
-
-          // If a media file is provided, upload it to Dropbox and update the post
-          if (mediaFile) {
-            // @ts-ignore
-            const dropboxModule = await import('dropbox');
-            const dropbox = new dropboxModule.Dropbox({ accessToken: process.env.DROPBOX_ACCESS_TOKEN });
-            // Generate a unique path for the file
-            const filePath = `/collabswipe_media/${createdPost.id}_${Date.now()}`;
-            const fileBuffer = Buffer.from(mediaFile, "base64");
-            await dropbox.filesUpload({ path: filePath, contents: fileBuffer });
-            const sharedLink = await dropbox.sharingCreateSharedLinkWithSettings({ path: filePath });
-            // Update post with Dropbox shared link
-            await ctx.prisma.post.update({
-              where: { id: createdPost.id },
-              data: { mediaUrl: sharedLink.result.url },
-            });
-          }
+          console.log('[post.create] created post id:', createdPost.id);
           return createdPost;
         }
     ),
+
 
   // ─── Gönderiyi Düzenle ────────────────────────────────────────────────────
   editPost: protectedProcedure
@@ -163,16 +156,41 @@ export const postRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const items = await ctx.prisma.post.findMany({
+      // Debug: count total posts without filter
+      const totalPosts = await ctx.prisma.post.count();
+      console.log(`[getFeed] total posts in DB: ${totalPosts}, currentUserId: ${input.currentUserId}`);
+      
+      // Debug: check how many pass the filter
+      const filteredCount = await ctx.prisma.post.count({
         where: { 
           isBanned: false,
           OR: [
             { isQuarantined: false, author: { isShadowbanned: false } },
-            { authorId: input.currentUserId } // Kendi gönderilerini her zaman görür (karantina veya shadowban olsa bile)
+            ...(input.currentUserId ? [{ authorId: input.currentUserId }] : [])
+          ]
+        }
+      });
+      console.log(`[getFeed] posts after filter: ${filteredCount}`);
+
+      const items = await ctx.prisma.post.findMany({
+        where: { 
+          isBanned: false,
+          OR: [
+            { 
+              isQuarantined: false, 
+              author: { 
+                OR: [
+                  { isShadowbanned: false },
+                  { isShadowbanned: null }
+                ]
+              }
+            },
+            ...(input.currentUserId ? [{ authorId: input.currentUserId }] : [])
           ]
         },
         orderBy: { createdAt: "desc" },
         take: input.limit + 1,
+
         cursor: input.cursor ? { id: input.cursor } : undefined,
         include: {
           author: { select: { id: true, name: true, surname: true, image: true, role: true, sector: true, profile: { select: { bio: true, experiences: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { corp: true, title: true } }, educations: { where: { endDate: null }, orderBy: { startDate: "desc" }, take: 1, select: { instName: true, instProgram: true } } } } } },
