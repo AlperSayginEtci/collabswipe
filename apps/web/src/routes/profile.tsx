@@ -51,6 +51,7 @@ function ProfilePage() {
   
   // Skills
   const [skillSearch, setSkillSearch] = useState('');
+  const [isSkillFocused, setIsSkillFocused] = useState(false);
   
   // Image Compression Utility
   const compressImage = async (file: File): Promise<File> => {
@@ -430,7 +431,17 @@ function ProfilePage() {
     });
   };
 
-  const POPULAR_SKILLS = ["React", "Node.js", "TypeScript", "Python", "UI/UX Tasarımı", "Figma", "Pazarlama", "Proje Yönetimi", "Yapay Zeka (AI)", "SQL", "İletişim", "Liderlik"];
+  const POPULAR_SKILLS = [
+    "React", "Node.js", "TypeScript", "Python", "UI/UX Tasarımı", "Figma", 
+    "Pazarlama", "Proje Yönetimi", "Yapay Zeka (AI)", "SQL", "İletişim", "Liderlik",
+    "Java", "C++", "C#", "Go", "Rust", "Ruby", "PHP", "Swift", "Kotlin", "React Native",
+    "Flutter", "Vue.js", "Angular", "Svelte", "Tailwind CSS", "SASS", "MongoDB",
+    "PostgreSQL", "MySQL", "Redis", "Docker", "Kubernetes", "AWS", "Google Cloud", 
+    "Azure", "Linux", "Makine Öğrenimi", "Veri Bilimi", "Veri Analizi", "Excel",
+    "Dijital Pazarlama", "SEO", "Sosyal Medya Yönetimi", "İçerik Üretimi", 
+    "Satış", "İnsan Kaynakları", "Agile", "Scrum", "Problem Çözme", "Zaman Yönetimi",
+    "İngilizce", "Almanca", "Adobe Photoshop", "Adobe Illustrator", "Video Kurgu"
+  ];
 
   const filteredSkills = allSkills?.filter(s => s.skillName.toLowerCase().includes(skillSearch.toLowerCase()) && !profile?.skills.find((ps: any) => ps.skill.skillName === s.skillName)) || [];
   
@@ -841,7 +852,8 @@ function ProfilePage() {
                   type="text" 
                   value={skillSearch} 
                   onChange={e => setSkillSearch(e.target.value)} 
-                  onFocus={() => { if(!skillSearch) setSkillSearch(' '); setSkillSearch('') }} // Trigger re-render if needed
+                  onFocus={() => setIsSkillFocused(true)}
+                  onBlur={() => setTimeout(() => setIsSkillFocused(false), 200)}
                   placeholder="Yetenek ara veya yeni yetenek yazıp Enter'a bas..." 
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
                   onKeyDown={e => {
@@ -850,6 +862,7 @@ function ProfilePage() {
                     }
                   }}
                 />
+                {isSkillFocused && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
                   {!skillSearch ? (
                     <>
@@ -891,6 +904,7 @@ function ProfilePage() {
                     </>
                   )}
                 </div>
+                )}
               </div>
             )}
           </div>
