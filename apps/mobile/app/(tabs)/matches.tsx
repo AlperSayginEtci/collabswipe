@@ -138,7 +138,7 @@ export default function MatchesScreen() {
               contentContainerStyle={{ padding: 16 }}
               renderItem={({ item }) => {
                 const nameText = `${item.name} ${item.surname || ''}`.trim();
-                const avatarUrl = item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
+                const avatarUrl = (item?.image || ((item as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'));
                 return (
                   <TouchableOpacity
                     style={styles.convItem}
@@ -172,7 +172,7 @@ export default function MatchesScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.matchesRow}>
                 {matches.map((item: any) => {
                   const nameText = item.name || 'User';
-                  const avatarUrl = item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
+                  const avatarUrl = (item?.image || ((item as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'));
                   return (
                     <TouchableOpacity
                       key={item.id}
@@ -213,7 +213,7 @@ export default function MatchesScreen() {
               inboxChats?.filter((c: any) => c.lastMessage).map((item: any) => {
                 const otherUser = item.otherUser;
                 const lastMessage = item.lastMessage;
-                const avatarUrl = otherUser?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'User'}`;
+                const avatarUrl = (otherUser?.image || ((otherUser as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'));
 
                 return (
                   <TouchableOpacity

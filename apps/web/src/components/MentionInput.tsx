@@ -100,7 +100,7 @@ export function MentionInput({ value, onChange, placeholder, className, autoFocu
                 >
                   <div className="w-8 h-8 rounded-full bg-secondary shrink-0 overflow-hidden border border-border/40">
                     <img 
-                      src={user.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} 
+                      src={(user?.image || ((user as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))} 
                       alt={user.name || ''} 
                       className="w-full h-full object-cover" 
                     />

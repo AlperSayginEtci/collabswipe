@@ -84,7 +84,7 @@ export function MentionTextInput({ value, onChangeText, containerStyle, ...props
                   onPress={() => handleSelectMention(item)}
                 >
                   <Image 
-                    source={{ uri: item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
+                    source={{ uri: (item?.image || ((item as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024')) }} 
                     style={styles.mentionAvatar}
                   />
                   <Text style={styles.mentionName} numberOfLines={1}>

@@ -168,10 +168,10 @@ export const userRouter = createTRPCRouter({
         // Debug: log full response shape to understand token location
         console.log("[login] auth.api.signInEmail response keys:", Object.keys(response || {}));
         console.log("[login] response.token:", response?.token ? `${String(response.token).substring(0, 15)}...` : "NULL/UNDEFINED");
-        console.log("[login] response.session:", response?.session ? JSON.stringify(Object.keys(response.session)) : "NULL");
+        console.log("[login] response.session:", (response as any)?.session ? JSON.stringify(Object.keys((response as any).session)) : "NULL");
 
         // Better Auth may return the token inside session.token
-        const token = response?.token ?? (response?.session as any)?.token ?? null;
+        const token = response?.token ?? ((response as any)?.session)?.token ?? null;
         console.log("[login] resolved token:", token ? `${String(token).substring(0, 15)}...` : "NULL");
 
         const user = await ctx.prisma.user.findUnique({
@@ -200,7 +200,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         email: z.string().email(),
-        password: z.string().min(6),
+        password: z.string().min(8, "Şifre en az 8 karakter olmalıdır."),
         name: z.string(),
         surname: z.string(),
         role: z.string().default("user"),

@@ -21,17 +21,9 @@ export const createTRPCContext = async (opts?: {
 
   if (opts?.headers) {
     try {
-      const headerObj: Record<string, string> = {};
-      opts.headers.forEach((val, key) => {
-        headerObj[key] = val;
-      });
-      console.log("[createTRPCContext] Incoming Headers:", JSON.stringify(headerObj));
-
       const betterAuthSession = await auth.api.getSession({
         headers: opts.headers,
       });
-      
-      console.log("[createTRPCContext] getSession result exists:", !!betterAuthSession);
       
       if (betterAuthSession?.session && betterAuthSession?.user) {
         session = {

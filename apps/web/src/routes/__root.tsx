@@ -1,9 +1,15 @@
 import { createRootRoute, Link, Outlet, useLocation, useNavigate } from '@tanstack/react-router';
-import { Home, Compass, Briefcase, MessageSquare, User as UserIcon, Bell, LogOut, ChevronDown, PlusCircle, Heart, Inbox, Shield, LifeBuoy, ArrowUp } from 'lucide-react';
+import { Home, Briefcase, MessageSquare, User as UserIcon, Bell, LogOut, ChevronDown, PlusCircle, Heart, Inbox, Shield, LifeBuoy, ArrowUp } from 'lucide-react';
 import { useSession, signOut } from '@collabswipe/auth/client';
 import React, { useEffect, useState, useRef } from 'react';
 import { trpc } from '../lib/trpc';
 import { Toaster } from 'react-hot-toast';
+
+const CardsIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M21.47,4.35L20.13,3.79V12.82L22.56,6.96C22.97,5.94 22.5,4.77 21.47,4.35M1.97,8.05L6.93,20C7.24,20.77 7.97,21.24 8.74,21.26C9,21.26 9.27,21.21 9.53,21.1L16.9,18.05C17.65,17.74 18.11,17 18.13,16.26C18.14,16 18.09,15.71 18,15.45L13,3.5C12.71,2.73 11.97,2.26 11.19,2.25C10.93,2.25 10.67,2.31 10.42,2.4L3.06,5.45C2.04,5.87 1.55,7.04 1.97,8.05M18.12,4.25A2,2 0 0,0 16.12,2.25H14.67L18.12,10.59" />
+  </svg>
+);
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -130,7 +136,7 @@ function RootLayout() {
               className={`flex items-center justify-between px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors cursor-pointer ${location.pathname.startsWith('/discover') ? 'bg-secondary text-foreground' : ''}`}
             >
               <div className="flex items-center gap-3">
-                <Compass className="w-5 h-5" />
+                <CardsIcon className="w-5 h-5" />
                 Keşfet
               </div>
               <ChevronDown className={`w-4 h-4 transition-transform ${isDiscoverOpen ? 'rotate-180' : ''}`} />
@@ -161,7 +167,7 @@ function RootLayout() {
             <div className="relative">
               {((session?.user as any)?.role === 'company') ? <Inbox className="w-5 h-5" /> : <Heart className="w-5 h-5" />}
               {likesCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold px-1 min-w-[16px] h-4 rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1 min-w-[14px] h-[14px] rounded-full flex items-center justify-center">
                   {likesCount > 99 ? '99+' : likesCount}
                 </span>
               )}
@@ -180,13 +186,13 @@ function RootLayout() {
             <LifeBuoy className="w-5 h-5" />
             Destek
           </Link>
-          {(session?.user as any)?.role === 'company' && (
+          {((session?.user as any)?.role === 'company') && (
             <Link to="/post-job" className="[&.active]:bg-primary/20 [&.active]:text-primary flex items-center gap-3 px-4 py-3 mt-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-bold transition-colors border border-primary/20">
               <PlusCircle className="w-5 h-5" />
               İlan Ver
             </Link>
           )}
-          {(session?.user as any)?.role === 'admin' && (
+          {((session?.user as any)?.role === 'admin') && (
             <Link to="/admin" className="[&.active]:bg-red-500/20 [&.active]:text-red-500 flex items-center gap-3 px-4 py-3 mt-4 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 font-bold transition-colors border border-red-500/20">
               <Shield className="w-5 h-5" />
               Admin Paneli
@@ -263,14 +269,14 @@ function RootLayout() {
           <span className="text-[10px] font-medium">Ana Sayfa</span>
         </Link>
         <Link to="/discover" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground">
-          <Compass className="w-6 h-6" />
+          <CardsIcon className="w-6 h-6" />
           <span className="text-[10px] font-medium">Keşfet</span>
         </Link>
         <Link to="/likes" className="flex flex-col items-center p-2 text-muted-foreground [&.active]:text-foreground transition-colors relative">
           <div className="relative">
             {((session?.user as any)?.role === 'company') ? <Inbox className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
             {likesCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold px-1 min-w-[16px] h-4 rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1 min-w-[14px] h-[14px] rounded-full flex items-center justify-center">
                 {likesCount > 99 ? '99+' : likesCount}
               </span>
             )}
@@ -294,13 +300,13 @@ function RootLayout() {
           <UserIcon className="w-6 h-6" />
           <span className="text-[10px] font-medium">Profil</span>
         </Link>
-        {(session?.user as any)?.role === 'company' && (
+        {((session?.user as any)?.role === 'company') && (
           <Link to="/post-job" className="[&.active]:text-primary flex flex-col items-center gap-1 text-primary">
             <PlusCircle className="w-6 h-6" />
             <span className="text-[10px] font-medium">İlan Ver</span>
           </Link>
         )}
-        {(session?.user as any)?.role === 'admin' && (
+        {((session?.user as any)?.role === 'admin') && (
           <Link to="/admin" className="[&.active]:text-red-500 flex flex-col items-center gap-1 text-red-500">
             <Shield className="w-6 h-6" />
             <span className="text-[10px] font-medium">Admin</span>

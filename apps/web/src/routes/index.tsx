@@ -152,7 +152,7 @@ function CommentNode({ comment, depth = 0, ctx }: { comment: any; depth?: number
       <div className="flex gap-2.5 items-start">
         <Link to="/profile" search={{ userId: comment.authorId }} className={`${avatarCls} bg-secondary overflow-hidden shrink-0 border border-border/40 block hover:opacity-80 transition-opacity`}>
           <img
-            src={comment.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}`}
+            src={(comment.author?.image || ((comment.author as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))}
             alt={comment.author?.name || 'avatar'}
             className="w-full h-full object-cover"
           />
@@ -426,7 +426,7 @@ function HomeFeed() {
   // Mutations
   const createPost = trpc.post.create.useMutation({
     onSuccess: () => {
-      toast.success('Gönderi paylaşıldı!');
+      // toast.success('Gönderi paylaşıldı!');
       setContent('');
       setMediaUrl('');
       setMediaPreviewUrl('');
@@ -673,6 +673,13 @@ function HomeFeed() {
   </div>
 </div>
 
+        {createPost.isPending && (
+          <div className="bg-card/70 backdrop-blur-md border border-border/55 rounded-xl p-3 flex items-center justify-between shadow-sm animate-pulse">
+            <span className="text-sm font-medium text-foreground">Gönderi paylaşılıyor...</span>
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+
         {/* FEED FILTER BAR */}
         <div className="flex items-center justify-between px-2">
           <div className="h-px bg-border flex-1" />
@@ -719,7 +726,7 @@ function HomeFeed() {
                     <div className="flex items-center gap-3">
                       <Link to="/profile" search={{ userId: post.authorId }} className="w-11 h-11 rounded-xl bg-secondary overflow-hidden shrink-0 border border-border/40 block hover:opacity-80 transition-opacity">
                         <img 
-                          src={post.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}`} 
+                          src={(post.author?.image || ((post.author as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))} 
                           alt="avatar" 
                           className="w-full h-full object-cover" 
                         />
@@ -846,17 +853,19 @@ function HomeFeed() {
                     {hasOriginal && (
                       <div className="border border-border/60 bg-muted/10 rounded-xl p-4 space-y-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-secondary overflow-hidden shrink-0 border border-border/40">
+                          <Link to="/profile" search={{ userId: post.originalPost?.authorId }} className="w-8 h-8 rounded-lg bg-secondary overflow-hidden shrink-0 border border-border/40 hover:opacity-80 transition-opacity">
                             <img 
-                              src={post.originalPost?.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}`} 
+                              src={(post.originalPost?.author?.image || ((post.originalPost?.author as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))} 
                               alt="avatar" 
                               className="w-full h-full object-cover" 
                             />
-                          </div>
+                          </Link>
                           <div>
-                            <h5 className="font-bold text-foreground text-xs hover:underline cursor-pointer">
-                              {post.originalPost?.author?.name} {post.originalPost?.author?.surname}
-                            </h5>
+                            <Link to="/profile" search={{ userId: post.originalPost?.authorId }}>
+                              <h5 className="font-bold text-foreground text-xs hover:underline cursor-pointer">
+                                {post.originalPost?.author?.name} {post.originalPost?.author?.surname}
+                              </h5>
+                            </Link>
                             <p className="text-[10px] text-muted-foreground line-clamp-1">
                               {getAuthorSubtitle(post.originalPost?.author)}
                             </p>
@@ -1103,7 +1112,7 @@ function HomeFeed() {
                 <Link to="/profile" search={{ userId: user.id }} className="flex items-center gap-2 min-w-0 flex-1">
                   <div className="w-9 h-9 rounded-full bg-secondary overflow-hidden shrink-0 border border-border/40">
                     <img 
-                      src={user.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} 
+                      src={(user?.image || ((user as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))} 
                       alt={user.name || 'User'} 
                       className="w-full h-full object-cover" 
                     />
@@ -1177,7 +1186,7 @@ function HomeFeed() {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-secondary overflow-hidden shrink-0 border border-border/40">
                   <img 
-                    src={session?.user?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} 
+                    src={(session?.user?.image || ((session?.user as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))} 
                     alt="avatar" 
                     className="w-full h-full object-cover" 
                   />
@@ -1224,7 +1233,7 @@ function HomeFeed() {
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded bg-secondary overflow-hidden shrink-0 border border-border/40">
                       <img 
-                        src={repostTarget.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} 
+                        src={(repostTarget.author?.image || ((repostTarget.author as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))} 
                         alt="avatar" 
                         className="w-full h-full object-cover" 
                       />

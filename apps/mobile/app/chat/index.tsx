@@ -10,6 +10,7 @@ import {
   FlatList,
   Image,
   Modal,
+  Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter, Redirect } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -137,6 +138,12 @@ export default function ChatScreen() {
   const editMessage = trpc.chat.editMessage.useMutation();
   const deleteMessage = trpc.chat.deleteMessage.useMutation();
   const reactMessage = trpc.chat.reactMessage.useMutation();
+  const deleteConversation = trpc.chat.deleteConversation.useMutation({
+    onSuccess: () => {
+      utils.chat.getConversations.invalidate();
+      router.canGoBack() ? router.back() : router.replace('/(tabs)/matches');
+    }
+  });
 
   useEffect(() => {
     if (convId && userId) {
@@ -175,17 +182,29 @@ export default function ChatScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/matches')} style={styles.backButton}>
-            <MaterialCommunityIcons name="chevron-left" size={32} color="#333" />
-          </TouchableOpacity>
-          <View style={styles.headerUserInfo}>
-            {otherUserImage ? (
-              <Image source={{ uri: otherUserImage as string }} style={styles.headerAvatar} />
-            ) : (
-              <View style={[styles.headerAvatar, { backgroundColor: '#000000' }]} />
-            )}
-            <Text style={styles.headerName}>{otherUserName || 'Sohbet'}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/matches')} style={styles.backButton}>
+              <MaterialCommunityIcons name="chevron-left" size={32} color="#333" />
+            </TouchableOpacity>
+            <View style={styles.headerUserInfo}>
+              {otherUserImage ? (
+                <Image source={{ uri: otherUserImage as string }} style={styles.headerAvatar} />
+              ) : (
+                <View style={[styles.headerAvatar, { backgroundColor: '#000000' }]} />
+              )}
+              <Text style={styles.headerName}>{otherUserName || 'Sohbet'}</Text>
+            </View>
           </View>
+          <TouchableOpacity 
+            onPress={() => {
+              Alert.alert('Emin misiniz?', 'Sohbeti tamamen silmek istediğininze emin misiniz? Bu işlem geri alınamaz.', [
+                { text: 'İptal', style: 'cancel' },
+                { text: 'Sil', style: 'destructive', onPress: () => deleteConversation.mutate({ conversationId: convId!, userId: userId! }) }
+              ]);
+            }}
+          >
+            <MaterialCommunityIcons name="trash-can-outline" size={24} color="#FF6B6B" />
+          </TouchableOpacity>
         </View>
 
         <FlatList
@@ -341,6 +360,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
     backgroundColor: '#FFF',
     borderBottomWidth: 1,

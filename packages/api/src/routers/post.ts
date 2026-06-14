@@ -179,10 +179,7 @@ export const postRouter = createTRPCRouter({
             { 
               isQuarantined: false, 
               author: { 
-                OR: [
-                  { isShadowbanned: false },
-                  { isShadowbanned: null }
-                ]
+                isShadowbanned: false
               }
             },
             ...(input.currentUserId ? [{ authorId: input.currentUserId }] : [])

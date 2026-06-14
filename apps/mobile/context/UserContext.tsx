@@ -39,8 +39,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         const savedUserJson = await AsyncStorage.getItem('@collabswipe_user');
         const savedToken = await AsyncStorage.getItem('@collabswipe_session_token');
         
-        console.log('[UserContext load] user exists:', !!savedUserJson, '| token exists:', !!savedToken);
-        
         if (savedUserJson && savedToken) {
           // Both user and token exist — valid session
           const parsedUser = JSON.parse(savedUserJson);
@@ -69,20 +67,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       const u = data && 'user' in data ? data.user : (data as User);
       const token = data && 'token' in data ? data.token : null;
 
-      console.log('[UserContext login] token received:', token ? `${String(token).substring(0, 15)}...` : 'NULL');
-
       setUserId(u.id);
       setUser(u);
-      setSessionToken(token || null);
-
-      await AsyncStorage.setItem('@collabswipe_user', JSON.stringify(u));
-      if (token) {
+      
+      if (token !== undefined && token !== null) {
+        setSessionToken(token);
         await AsyncStorage.setItem('@collabswipe_session_token', token);
-        console.log('[UserContext login] token saved to AsyncStorage ✓');
-      } else {
-        await AsyncStorage.removeItem('@collabswipe_session_token');
-        console.log('[UserContext login] NO TOKEN - removing from AsyncStorage');
       }
+      
+      await AsyncStorage.setItem('@collabswipe_user', JSON.stringify(u));
     } catch (err) {
       console.error('Session save failed:', err);
     }

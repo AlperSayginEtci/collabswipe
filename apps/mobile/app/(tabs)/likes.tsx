@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Alert, ActivityIndicator, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useUser } from '../../context/UserContext';
 import { trpc } from '../../lib/trpc';
 
@@ -77,6 +78,7 @@ export default function LikesScreen() {
 
 function UserLikes() {
   const { userId } = useUser();
+  const router = useRouter();
   const utils = trpc.useUtils();
   
   const { data: pendingRequests, isLoading } = trpc.connection.getPendingRequests.useQuery(
@@ -105,9 +107,13 @@ function UserLikes() {
   return (
     <View style={styles.list}>
       {pendingRequests.map(req => (
-        <View key={req.requester.id} style={styles.card}>
+        <TouchableOpacity 
+          key={req.requester.id} 
+          style={styles.card}
+          onPress={() => router.push(`/user/${req.requester.id}`)}
+        >
           <Image 
-            source={{ uri: req.requester.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
+            source={{ uri: (req.requester?.image || ((req.requester as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024')) }} 
             style={styles.avatar} 
           />
           <View style={styles.cardInfo}>
@@ -128,7 +134,7 @@ function UserLikes() {
               <MaterialCommunityIcons name="close" size={24} color="#000000" />
             </TouchableOpacity>
           </View>
-        </View>
+        </TouchableOpacity>
       ))}
     </View>
   );
@@ -136,6 +142,7 @@ function UserLikes() {
 
 function UserOutgoing() {
   const { userId } = useUser();
+  const router = useRouter();
   const utils = trpc.useUtils();
   
   const { data: sentRequests, isLoading: isLoadingReq } = trpc.connection.getSentRequests.useQuery(
@@ -180,9 +187,13 @@ function UserOutgoing() {
         <>
           <Text style={styles.sectionTitle}>Gönderilen Beğeniler</Text>
           {sentRequests.map(req => (
-            <View key={req.addressee.id} style={styles.card}>
+            <TouchableOpacity 
+              key={req.addressee.id} 
+              style={styles.card}
+              onPress={() => router.push(`/user/${req.addressee.id}`)}
+            >
               <Image 
-                source={{ uri: req.addressee.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
+                source={{ uri: (req.addressee?.image || ((req.addressee as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024')) }} 
                 style={styles.avatar} 
               />
               <View style={styles.cardInfo}>
@@ -195,7 +206,7 @@ function UserOutgoing() {
               >
                 <MaterialCommunityIcons name="undo" size={24} color="#000000" />
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           ))}
         </>
       )}
@@ -204,9 +215,13 @@ function UserOutgoing() {
         <>
           <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Yapılan Başvurular</Text>
           {myApps.map(app => (
-            <View key={app.id} style={styles.card}>
+            <TouchableOpacity 
+              key={app.id} 
+              style={styles.card}
+              onPress={() => router.push(`/user/${app.job.publisherId}`)}
+            >
               <Image 
-                source={{ uri: app.job.publisher?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
+                source={{ uri: (app.job.publisher?.image || ((app.job.publisher as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024')) }} 
                 style={styles.avatar} 
               />
               <View style={styles.cardInfo}>
@@ -219,7 +234,7 @@ function UserOutgoing() {
               >
                 <MaterialCommunityIcons name="undo" size={24} color="#000000" />
               </TouchableOpacity>
-            </View>
+            </TouchableOpacity>
           ))}
         </>
       )}
@@ -228,6 +243,7 @@ function UserOutgoing() {
 }
 
 function CompanyApplicants() {
+  const router = useRouter();
   const { data: apps, isLoading } = trpc.job.getCompanyApplications.useQuery(undefined, { refetchInterval: 3000 });
   const utils = trpc.useUtils();
   const updateStatus = trpc.job.updateApplicationStatus.useMutation({
@@ -251,10 +267,14 @@ function CompanyApplicants() {
   return (
     <View style={styles.list}>
       {apps.map(app => (
-        <View key={app.id} style={[styles.card, { flexDirection: 'column', alignItems: 'stretch' }]}>
+        <TouchableOpacity 
+          key={app.id} 
+          style={[styles.card, { flexDirection: 'column', alignItems: 'stretch' }]}
+          onPress={() => router.push(`/user/${app.applicantId}`)}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
             <Image 
-              source={{ uri: app.applicant.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
+              source={{ uri: (app.applicant?.image || ((app.applicant as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024')) }} 
               style={styles.avatar} 
             />
             <View style={styles.cardInfo}>
@@ -283,7 +303,7 @@ function CompanyApplicants() {
               {app.status === 'ACCEPTED' ? 'Kabul Edildi' : 'Reddedildi'}
             </Text>
           )}
-        </View>
+        </TouchableOpacity>
       ))}
     </View>
   );
@@ -291,6 +311,7 @@ function CompanyApplicants() {
 
 function CompanyOutgoing() {
   const { userId } = useUser();
+  const router = useRouter();
   const utils = trpc.useUtils();
   
   const { data: sentRequests, isLoading } = trpc.connection.getSentRequests.useQuery(
@@ -318,9 +339,13 @@ function CompanyOutgoing() {
   return (
     <View style={styles.list}>
       {sentRequests.map(req => (
-        <View key={req.addressee.id} style={styles.card}>
+        <TouchableOpacity 
+          key={req.addressee.id} 
+          style={styles.card}
+          onPress={() => router.push(`/user/${req.addressee.id}`)}
+        >
           <Image 
-            source={{ uri: req.addressee.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024` }} 
+            source={{ uri: (req.addressee?.image || ((req.addressee as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024')) }} 
             style={styles.avatar} 
           />
           <View style={styles.cardInfo}>
@@ -333,7 +358,7 @@ function CompanyOutgoing() {
           >
             <MaterialCommunityIcons name="undo" size={24} color="#000000" />
           </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
       ))}
     </View>
   );

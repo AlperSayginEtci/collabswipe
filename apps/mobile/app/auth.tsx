@@ -63,8 +63,8 @@ export default function AuthScreen() {
       Alert.alert('Geçersiz Bilgi', 'Lütfen geçerli bir e-posta adresi girin.');
       return;
     }
-    if (!password || password.length < 6) {
-      Alert.alert('Geçersiz Bilgi', 'Şifreniz en az 6 karakter uzunluğunda olmalıdır.');
+    if (!password || password.length < 8) {
+      Alert.alert('Geçersiz Bilgi', 'Şifreniz en az 8 karakter uzunluğunda olmalıdır.');
       return;
     }
     if (!isLoginTab) return;
@@ -77,19 +77,20 @@ export default function AuthScreen() {
       // Bearer plugin ile token field'ı response body'de gelir
       const authRes = await fetch(`${baseUrl}/api/auth/sign-in/email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Origin': baseUrl
+        },
         body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
       });
 
       const authData = await authRes.json();
-      console.log('[Login] status:', authRes.status, '| keys:', Object.keys(authData || {}));
 
       if (!authRes.ok) {
         throw new Error(authData?.message || 'Giriş yapılamadı. Bilgilerinizi kontrol edin.');
       }
 
       const token = authData?.token ?? authData?.session?.token ?? null;
-      console.log('[Login] token:', token ? `${String(token).substring(0, 15)}...` : 'NULL — bearer plugin eksik olabilir');
 
       if (!token) {
         throw new Error('Oturum tokeni alınamadı. Lütfen tekrar deneyin.');

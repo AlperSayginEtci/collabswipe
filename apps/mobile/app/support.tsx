@@ -10,8 +10,10 @@ import {
   Modal, 
   ScrollView, 
   KeyboardAvoidingView, 
-  Platform 
+  Platform,
+  Image
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -30,10 +32,12 @@ export default function SupportScreen() {
   const [subject, setSubject] = useState('');
   const [category, setCategory] = useState('Diğer');
   const [message, setMessage] = useState('');
+  const [createMedia, setCreateMedia] = useState<string[]>([]);
 
   // Ticket Details states
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [replyMessage, setReplyMessage] = useState('');
+  const [replyMedia, setReplyMedia] = useState<string[]>([]);
 
   // Queries & Mutations
   const { data: tickets, isLoading: isTicketsLoading } = trpc.ticket.getMyTickets.useQuery(
@@ -51,6 +55,7 @@ export default function SupportScreen() {
       setIsModalOpen(false);
       setSubject('');
       setMessage('');
+      setCreateMedia([]);
       utils.ticket.getMyTickets.invalidate();
     }
   });
@@ -58,26 +63,42 @@ export default function SupportScreen() {
   const addMessage = trpc.ticket.addMessage.useMutation({
     onSuccess: () => {
       setReplyMessage('');
+      setReplyMedia([]);
       utils.ticket.getTicketById.invalidate({ ticketId: selectedTicketId! });
       utils.ticket.getMyTickets.invalidate();
     }
   });
 
   const handleCreateTicket = () => {
-    if (!subject.trim() || !message.trim()) return;
+    if (!subject.trim() || (!message.trim() && createMedia.length === 0)) return;
     createTicket.mutate({
       subject: subject.trim(),
       category,
       message: message.trim(),
+      mediaFiles: createMedia,
     });
   };
 
   const handleSendReply = () => {
-    if (!replyMessage.trim() || !selectedTicketId) return;
+    if ((!replyMessage.trim() && replyMedia.length === 0) || !selectedTicketId) return;
     addMessage.mutate({
       ticketId: selectedTicketId,
-      content: replyMessage.trim()
+      content: replyMessage.trim(),
+      mediaFiles: replyMedia,
     });
+  };
+
+  const pickImage = async (type: 'create' | 'reply') => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.5,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      if (type === 'create') setCreateMedia([...createMedia, result.assets[0].base64]);
+      else setReplyMedia([...replyMedia, result.assets[0].base64]);
+    }
   };
 
   const renderTicketCard = ({ item }: { item: any }) => {
@@ -190,9 +211,20 @@ export default function SupportScreen() {
                           <MaterialCommunityIcons name="shield-check" size={12} color="#4F46E5" /> Destek Ekibi
                         </Text>
                       )}
-                      <Text style={[styles.msgText, isMe ? styles.msgTextMe : styles.msgTextOther]}>
-                        {msg.content}
-                      </Text>
+                      
+                      {msg.attachmentUrls && msg.attachmentUrls.length > 0 && (
+                        <View style={{ marginBottom: 8, gap: 8 }}>
+                          {msg.attachmentUrls.map((url: string, i: number) => (
+                            <Image key={i} source={{ uri: url }} style={{ width: 200, height: 200, borderRadius: 8, backgroundColor: '#EEE' }} />
+                          ))}
+                        </View>
+                      )}
+                      
+                      {msg.content ? (
+                        <Text style={[styles.msgText, isMe ? styles.msgTextMe : styles.msgTextOther]}>
+                          {msg.content}
+                        </Text>
+                      ) : null}
                       <Text style={[styles.msgTime, isMe ? styles.msgTimeMe : styles.msgTimeOther]}>
                         {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </Text>
@@ -203,25 +235,42 @@ export default function SupportScreen() {
             </ScrollView>
 
             {activeTicket.status !== 'CLOSED' ? (
-              <View style={styles.composer}>
-                <TextInput 
-                  value={replyMessage}
-                  onChangeText={setReplyMessage}
-                  placeholder="Bir cevap yazın..."
-                  style={styles.composerInput}
-                  multiline
-                />
-                <TouchableOpacity 
-                  onPress={handleSendReply}
-                  disabled={!replyMessage.trim() || addMessage.isLoading}
-                  style={[styles.sendBtn, !replyMessage.trim() && { opacity: 0.5 }]}
-                >
-                  {addMessage.isLoading ? (
-                    <ActivityIndicator size="small" color="#FFF" />
-                  ) : (
-                    <MaterialCommunityIcons name="send" size={20} color="#FFF" />
-                  )}
-                </TouchableOpacity>
+              <View style={styles.composerWrapper}>
+                {replyMedia.length > 0 && (
+                  <View style={styles.previewContainer}>
+                    {replyMedia.map((b64, i) => (
+                      <View key={i} style={styles.previewBox}>
+                        <Image source={{ uri: `data:image/jpeg;base64,${b64}` }} style={styles.previewImage} />
+                        <TouchableOpacity style={styles.previewRemove} onPress={() => setReplyMedia(replyMedia.filter((_, idx) => idx !== i))}>
+                          <MaterialCommunityIcons name="close" size={14} color="#FFF" />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                <View style={styles.composer}>
+                  <TouchableOpacity style={styles.attachBtn} onPress={() => pickImage('reply')}>
+                    <MaterialCommunityIcons name="image-plus" size={24} color="#666" />
+                  </TouchableOpacity>
+                  <TextInput 
+                    value={replyMessage}
+                    onChangeText={setReplyMessage}
+                    placeholder="Bir cevap yazın..."
+                    style={styles.composerInput}
+                    multiline
+                  />
+                  <TouchableOpacity 
+                    onPress={handleSendReply}
+                    disabled={(!replyMessage.trim() && replyMedia.length === 0) || addMessage.isLoading}
+                    style={[styles.sendBtn, (!replyMessage.trim() && replyMedia.length === 0) && { opacity: 0.5 }]}
+                  >
+                    {addMessage.isLoading ? (
+                      <ActivityIndicator size="small" color="#FFF" />
+                    ) : (
+                      <MaterialCommunityIcons name="send" size={20} color="#FFF" />
+                    )}
+                  </TouchableOpacity>
+                </View>
               </View>
             ) : (
               <View style={styles.closedPanel}>
@@ -304,10 +353,28 @@ export default function SupportScreen() {
               numberOfLines={6}
             />
 
+            <Text style={styles.formLabel}>Ekran Görüntüsü / Fotoğraf</Text>
+            {createMedia.length > 0 && (
+              <View style={[styles.previewContainer, { marginBottom: 16 }]}>
+                {createMedia.map((b64, i) => (
+                  <View key={i} style={styles.previewBox}>
+                    <Image source={{ uri: `data:image/jpeg;base64,${b64}` }} style={[styles.previewImage, { width: 80, height: 80 }]} />
+                    <TouchableOpacity style={styles.previewRemove} onPress={() => setCreateMedia(createMedia.filter((_, idx) => idx !== i))}>
+                      <MaterialCommunityIcons name="close" size={14} color="#FFF" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+            <TouchableOpacity style={styles.uploadBtn} onPress={() => pickImage('create')}>
+              <MaterialCommunityIcons name="image-plus" size={24} color="#666" />
+              <Text style={styles.uploadBtnText}>Fotoğraf Ekle</Text>
+            </TouchableOpacity>
+
             <TouchableOpacity 
-              style={[styles.submitBtn, (!subject.trim() || !message.trim()) && { opacity: 0.5 }]}
+              style={[styles.submitBtn, (!subject.trim() || (!message.trim() && createMedia.length === 0)) && { opacity: 0.5 }]}
               onPress={handleCreateTicket}
-              disabled={!subject.trim() || !message.trim() || createTicket.isLoading}
+              disabled={!subject.trim() || (!message.trim() && createMedia.length === 0) || createTicket.isLoading}
             >
               {createTicket.isLoading ? (
                 <ActivityIndicator size="small" color="#FFF" />
@@ -369,7 +436,14 @@ const styles = StyleSheet.create({
   msgTimeMe: { color: 'rgba(255,255,255,0.6)' },
   msgTimeOther: { color: '#888' },
 
-  composer: { flexDirection: 'row', padding: 12, backgroundColor: '#FFF', borderTopWidth: 1, borderTopColor: '#EFEFEF', alignItems: 'center' },
+  composerWrapper: { borderTopWidth: 1, borderTopColor: '#EFEFEF', backgroundColor: '#FFF' },
+  previewContainer: { flexDirection: 'row', padding: 12, gap: 12, flexWrap: 'wrap' },
+  previewBox: { position: 'relative' },
+  previewImage: { width: 60, height: 60, borderRadius: 12, borderWidth: 1, borderColor: '#EEE' },
+  previewRemove: { position: 'absolute', top: -6, right: -6, backgroundColor: '#FF4444', borderRadius: 12, width: 20, height: 20, justifyContent: 'center', alignItems: 'center' },
+  
+  composer: { flexDirection: 'row', padding: 12, alignItems: 'center' },
+  attachBtn: { padding: 8, marginRight: 4 },
   composerInput: { flex: 1, backgroundColor: '#FAFAFA', borderWidth: 1, borderColor: '#EFEFEF', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, maxHeight: 100, fontSize: 14, color: '#333' },
   sendBtn: { backgroundColor: '#000', width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
   closedPanel: { padding: 16, backgroundColor: '#F9FAFB', borderTopWidth: 1, borderTopColor: '#EFEFEF', alignItems: 'center' },
@@ -385,6 +459,8 @@ const styles = StyleSheet.create({
   categoryBtnActive: { backgroundColor: '#000' },
   categoryBtnText: { fontSize: 12, color: '#555', fontWeight: '600' },
   categoryBtnTextActive: { color: '#FFF' },
+  uploadBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FAFAFA', borderWidth: 1, borderColor: '#EFEFEF', borderRadius: 12, padding: 12, justifyContent: 'center', gap: 8, marginTop: 4 },
+  uploadBtnText: { color: '#666', fontSize: 14, fontWeight: '600' },
   submitBtn: { backgroundColor: '#000', borderRadius: 16, height: 52, justifyContent: 'center', alignItems: 'center', marginTop: 32 },
   submitBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' }
 });

@@ -109,7 +109,7 @@ function AdminTicketsPage() {
                 </div>
                 <h3 className="font-semibold text-sm line-clamp-1">{ticket.subject}</h3>
                 <div className="flex items-center gap-2 mt-2">
-                  <img src={ticket.user?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} className="w-5 h-5 rounded-full bg-secondary"/>
+                  <img src={(ticket.user?.image || ((ticket.user as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))} className="w-5 h-5 rounded-full bg-secondary"/>
                   <span className="text-xs text-muted-foreground truncate">{ticket.user?.name} {ticket.user?.surname}</span>
                 </div>
               </div>
@@ -147,7 +147,7 @@ function AdminTicketsPage() {
                   {activeTicket.messages.map((msg: any) => (
                     <div key={msg.id} className={`flex ${msg.isAdmin ? 'justify-end' : 'justify-start'}`}>
                       {!msg.isAdmin && (
-                        <img src={msg.sender?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} className="w-8 h-8 rounded-full mr-2 self-end"/>
+                        <img src={(msg.sender?.image || ((msg.sender as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))} className="w-8 h-8 rounded-full mr-2 self-end"/>
                       )}
                       <div className={`max-w-[75%] rounded-2xl p-4 ${msg.isAdmin ? 'bg-primary text-primary-foreground rounded-br-none' : 'bg-muted rounded-bl-none'}`}>
                         {msg.isAdmin && <div className="text-[10px] font-bold opacity-70 mb-1">Ben (Admin)</div>}
