@@ -413,6 +413,10 @@ function ChatView({ conversationId, otherUser, currentUserId, onDelete }: { conv
     onSuccess: () => {
       utils.chat.getConversations.invalidate();
       onDelete();
+    },
+    onError: (err) => {
+      alert('Sohbet silinirken hata oluştu: ' + err.message);
+      console.error(err);
     }
   });
 

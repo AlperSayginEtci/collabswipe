@@ -142,6 +142,9 @@ export default function ChatScreen() {
     onSuccess: () => {
       utils.chat.getConversations.invalidate();
       router.canGoBack() ? router.back() : router.replace('/(tabs)/matches');
+    },
+    onError: (err) => {
+      Alert.alert('Hata', 'Sohbet silinirken hata oluştu: ' + err.message);
     }
   });
 
