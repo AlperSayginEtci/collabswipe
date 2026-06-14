@@ -72,7 +72,10 @@ export function RegisterWizard({ onComplete, onCancel }: RegisterWizardProps) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      let apiUrl = import.meta.env.PROD ? window.location.origin : (import.meta.env.VITE_API_URL || 'http://localhost:3001');
+      let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && !window.location.hostname.includes('192.168.')) {
+        apiUrl = window.location.origin;
+      }
       if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1);
       const res = await fetch(`${apiUrl}/api/upload`, {
         method: 'POST',

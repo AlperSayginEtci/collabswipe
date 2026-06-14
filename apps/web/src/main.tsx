@@ -19,8 +19,13 @@ declare module '@tanstack/react-router' {
 function App() {
   const [queryClient] = useState(() => new QueryClient())
   
-  // Get API URL dynamically. In production, use the exact current browser origin to guarantee same-origin requests!
-  let apiUrl = import.meta.env.PROD ? window.location.origin : ((import.meta.env.VITE_API_URL as string) || 'http://localhost:3001');
+  // Get API URL from env, or default to localhost. Remove trailing slash if exists.
+  let apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('192.168.')) {
+      apiUrl = window.location.origin;
+    }
+  }
   if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1);
   
   const wsUrl = apiUrl.replace(/^http/, 'ws');
