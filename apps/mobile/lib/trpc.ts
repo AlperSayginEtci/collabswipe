@@ -7,9 +7,8 @@ import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const getBaseUrl = () => {
-  // Use computer's local IP (192.168.0.22) which is universally accessible on the same Wi-Fi network
-  // for both physical devices (Android/iOS) and emulators.
-  return 'http://192.168.0.22:3001';
+  // Production Railway URL
+  return 'https://collabswipe-production.up.railway.app';
 };
 
 export const trpc = createTRPCReact<AppRouter>();
