@@ -284,7 +284,7 @@ export const connectionRouter = createTRPCRouter({
             message: targetProfile?.isPrivate 
               ? `${followerName} seni takip etmek istiyor.` 
               : `${followerName} seni takip etmeye başladı.`,
-            link: `/profile/${input.followerId}`,
+            link: `/profile?userId=${input.followerId}`,
           }
         });
       }
