@@ -28,7 +28,11 @@ function App() {
   }
   if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1);
   
-  const wsUrl = apiUrl.replace(/^http/, 'ws');
+  // Vercel does not support WebSockets. Point WS directly to Railway in production!
+  let wsUrl = apiUrl.replace(/^http/, 'ws');
+  if (typeof window !== 'undefined' && window.location.hostname === 'collabswipe-web.vercel.app') {
+    wsUrl = 'wss://collabswipe-production.up.railway.app';
+  }
 
   const [trpcClient] = useState(() =>
     trpc.createClient({
