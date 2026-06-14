@@ -12,7 +12,9 @@ import type { auth } from "./index"
  */
 let apiUrl = "http://localhost:3001";
 
-if (typeof window !== 'undefined') {
+if (typeof process !== 'undefined' && process.env && process.env.EXPO_PUBLIC_API_URL) {
+  apiUrl = process.env.EXPO_PUBLIC_API_URL;
+} else if (typeof window !== 'undefined' && window.location && window.location.hostname) {
   if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('192.168.')) {
     apiUrl = window.location.origin;
   }
