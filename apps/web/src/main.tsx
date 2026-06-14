@@ -19,8 +19,10 @@ declare module '@tanstack/react-router' {
 function App() {
   const [queryClient] = useState(() => new QueryClient())
   
-  // Get API URL from env, or default to localhost
-  const apiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3001';
+  // Get API URL from env, or default to localhost. Remove trailing slash if exists.
+  let apiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3001';
+  if (apiUrl.endsWith('/')) apiUrl = apiUrl.slice(0, -1);
+  
   const wsUrl = apiUrl.replace(/^http/, 'ws');
 
   const [trpcClient] = useState(() =>

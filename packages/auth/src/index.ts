@@ -28,7 +28,9 @@ export const auth = betterAuth({
     "exp://192.168.0.22:8081",
     "exp://192.168.0.22:8082",
     "exp://192.168.0.22",
-  ],
+    "https://collabswipe-web.vercel.app",
+    process.env.FRONTEND_URL || ""
+  ].filter(Boolean),
 
   /**
    * E-posta / Şifre ile giriş
