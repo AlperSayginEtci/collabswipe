@@ -72,7 +72,8 @@ export function RegisterWizard({ onComplete, onCancel }: RegisterWizardProps) {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await fetch('http://localhost:3001/api/upload', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      const res = await fetch(`${apiUrl}/api/upload`, {
         method: 'POST',
         body: formData
       });

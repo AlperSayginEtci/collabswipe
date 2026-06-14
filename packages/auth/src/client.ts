@@ -10,8 +10,13 @@ import type { auth } from "./index"
  *   import { authClient } from "@collabswipe/auth/client"
  *   const { data: session } = authClient.useSession()
  */
+// Check if we are in a Vite environment (web)
+const apiUrl = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL 
+  : "http://localhost:3001";
+
 export const authClient = createAuthClient({
-  baseURL: "http://localhost:3001",
+  baseURL: apiUrl,
   plugins: [
     inferAdditionalFields<typeof auth>()
   ]

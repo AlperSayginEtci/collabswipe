@@ -18,6 +18,11 @@ declare module '@tanstack/react-router' {
 
 function App() {
   const [queryClient] = useState(() => new QueryClient())
+  
+  // Get API URL from env, or default to localhost
+  const apiUrl = (import.meta.env.VITE_API_URL as string) || 'http://localhost:3001';
+  const wsUrl = apiUrl.replace(/^http/, 'ws');
+
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [
@@ -25,11 +30,11 @@ function App() {
           condition: (op) => op.type === 'subscription',
           true: wsLink({
             client: createWSClient({
-              url: 'ws://localhost:3001/api/trpc',
+              url: `${wsUrl}/api/trpc`,
             }),
           }),
           false: httpBatchLink({
-            url: 'http://localhost:3001/api/trpc',
+            url: `${apiUrl}/api/trpc`,
             fetch: (url, options) => {
               return fetch(url, {
                 ...options,
