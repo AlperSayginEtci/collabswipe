@@ -58,7 +58,9 @@ app.post('/api/upload', (req, res, next) => {
     return res.status(400).json({ error: 'No file uploaded' });
   }
   // Return the public URL for the file
-  const fileUrl = `http://192.168.0.22:${port}/uploads/${req.file.filename}`;
+  const host = req.get('host');
+  const protocol = host?.includes('localhost') || host?.includes('192.168.') ? 'http' : 'https';
+  const fileUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
   console.log('[/api/upload] Returning url:', fileUrl);
   res.json({ url: fileUrl });
 });
