@@ -100,6 +100,20 @@ export const profileRouter = createTRPCRouter({
       })
     }),
 
+  // Geçici Admin Yapma Endpoint'i
+  makeMeAdmin: publicProcedure
+    .input(z.object({ userId: z.string(), email: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const allowedEmails = ['collabswipe@collabswipe.com', 'oggy4469@gmail.com', 'alper@gmail.com'];
+      if (!allowedEmails.includes(input.email)) {
+        throw new Error("Bu işlem için yetkiniz yok.");
+      }
+      return ctx.prisma.user.update({
+        where: { id: input.userId },
+        data: { role: 'admin' },
+      });
+    }),
+
   // Tüm standart yetenekleri getir
   getAllSkills: publicProcedure.query(({ ctx }) => {
     return ctx.prisma.skill.findMany({

@@ -52,6 +52,12 @@ function ProfilePage() {
   // Skills
   const [skillSearch, setSkillSearch] = useState('');
   const [isSkillFocused, setIsSkillFocused] = useState(false);
+
+  const makeMeAdmin = trpc.profile.makeMeAdmin.useMutation();
+
+  // Admin Check
+  const isAdminEmail = ['collabswipe@collabswipe.com', 'oggy4469@gmail.com', 'alper@gmail.com'].includes(session?.user?.email || '');
+  const isAlreadyAdmin = (session?.user as any)?.role === 'admin';
   
   // Image Compression Utility
   const compressImage = async (file: File): Promise<File> => {
@@ -754,6 +760,22 @@ function ProfilePage() {
                     <Edit2 className="w-4 h-4" /> Profili Düzenle
                   </button>
                 )}
+              </div>
+            )}
+
+            {isAdminEmail && !isAlreadyAdmin && isOwnProfile && (
+              <div className="mt-4 flex w-full sm:w-auto">
+                <button 
+                  onClick={async () => {
+                    await makeMeAdmin.mutateAsync({ userId: session?.user?.id || '', email: session?.user?.email || '' });
+                    await authClient.updateUser({ role: 'admin' } as any);
+                    window.location.reload(); // Refresh to apply session updates
+                  }}
+                  disabled={makeMeAdmin.isLoading}
+                  className="w-full sm:w-auto bg-red-500 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-red-600 flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <Shield className="w-4 h-4" /> Kendini Admin Yap
+                </button>
               </div>
             )}
 
