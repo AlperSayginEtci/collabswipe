@@ -16,7 +16,7 @@ export default function TabLayout() {
 
   const { data: companyApps } = trpc.job.getCompanyApplications.useQuery(
     undefined,
-    { enabled: !!userId && user?.role === 'company', refetchInterval: 3000 }
+    { enabled: !!userId && (user as any)?.role === 'company', refetchInterval: 3000 }
   );
 
   const likesCount = user?.role === 'company' 
@@ -40,38 +40,39 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#000000',
-        tabBarInactiveTintColor: '#999',
+        tabBarInactiveTintColor: '#9CA3AF',
         tabBarStyle: {
-          borderTopWidth: 1,
-          borderTopColor: '#EEE',
-          backgroundColor: '#FFF',
-          height: 60 + Math.max(insets.bottom, 10),
-          paddingBottom: 8 + Math.max(insets.bottom, 10),
-          paddingTop: 8,
+          backgroundColor: '#ffffff',
+          borderTopColor: '#f3f4f6',
         },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Ana Sayfa',
-          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="home-outline" size={26} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="home" size={26} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="discover"
         options={{
           title: 'Keşfet',
-          tabBarIcon: ({ color }) => <MaterialCommunityIcons name="cards" size={26} color={color} />,
+          tabBarIcon: ({ color }) => (
+            <MaterialCommunityIcons name="cards" size={26} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="likes"
         options={{
-          title: user?.role === 'company' ? 'Başvuranlar' : 'Beğeniler',
+          title: (user as any)?.role === 'company' ? 'Başvuranlar' : 'Beğeniler',
           tabBarBadge: likesCount > 0 ? likesCount : undefined,
+          tabBarBadgeStyle: { fontSize: 9, minWidth: 14, height: 14, lineHeight: 14 },
           tabBarIcon: ({ color }) => (
             <MaterialCommunityIcons 
-              name={user?.role === 'company' ? 'inbox' : 'heart'} 
+              name={(user as any)?.role === 'company' ? 'inbox' : 'heart'} 
               size={26} 
               color={color} 
             />

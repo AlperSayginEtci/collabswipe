@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { Search, Send, User } from 'lucide-react';
+import { Search, Send, User, Trash2 } from 'lucide-react';
 import { trpc } from '@/lib/trpc';
 import { useSession } from '@collabswipe/auth/client';
 import { useState, useRef, useEffect } from 'react';
@@ -101,7 +101,7 @@ function MatchesPage() {
               ) : (
                 searchResults?.map((item: any) => {
                   const nameText = `${item.name} ${item.surname || ''}`.trim();
-                  const avatarUrl = item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
+                  const avatarUrl = (item?.image || ((item as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'));
                   return (
                     <div 
                       key={item.id} 
@@ -133,7 +133,7 @@ function MatchesPage() {
                   <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
                     {matches.map((item: any) => {
                       const nameText = item.name || 'Kullanıcı';
-                      const avatarUrl = item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
+                      const avatarUrl = (item?.image || ((item as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'));
                       return (
                         <div 
                           key={item.id} 
@@ -180,7 +180,7 @@ function MatchesPage() {
                   inboxChats.map((conv) => {
                     const otherUser = conv.otherUser;
                   const nameText = otherUser ? `${otherUser.name} ${otherUser.surname || ''}` : 'Sohbet';
-                  const avatarUrl = otherUser?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
+                  const avatarUrl = (otherUser?.image || ((otherUser as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'));
                   const lastMessage = conv.lastMessage;
                   
                   return (
@@ -223,7 +223,7 @@ function MatchesPage() {
                   requestChats.map((conv) => {
                     const otherUser = conv.otherUser;
                     const nameText = otherUser ? `${otherUser.name} ${otherUser.surname || ''}` : 'Sohbet';
-                    const avatarUrl = otherUser?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
+                    const avatarUrl = (otherUser?.image || ((otherUser as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'));
                     const lastMessage = conv.lastMessage;
                     
                     return (
@@ -266,7 +266,7 @@ function MatchesPage() {
       {/* Chat Area */}
       <div className={`${selectedConvId ? 'flex' : 'hidden'} md:flex flex-col flex-1 bg-background`}>
         {selectedConvId && selectedConv ? (
-          <ChatView conversationId={selectedConvId} otherUser={selectedConv.otherUser} currentUserId={userId!} />
+          <ChatView conversationId={selectedConvId} otherUser={selectedConv.otherUser} currentUserId={userId!} onDelete={() => setSelectedConvId(null)} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground select-none">
             <div className="text-center space-y-4">
@@ -282,7 +282,7 @@ function MatchesPage() {
   );
 }
 
-function ChatView({ conversationId, otherUser, currentUserId }: { conversationId: string, otherUser: any, currentUserId: string }) {
+function ChatView({ conversationId, otherUser, currentUserId, onDelete }: { conversationId: string, otherUser: any, currentUserId: string, onDelete: () => void }) {
   const [inputText, setInputText] = useState('');
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
@@ -409,6 +409,12 @@ function ChatView({ conversationId, otherUser, currentUserId }: { conversationId
       utils.chat.getMessages.invalidate({ conversationId });
     }
   });
+  const deleteConversation = trpc.chat.deleteConversation.useMutation({
+    onSuccess: () => {
+      utils.chat.getConversations.invalidate();
+      onDelete();
+    }
+  });
 
   useEffect(() => {
     // Mark as read when opening conversation
@@ -451,18 +457,31 @@ function ChatView({ conversationId, otherUser, currentUserId }: { conversationId
   };
 
   const nameText = otherUser ? `${otherUser.name} ${otherUser.surname || ''}` : 'Sohbet';
-  const avatarUrl = otherUser?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
+  const avatarUrl = (otherUser?.image || ((otherUser as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'));
 
   return (
     <div className="flex flex-col h-full w-full">
       {/* Chat Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border bg-card shrink-0">
-        <div className="w-10 h-10 rounded-full bg-primary/20 overflow-hidden">
-          <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+      <div className="flex items-center justify-between p-4 border-b border-border bg-card shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/20 overflow-hidden">
+            <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground">{nameText}</h3>
+          </div>
         </div>
-        <div>
-          <h3 className="font-semibold text-foreground">{nameText}</h3>
-        </div>
+        <button 
+          onClick={() => {
+            if (window.confirm('Bu sohbeti tamamen silmek istediğinize emin misiniz? Bu işlem geri alınamaz.')) {
+              deleteConversation.mutate({ conversationId, userId: currentUserId });
+            }
+          }}
+          className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-full transition-colors"
+          title="Sohbeti Sil"
+        >
+          <Trash2 className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Messages List */}

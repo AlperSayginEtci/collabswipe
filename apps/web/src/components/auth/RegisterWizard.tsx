@@ -54,7 +54,7 @@ export function RegisterWizard({ onComplete, onCancel }: RegisterWizardProps) {
     setError('');
     // Validations
     if (step === 1 && !email) return setError('Lütfen e-posta giriniz.');
-    if (step === 2 && !password) return setError('Lütfen şifre giriniz.');
+    if (step === 2 && password.length < 8) return setError('Şifre en az 8 karakter olmalıdır.');
     if (step === 3 && !isCompany && (!name || !surname)) return setError('Ad ve soyad zorunludur.');
     if (step === 3 && isCompany && !name) return setError('Şirket adı zorunludur.');
     if (step === 4 && isCompany && !sector) return setError('Sektör zorunludur.');

@@ -54,7 +54,7 @@ export function LandingPage() {
               Kariyerini <span className="text-primary">Kaydır</span>,<br />Geleceğini Bul.
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl">
-              İş arayışının Tinder'ı. Hayalinizdeki kariyere doğru sağa kaydırın. Yetenekleri ve yenilikçi şirketleri hızlı, sezgisel ve modern bir deneyimle buluşturuyoruz.
+              Hayalinizdeki kariyere doğru sağa kaydırın. Yetenekleri ve yenilikçi şirketleri hızlı, sezgisel ve modern bir deneyimle buluşturuyoruz.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <Link to="/login" className="bg-primary text-primary-foreground font-bold text-lg px-8 py-4 rounded-xl hover:opacity-90 transition-all active:scale-95 shadow-[0_0_20px_rgba(206,189,255,0.4)] flex justify-center items-center gap-2">

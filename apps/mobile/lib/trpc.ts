@@ -7,9 +7,9 @@ import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const getBaseUrl = () => {
-  // Use computer's local IP (192.168.1.39) which is universally accessible on the same Wi-Fi network
+  // Use computer's local IP (192.168.0.22) which is universally accessible on the same Wi-Fi network
   // for both physical devices (Android/iOS) and emulators.
-  return 'http://192.168.1.39:3001';
+  return 'http://192.168.0.22:3001';
 };
 
 export const trpc = createTRPCReact<AppRouter>();
@@ -37,7 +37,6 @@ export function getTrpcClient() {
           },
           async headers() {
             const token = await AsyncStorage.getItem('@collabswipe_session_token');
-            console.log("[tRPC Client headers] Loaded token from storage:", token ? `${token.substring(0, 10)}...` : "null");
             return token ? {
               Authorization: `Bearer ${token}`
             } : {};

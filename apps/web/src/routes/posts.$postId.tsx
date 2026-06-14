@@ -101,7 +101,7 @@ function CommentNode({ comment, depth = 0, ctx }: { comment: any; depth?: number
       <div className="flex gap-2.5 items-start">
         <Link to="/profile" search={{ userId: comment.authorId }} className={`${avatarCls} bg-secondary overflow-hidden shrink-0 border border-border/40 block hover:opacity-80 transition-opacity`}>
           <img
-            src={comment.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}`}
+            src={(comment.author?.image || ((comment.author as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))}
             alt={comment.author?.name || 'avatar'}
             className="w-full h-full object-cover"
           />
@@ -265,7 +265,7 @@ function PostDetailPage() {
           <div className="flex items-center gap-4">
             <Link to="/profile" search={{ userId: post.authorId }} className="w-14 h-14 rounded-2xl bg-secondary overflow-hidden shrink-0 border border-border/50 shadow-sm block hover:opacity-80 transition-opacity">
               <img 
-                src={post.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}`} 
+                src={(post.author?.image || ((post.author as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))} 
                 alt="avatar" 
                 className="w-full h-full object-cover" 
               />
@@ -357,7 +357,7 @@ function PostDetailPage() {
             <div className="border-2 border-border/60 bg-muted/5 rounded-2xl p-5 mt-4">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-secondary overflow-hidden shrink-0 border border-border/40">
-                  <img src={post.originalPost?.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} alt="avatar" className="w-full h-full object-cover" />
+                  <img src={(post.originalPost?.author?.image || ((post.originalPost?.author as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))} alt="avatar" className="w-full h-full object-cover" />
                 </div>
                 <div>
                   <h5 className="font-bold text-foreground text-sm hover:underline cursor-pointer">
@@ -431,7 +431,7 @@ function PostDetailPage() {
           <div className="flex gap-3 items-start mb-6">
             <div className="w-10 h-10 rounded-xl bg-secondary overflow-hidden shrink-0 border border-border/40">
               <img 
-                src={session?.user?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} 
+                src={(session?.user?.image || ((session?.user as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'))} 
                 alt="you" 
                 className="w-full h-full object-cover" 
               />

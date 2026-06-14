@@ -11,11 +11,13 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  Modal,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { trpc } from '../../lib/trpc';
+import { useRouter } from 'expo-router';
+import { trpc, getBaseUrl } from '../../lib/trpc';
 import { useUser } from '../../context/UserContext';
 import { MentionTextInput } from '../../components/MentionTextInput';
 import { FormattedText } from '../../components/FormattedText';
@@ -48,6 +50,7 @@ function getAuthorSubtitle(author: any) {
 
 export default function HomeFeedScreen() {
   const { userId, user } = useUser();
+  const router = useRouter();
   const [content, setContent] = useState('');
   // Uploaded media URL (from /api/upload)
   const [mediaUrl, setMediaUrl] = useState('');
@@ -56,6 +59,11 @@ export default function HomeFeedScreen() {
   const [showMediaInput, setShowMediaInput] = useState(false);
   const [activeCommentsPostId, setActiveCommentsPostId] = useState<string | null>(null);
   const [activeReactionPostId, setActiveReactionPostId] = useState<string | null>(null);
+
+  const [selectedPostOptions, setSelectedPostOptions] = useState<any>(null);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editingPostText, setEditingPostText] = useState('');
   const [commentText, setCommentText] = useState('');
   const utils = trpc.useUtils();
 
@@ -73,7 +81,7 @@ export default function HomeFeedScreen() {
         setIsUploadingMedia(true);
         try {
           // Upload directly to server /api/upload using multipart/form-data
-          const baseUrl = (await import('../../lib/trpc')).getBaseUrl();
+          const baseUrl = getBaseUrl();
           const formData = new FormData();
           const filename = asset.uri.split('/').pop() || 'photo.jpg';
           const match = /\.([^.]+)$/.exec(filename);
@@ -111,7 +119,6 @@ export default function HomeFeedScreen() {
       setMediaPreviewUrl('');
       setShowMediaInput(false);
       utils.post.getFeed.invalidate();
-      Alert.alert('Başarılı', 'Gönderi paylaşıldı.');
     },
     onError: (err) => {
       Alert.alert('Hata', 'Gönderi paylaşılamadı.');
@@ -129,6 +136,33 @@ export default function HomeFeedScreen() {
       console.error(err);
     }
   });
+
+  const createReport = trpc.user.createReport.useMutation({
+    onSuccess: () => {
+      Alert.alert('Başarılı', 'Şikayetiniz alındı ve incelenecek.');
+    },
+    onError: () => {
+      Alert.alert('Hata', 'Şikayet edilirken bir hata oluştu.');
+    }
+  });
+
+  const editPost = trpc.post.editPost.useMutation({
+    onSuccess: () => {
+      utils.post.getFeed.invalidate();
+      setIsEditModalVisible(false);
+      setEditingPostId(null);
+      setEditingPostText('');
+      Alert.alert('Başarılı', 'Gönderi güncellendi.');
+    },
+    onError: (err) => {
+      Alert.alert('Hata', 'Gönderi güncellenemedi.');
+      console.error(err);
+    }
+  });
+
+  const handlePostOptions = (post: any) => {
+    setSelectedPostOptions(post);
+  };
 
   const likePost = trpc.post.like.useMutation({
     onSuccess: () => {
@@ -245,7 +279,7 @@ export default function HomeFeedScreen() {
     <View style={styles.composerCard}>
       <View style={styles.composerHeader}>
         <Image
-          source={{ uri: (user as any)?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}` }}
+          source={{ uri: (user as any)?.image || ((user as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024') }}
           style={styles.composerAvatar}
         />
         <View style={{ flex: 1, zIndex: 1000 }}>
@@ -320,20 +354,22 @@ export default function HomeFeedScreen() {
       <View style={styles.postCard}>
         {/* Post Header */}
         <View style={styles.postHeader}>
-          <Image
-            source={{ uri: item.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}` }}
-            style={styles.postAvatar}
-          />
+          <TouchableOpacity onPress={() => router.push(`/user/${item.authorId}`)}>
+            <Image
+              source={{ uri: (item.author?.image || ((item.author as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024')) }}
+              style={styles.postAvatar}
+            />
+          </TouchableOpacity>
           <View style={styles.postAuthorInfo}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Text style={styles.postAuthorName}>
-                {item.author?.name || 'Mock'} {item.author?.surname || 'User'}
-              </Text>
-              {isAuthor && (
-                <TouchableOpacity onPress={() => handleDeletePostConfirm(item.id)}>
-                  <MaterialCommunityIcons name="delete-outline" size={20} color="#000000" />
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity onPress={() => router.push(`/user/${item.authorId}`)}>
+                <Text style={styles.postAuthorName}>
+                  {item.author?.name || 'Mock'} {item.author?.surname || 'User'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handlePostOptions(item)}>
+                <MaterialCommunityIcons name="dots-horizontal" size={20} color="#666" />
+              </TouchableOpacity>
             </View>
 
             <Text style={styles.postAuthorHeadline} numberOfLines={1}>
@@ -359,14 +395,18 @@ export default function HomeFeedScreen() {
         {hasOriginal && (
           <View style={styles.repostContainer}>
             <View style={styles.repostHeader}>
-              <Image
-                source={{ uri: item.originalPost.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}` }}
-                style={styles.repostAvatar}
-              />
+              <TouchableOpacity onPress={() => router.push(`/user/${item.originalPost.authorId}`)}>
+                <Image
+                  source={{ uri: (item.originalPost.author?.image || ((item.originalPost.author as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024')) }}
+                  style={styles.repostAvatar}
+                />
+              </TouchableOpacity>
               <View style={styles.repostAuthorInfo}>
-                <Text style={styles.repostAuthorName}>
-                  {item.originalPost.author?.name} {item.originalPost.author?.surname}
-                </Text>
+                <TouchableOpacity onPress={() => router.push(`/user/${item.originalPost.authorId}`)}>
+                  <Text style={styles.repostAuthorName}>
+                    {item.originalPost.author?.name} {item.originalPost.author?.surname}
+                  </Text>
+                </TouchableOpacity>
                 <Text style={styles.repostAuthorHeadline} numberOfLines={1}>
                   {getAuthorSubtitle(item.originalPost.author)}
                 </Text>
@@ -476,13 +516,17 @@ export default function HomeFeedScreen() {
                 return (
                   <View key={comment.id} style={{ marginBottom: 12 }}>
                     <View style={styles.commentBubbleContainer}>
-                      <Image
-                        source={{ uri: comment.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}` }}
-                        style={styles.commentAvatar}
-                      />
+                      <TouchableOpacity onPress={() => router.push(`/user/${comment.authorId}`)}>
+                        <Image
+                          source={{ uri: (comment.author?.image || ((comment.author as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024')) }}
+                          style={styles.commentAvatar}
+                        />
+                      </TouchableOpacity>
                       <View style={styles.commentBubble}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Text style={styles.commentAuthorName}>{comment.author?.name} {comment.author?.surname}</Text>
+                          <TouchableOpacity onPress={() => router.push(`/user/${comment.authorId}`)}>
+                            <Text style={styles.commentAuthorName}>{comment.author?.name} {comment.author?.surname}</Text>
+                          </TouchableOpacity>
                           {isCommentAuthor && (
                             <TouchableOpacity onPress={() => deleteComment.mutate({ commentId: comment.id })}>
                               <MaterialCommunityIcons name="delete" size={14} color="#000000" />
@@ -500,13 +544,17 @@ export default function HomeFeedScreen() {
                     {/* Replies */}
                     {comment.replies && comment.replies.map((reply: any) => (
                       <View key={reply.id} style={[styles.commentBubbleContainer, { marginLeft: 38, marginTop: 4 }]}>
-                        <Image
-                          source={{ uri: reply.author?.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'user'}` }}
-                          style={[styles.commentAvatar, { width: 24, height: 24, borderRadius: 12 }]}
-                        />
+                        <TouchableOpacity onPress={() => router.push(`/user/${reply.authorId}`)}>
+                          <Image
+                            source={{ uri: (reply.author?.image || ((reply.author as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024')) }}
+                            style={[styles.commentAvatar, { width: 24, height: 24, borderRadius: 12 }]}
+                          />
+                        </TouchableOpacity>
                         <View style={[styles.commentBubble, { backgroundColor: '#F8F9FA' }]}>
                           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Text style={styles.commentAuthorName}>{reply.author?.name} {reply.author?.surname}</Text>
+                            <TouchableOpacity onPress={() => router.push(`/user/${reply.authorId}`)}>
+                              <Text style={styles.commentAuthorName}>{reply.author?.name} {reply.author?.surname}</Text>
+                            </TouchableOpacity>
                             {reply.authorId === userId && (
                               <TouchableOpacity onPress={() => deleteComment.mutate({ commentId: reply.id })}>
                                 <MaterialCommunityIcons name="delete" size={12} color="#000000" />
@@ -549,6 +597,12 @@ export default function HomeFeedScreen() {
                 <Text style={styles.feedTitle}>Akışınız</Text>
                 <Text style={styles.feedSubtitle}>Ağınızdaki en son güncellemeleri görün.</Text>
               </View>
+              {createPost.isPending && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FFF', padding: 12, borderRadius: 12, marginBottom: 12, marginHorizontal: 12, borderWidth: 1, borderColor: '#EEE' }}>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: '#111' }}>Gönderi paylaşılıyor...</Text>
+                  <ActivityIndicator size="small" color="#0F172A" />
+                </View>
+              )}
               {renderComposer()}
             </>
           }
@@ -563,6 +617,112 @@ export default function HomeFeedScreen() {
           }
         />
       </KeyboardAvoidingView>
+      {/* Dropdown / Action Sheet Modal */}
+      <Modal
+        visible={!!selectedPostOptions}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setSelectedPostOptions(null)}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setSelectedPostOptions(null)}
+        >
+          <View style={styles.actionSheetContainer}>
+            {selectedPostOptions?.authorId === userId ? (
+              <>
+                <TouchableOpacity 
+                  style={styles.actionSheetButton}
+                  onPress={() => {
+                    setEditingPostId(selectedPostOptions.id);
+                    setEditingPostText(selectedPostOptions.content || '');
+                    setSelectedPostOptions(null);
+                    setIsEditModalVisible(true);
+                  }}
+                >
+                  <MaterialCommunityIcons name="pencil" size={24} color="#1A1A1A" />
+                  <Text style={styles.actionSheetText}>Düzenle</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.actionSheetButton, { borderBottomWidth: 0 }]}
+                  onPress={() => {
+                    const postId = selectedPostOptions.id;
+                    setSelectedPostOptions(null);
+                    handleDeletePostConfirm(postId);
+                  }}
+                >
+                  <MaterialCommunityIcons name="delete" size={24} color="#EF4444" />
+                  <Text style={[styles.actionSheetText, { color: '#EF4444' }]}>Sil</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <TouchableOpacity 
+                style={[styles.actionSheetButton, { borderBottomWidth: 0 }]}
+                onPress={() => {
+                  const postId = selectedPostOptions?.id;
+                  setSelectedPostOptions(null);
+                  if (postId) {
+                    createReport.mutate({
+                      targetType: 'POST',
+                      targetId: postId,
+                      reason: 'Uygunsuz içerik (Mobil)'
+                    });
+                  }
+                }}
+              >
+                <MaterialCommunityIcons name="flag" size={24} color="#EF4444" />
+                <Text style={[styles.actionSheetText, { color: '#EF4444' }]}>Şikayet Et</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Edit Modal */}
+      <Modal
+        visible={isEditModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsEditModalVisible(false)}
+      >
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.editModalContainer}>
+            <View style={styles.editModalHeader}>
+              <Text style={styles.editModalTitle}>Gönderiyi Düzenle</Text>
+              <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
+                <MaterialCommunityIcons name="close" size={24} color="#1A1A1A" />
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={styles.editModalInput}
+              multiline
+              value={editingPostText}
+              onChangeText={setEditingPostText}
+              placeholder="Gönderini düzenle..."
+              autoFocus
+            />
+            <TouchableOpacity 
+              style={[styles.saveButton, editPost.isPending && { opacity: 0.7 }]} 
+              onPress={() => {
+                if (editingPostId && editingPostText.trim()) {
+                  editPost.mutate({ postId: editingPostId, content: editingPostText.trim() });
+                }
+              }}
+              disabled={editPost.isPending || !editingPostText.trim()}
+            >
+              {editPost.isPending ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.saveButtonText}>Kaydet</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -929,5 +1089,70 @@ const styles = StyleSheet.create({
     marginTop: 40,
     color: '#999',
     fontSize: 14,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  actionSheetContainer: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    paddingTop: 10,
+    paddingHorizontal: 20,
+  },
+  actionSheetButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F5F5F5',
+    gap: 12,
+  },
+  actionSheetText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  editModalContainer: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+  },
+  editModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  editModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1A1A1A',
+  },
+  editModalInput: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+    padding: 16,
+    minHeight: 120,
+    textAlignVertical: 'top',
+    fontSize: 16,
+    color: '#1A1A1A',
+    marginBottom: 16,
+  },
+  saveButton: {
+    backgroundColor: '#000',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useSession } from '@collabswipe/auth/client';
 import { trpc } from '../lib/trpc';
 import { Heart, Inbox, User as UserIcon, Check, X, Building, MapPin } from 'lucide-react';
@@ -92,17 +92,19 @@ function UserLikes() {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {pendingRequests.map(req => (
         <div key={req.requester.id} className="bg-card border border-border rounded-2xl p-4 flex gap-4 items-center">
-          {req.requester.image ? (
-            <img src={req.requester.image} alt={req.requester.name || 'User'} className="w-16 h-16 rounded-full object-cover shrink-0" />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center shrink-0">
-              <UserIcon className="w-8 h-8 text-muted-foreground" />
+          <Link to="/profile" search={{ userId: req.requester.id }} className="flex gap-4 items-center flex-1 overflow-hidden hover:opacity-80 transition-opacity">
+            {req.requester.image ? (
+              <img src={req.requester.image} alt={req.requester.name || 'User'} className="w-16 h-16 rounded-full object-cover shrink-0" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                <UserIcon className="w-8 h-8 text-muted-foreground" />
+              </div>
+            )}
+            <div className="flex-1 overflow-hidden">
+              <h4 className="font-bold text-lg truncate">{req.requester.name} {req.requester.surname}</h4>
+              <p className="text-xs text-muted-foreground mt-1">Seni beğendi!</p>
             </div>
-          )}
-          <div className="flex-1 overflow-hidden">
-            <h4 className="font-bold text-lg truncate">{req.requester.name} {req.requester.surname}</h4>
-            <p className="text-xs text-muted-foreground mt-1">Seni beğendi!</p>
-          </div>
+          </Link>
           <div className="flex flex-col gap-2 shrink-0">
             <button 
               onClick={() => respondMutation.mutate({ requesterId: req.requester.id, addresseeId: session!.user!.id, status: 'ACCEPTED' })}
@@ -176,17 +178,19 @@ function UserOutgoing() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {sentRequests.map(req => (
               <div key={req.addressee.id} className="bg-card border border-border rounded-2xl p-4 flex gap-4 items-center">
-                {req.addressee.image ? (
-                  <img src={req.addressee.image} alt={req.addressee.name || 'User'} className="w-16 h-16 rounded-full object-cover shrink-0" />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                    <UserIcon className="w-8 h-8 text-muted-foreground" />
+                <Link to="/profile" search={{ userId: req.addressee.id }} className="flex gap-4 items-center flex-1 overflow-hidden hover:opacity-80 transition-opacity">
+                  {req.addressee.image ? (
+                    <img src={req.addressee.image} alt={req.addressee.name || 'User'} className="w-16 h-16 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                      <UserIcon className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 overflow-hidden">
+                    <h4 className="font-bold text-lg truncate">{req.addressee.name} {req.addressee.surname}</h4>
+                    <p className="text-xs text-amber-500 font-bold mt-1">Bekliyor</p>
                   </div>
-                )}
-                <div className="flex-1 overflow-hidden">
-                  <h4 className="font-bold text-lg truncate">{req.addressee.name} {req.addressee.surname}</h4>
-                  <p className="text-xs text-amber-500 font-bold mt-1">Bekliyor</p>
-                </div>
+                </Link>
                 <button 
                   onClick={() => undoSwipe.mutate({ requesterId: session!.user!.id, addresseeId: req.addressee.id })}
                   className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive hover:text-white transition-colors shrink-0"
@@ -205,17 +209,19 @@ function UserOutgoing() {
           <div className="space-y-4">
             {myApplications.map(app => (
               <div key={app.id} className="bg-card border border-border rounded-2xl p-4 flex gap-4 items-center">
-                {app.job.publisher?.image ? (
-                  <img src={app.job.publisher.image} alt={app.job.publisher.name || 'Company'} className="w-14 h-14 rounded-full object-cover shrink-0" />
-                ) : (
-                  <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                    <Building className="w-6 h-6 text-muted-foreground" />
+                <Link to="/profile" search={{ userId: app.job.publisherId }} className="flex gap-4 items-center flex-1 overflow-hidden hover:opacity-80 transition-opacity">
+                  {app.job.publisher?.image ? (
+                    <img src={app.job.publisher.image} alt={app.job.publisher.name || 'Company'} className="w-14 h-14 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                      <Building className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 overflow-hidden">
+                    <h4 className="font-bold text-lg truncate">{app.job.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-1">{app.job.publisher?.name}</p>
                   </div>
-                )}
-                <div className="flex-1 overflow-hidden">
-                  <h4 className="font-bold text-lg truncate">{app.job.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-1">{app.job.publisher?.name}</p>
-                </div>
+                </Link>
                 <div className="shrink-0 flex items-center gap-2">
                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 hidden sm:inline-block">
                      Bekliyor
@@ -265,7 +271,7 @@ function CompanyApplicants() {
     <div className="space-y-4">
       {applications.map(app => (
         <div key={app.id} className="bg-card border border-border rounded-2xl p-5 flex flex-col md:flex-row gap-4">
-          <div className="flex items-start gap-4 md:w-1/2">
+          <Link to="/profile" search={{ userId: app.applicantId }} className="flex items-start gap-4 md:w-1/2 hover:opacity-80 transition-opacity">
             {app.applicant.image ? (
               <img src={app.applicant.image} alt={app.applicant.name || 'Applicant'} className="w-14 h-14 rounded-full object-cover shrink-0" />
             ) : (
@@ -286,7 +292,7 @@ function CompanyApplicants() {
                 </div>
               )}
             </div>
-          </div>
+          </Link>
           
           <div className="flex flex-row md:flex-col justify-between items-center md:items-end md:w-1/2 pt-4 md:pt-0 border-t md:border-t-0 border-border">
             <span className={`text-xs font-bold px-3 py-1 rounded-full mb-0 md:mb-4 ${app.status === 'PENDING' ? 'bg-amber-500/10 text-amber-500' : app.status === 'ACCEPTED' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
@@ -350,17 +356,19 @@ function CompanyOutgoing() {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {sentRequests.map(req => (
         <div key={req.addressee.id} className="bg-card border border-border rounded-2xl p-4 flex gap-4 items-center">
-          {req.addressee.image ? (
-            <img src={req.addressee.image} alt={req.addressee.name || 'User'} className="w-16 h-16 rounded-full object-cover shrink-0" />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center shrink-0">
-              <UserIcon className="w-8 h-8 text-muted-foreground" />
+          <Link to="/profile" search={{ userId: req.addressee.id }} className="flex gap-4 items-center flex-1 overflow-hidden hover:opacity-80 transition-opacity">
+            {req.addressee.image ? (
+              <img src={req.addressee.image} alt={req.addressee.name || 'User'} className="w-16 h-16 rounded-full object-cover shrink-0" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                <UserIcon className="w-8 h-8 text-muted-foreground" />
+              </div>
+            )}
+            <div className="flex-1 overflow-hidden">
+              <h4 className="font-bold text-lg truncate">{req.addressee.name} {req.addressee.surname}</h4>
+              <p className="text-xs text-amber-500 font-bold mt-1">Bekliyor</p>
             </div>
-          )}
-          <div className="flex-1 overflow-hidden">
-            <h4 className="font-bold text-lg truncate">{req.addressee.name} {req.addressee.surname}</h4>
-            <p className="text-xs text-amber-500 font-bold mt-1">Bekliyor</p>
-          </div>
+          </Link>
           <button 
             onClick={() => undoSwipe.mutate({ requesterId: session!.user!.id, addresseeId: req.addressee.id })}
             className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive hover:text-white transition-colors shrink-0"

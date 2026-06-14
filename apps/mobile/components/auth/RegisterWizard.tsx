@@ -72,7 +72,7 @@ export function RegisterWizard({ onCancel }: RegisterWizardProps) {
 
   const handleNext = () => {
     if (step === 1 && (!email || !email.includes('@'))) return Alert.alert('Hata', 'Geçerli bir e-posta girin.');
-    if (step === 2 && password.length < 6) return Alert.alert('Hata', 'Şifre en az 6 karakter olmalıdır.');
+    if (step === 2 && password.length < 8) return Alert.alert('Hata', 'Şifre en az 8 karakter olmalıdır.');
     if (step === 3 && !isCompany && (!name.trim() || !surname.trim())) return Alert.alert('Hata', 'Ad ve soyad zorunludur.');
     if (step === 3 && isCompany && !name.trim()) return Alert.alert('Hata', 'Şirket adı zorunludur.');
     if (step === 4 && isCompany && !sector.trim()) return Alert.alert('Hata', 'Sektör zorunludur.');

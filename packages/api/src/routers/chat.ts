@@ -203,6 +203,40 @@ export const chatRouter = createTRPCRouter({
       return message;
     }),
 
+  // Delete conversation for the current user (removes Participant record)
+  deleteConversation: publicProcedure
+    .input(z.object({
+      conversationId: z.string(),
+      userId: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is a participant
+      const participant = await ctx.prisma.participant.findUnique({
+        where: {
+          conversationId_userId: {
+            conversationId: input.conversationId,
+            userId: input.userId,
+          },
+        },
+      });
+
+      if (!participant) {
+        throw new Error("Unauthorized");
+      }
+
+      // Delete the participant record (soft delete for the conversation itself)
+      await ctx.prisma.participant.delete({
+        where: {
+          conversationId_userId: {
+            conversationId: input.conversationId,
+            userId: input.userId,
+          },
+        },
+      });
+
+      return { success: true };
+    }),
+
   // Delete a message (soft delete)
   deleteMessage: publicProcedure
     .input(z.object({

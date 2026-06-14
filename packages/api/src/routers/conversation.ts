@@ -11,6 +11,23 @@ export const conversationRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Check for existing 1-on-1 conversation
+      if (!input.isGroup && input.participantIds.length === 2) {
+        const [user1, user2] = input.participantIds;
+        const existingConv = await ctx.prisma.conversation.findFirst({
+          where: {
+            isGroup: false,
+            AND: [
+              { participants: { some: { userId: user1 } } },
+              { participants: { some: { userId: user2 } } },
+            ],
+          },
+        });
+        if (existingConv) {
+          return existingConv;
+        }
+      }
+
       const conversation = await ctx.prisma.conversation.create({
         data: {
           isGroup: input.isGroup,
@@ -18,8 +35,8 @@ export const conversationRouter = createTRPCRouter({
             create: input.participantIds.map((userId) => ({ userId })),
           },
         },
-      })
-      return conversation
+      });
+      return conversation;
     }),
 
   // Kullanıcının konuşmalarını listele

@@ -4,7 +4,7 @@ import { prisma } from "@collabswipe/db"
 import { bearer } from "better-auth/plugins"
 
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL || "http://192.168.1.39:3001/api/auth",
+  baseURL: process.env.BETTER_AUTH_URL || "http://192.168.0.22:3001/api/auth",
   plugins: [bearer()],
   /**
    * Veritabanı adaptörü — mevcut Prisma instance'ını kullan
@@ -19,15 +19,15 @@ export const auth = betterAuth({
   trustedOrigins: [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://192.168.1.39:5173",
-    "http://192.168.1.39:3000",
-    "http://192.168.1.39:3001",
-    "http://192.168.1.39:8081",
-    "http://192.168.1.39:8082",
-    "http://192.168.1.39",
-    "exp://192.168.1.39:8081",
-    "exp://192.168.1.39:8082",
-    "exp://192.168.1.39",
+    "http://192.168.0.22:5173",
+    "http://192.168.0.22:3000",
+    "http://192.168.0.22:3001",
+    "http://192.168.0.22:8081",
+    "http://192.168.0.22:8082",
+    "http://192.168.0.22",
+    "exp://192.168.0.22:8081",
+    "exp://192.168.0.22:8082",
+    "exp://192.168.0.22",
   ],
 
   /**

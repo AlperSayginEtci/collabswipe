@@ -32,18 +32,31 @@ export const connectionRouter = createTRPCRouter({
           data: { status: "ACCEPTED" },
         });
 
-        // Create a conversation for the new match
-        await ctx.prisma.conversation.create({
-          data: {
+        // Check if a conversation already exists
+        const existingConvs = await ctx.prisma.conversation.findMany({
+          where: {
             isGroup: false,
-            participants: {
-              create: [
-                { userId: input.requesterId },
-                { userId: input.addresseeId },
-              ],
-            },
+            AND: [
+              { participants: { some: { userId: input.requesterId } } },
+              { participants: { some: { userId: input.addresseeId } } },
+            ],
           },
         });
+
+        if (existingConvs.length === 0) {
+          // Create a conversation for the new match
+          await ctx.prisma.conversation.create({
+            data: {
+              isGroup: false,
+              participants: {
+                create: [
+                  { userId: input.requesterId },
+                  { userId: input.addresseeId },
+                ],
+              },
+            },
+          });
+        }
 
         // Notify original requester
         const addresseeUser = await ctx.prisma.user.findUnique({

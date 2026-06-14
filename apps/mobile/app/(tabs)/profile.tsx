@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams, useGlobalSearchParams } from 'expo-router';
 import { trpc } from '../../lib/trpc';
 import { useUser } from '../../context/UserContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -32,9 +32,18 @@ const formatDate = (dateString: string) => {
 };
 
 export default function ProfileScreen() {
-  const { userId, user, login, logout } = useUser();
+  const { userId: loggedInUserId, user, login, logout } = useUser();
+  const localParams = useLocalSearchParams();
+  const globalParams = useGlobalSearchParams();
   const utils = trpc.useUtils();
   const router = useRouter();
+  
+  const routeId = (localParams.id || globalParams.id) as string;
+  const paramUserId = (localParams.userId || globalParams.userId) as string;
+  
+  const targetId = routeId || paramUserId;
+  const userId = targetId || loggedInUserId;
+  const isOwnProfile = !targetId || targetId === loggedInUserId;
 
   // Basic Profile State
   const [isEditing, setIsEditing] = useState(false);
@@ -74,15 +83,15 @@ export default function ProfileScreen() {
   const { data: allSkills } = trpc.profile.getAllSkills.useQuery();
 
   useEffect(() => {
-    if (profile && user && !isEditing) {
+    if (profile && !isEditing) {
       setEditBio(profile.bio || '');
       setEditLocation(profile.location || '');
       setEditBanner(profile.banner || '');
       setEditIsPrivate(profile.isPrivate || false);
-      setEditName(profile.user?.name || user.name || '');
-      setEditSurname(profile.user?.surname || user.surname || '');
+      setEditName(profile.user?.name || (isOwnProfile ? user?.name : '') || '');
+      setEditSurname((profile.user as any)?.surname || (isOwnProfile ? user?.surname : '') || '');
       
-      setEditImage(profile.user?.image || user.image || '');
+      setEditImage(profile.user?.image || (isOwnProfile ? user?.image : '') || '');
 
       const locStr = profile.location || '';
       if (locStr) {
@@ -108,7 +117,7 @@ export default function ProfileScreen() {
         }
       }
     }
-  }, [profile, user, isEditing]);
+  }, [profile, user, isEditing, isOwnProfile]);
 
   // Mutations
   const updateProfileMutation = trpc.profile.update.useMutation({
@@ -226,9 +235,12 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const fallbackAvatar = `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'User'}`;
+  const targetUser = profile?.user || user;
+  const fallbackAvatar = targetUser?.role === 'company'
+    ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024`
+    : `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`;
   const bannerUri = isEditing ? editBanner : profile?.banner;
-  const avatarUri = isEditing ? editImage : (profile?.user?.image || user?.image || fallbackAvatar);
+  const avatarUri = isEditing ? editImage : (targetUser?.image || fallbackAvatar);
 
   const filteredSkills = allSkills?.filter(s => s.skillName.toLowerCase().includes(skillSearch.toLowerCase()) && !profile?.skills.find((ps: any) => ps.skill.skillName === s.skillName)) || [];
 
@@ -250,6 +262,14 @@ export default function ProfileScreen() {
             source={bannerUri ? { uri: bannerUri } : undefined}
             style={[styles.banner, !bannerUri && styles.bannerPlaceholder]}
           >
+            {!isOwnProfile && (
+              <TouchableOpacity 
+                style={{ position: 'absolute', top: 16, left: 16, zIndex: 10, backgroundColor: 'rgba(0,0,0,0.5)', padding: 8, borderRadius: 20 }}
+                onPress={() => router.back()}
+              >
+                <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
+              </TouchableOpacity>
+            )}
             {isEditing && (
               <View style={styles.imageOverlay}>
                 <MaterialCommunityIcons name="camera" size={24} color="#FFF" />
@@ -269,23 +289,25 @@ export default function ProfileScreen() {
             )}
           </TouchableOpacity>
 
-          <View style={styles.headerActions}>
-            {isEditing ? (
-              <>
-                <TouchableOpacity onPress={() => setIsEditing(false)} style={[styles.actionBtn, styles.cancelBtn]}>
-                  <Text style={styles.cancelBtnText}>İptal</Text>
+          {isOwnProfile && (
+            <View style={styles.headerActions}>
+              {isEditing ? (
+                <>
+                  <TouchableOpacity onPress={() => setIsEditing(false)} style={[styles.actionBtn, styles.cancelBtn]}>
+                    <Text style={styles.cancelBtnText}>İptal</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleSaveProfile} style={styles.actionBtn}>
+                    <Text style={styles.actionBtnText}>Kaydet</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.actionBtn}>
+                  <MaterialCommunityIcons name="pencil" size={16} color="#FFF" />
+                  <Text style={styles.actionBtnText}>Profili Düzenle</Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={handleSaveProfile} style={styles.actionBtn}>
-                  <Text style={styles.actionBtnText}>Kaydet</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.actionBtn}>
-                <MaterialCommunityIcons name="pencil" size={16} color="#FFF" />
-                <Text style={styles.actionBtnText}>Profili Düzenle</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+              )}
+            </View>
+          )}
         </View>
 
         <View style={styles.infoContainer}>

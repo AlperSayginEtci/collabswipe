@@ -91,12 +91,12 @@ export default function NetworkScreen() {
   const data = getListData();
 
   const renderItem = ({ item }: { item: any }) => {
-    const avatarUrl = item.image || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'User'}`;
+    const avatarUrl = (item?.image || ((item as any)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024'));
     const displayName = `${item.name || ''} ${item.surname || ''}`.trim();
     
     return (
       <View style={styles.userCard}>
-        <TouchableOpacity style={styles.userInfoBtn} onPress={() => { /* Navigate to profile */ }}>
+        <TouchableOpacity style={styles.userInfoBtn} onPress={() => router.push(`/user/${item.id}`)}>
           <Image source={{ uri: avatarUrl }} style={styles.avatar} />
           <View style={styles.userInfo}>
             <Text style={styles.userName} numberOfLines={1}>{displayName}</Text>

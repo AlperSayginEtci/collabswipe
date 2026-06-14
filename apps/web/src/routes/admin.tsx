@@ -13,13 +13,13 @@ function AdminLayout() {
 
   useEffect(() => {
     if (!isPending) {
-      if (!session || (session.user as any)?.role !== 'admin') {
+      if (!session || (session?.user as any)?.role !== 'admin') {
         navigate({ to: '/' });
       }
     }
   }, [session, isPending, navigate]);
 
-  if (isPending || !session || (session.user as any)?.role !== 'admin') {
+  if (isPending || !session || (session?.user as any)?.role !== 'admin') {
     return (
       <div className="flex justify-center items-center h-full min-h-[50vh]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

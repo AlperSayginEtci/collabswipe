@@ -194,13 +194,27 @@ function ProfilePage() {
   );
 
   const followMutation = trpc.connection.follow.useMutation({
-    onSuccess: () => utils.connection.status.invalidate()
+    onSuccess: () => {
+      utils.connection.status.invalidate();
+      toast.success('Takip isteği gönderildi');
+    },
+    onError: (err) => toast.error('Hata: ' + err.message)
   });
   const unfollowMutation = trpc.connection.unfollow.useMutation({
-    onSuccess: () => utils.connection.status.invalidate()
+    onSuccess: () => {
+      utils.connection.status.invalidate();
+      toast.success('Takipten çıkıldı');
+    },
+    onError: (err) => toast.error('Hata: ' + err.message)
   });
   const connectMutation = trpc.connection.sendRequest.useMutation({
-    onSuccess: () => utils.connection.status.invalidate()
+    onSuccess: () => {
+      utils.connection.status.invalidate();
+      toast.success('Bağlantı isteği gönderildi');
+    },
+    onError: (err) => {
+      toast.error('Bağlantı isteği gönderilemedi: ' + err.message);
+    }
   });
 
   const updateProfile = trpc.profile.update.useMutation({
@@ -523,7 +537,7 @@ function ProfilePage() {
                {...(isEditing ? getAvatarRootProps() : {})}
                className={`-mt-12 sm:-mt-16 w-28 h-28 sm:w-32 sm:h-32 rounded-full border-4 border-card bg-secondary overflow-hidden shadow-lg shrink-0 z-10 relative group ${isEditing ? 'cursor-pointer' : ''} ${isAvatarDragActive ? 'border-primary border-dashed' : ''}`}
             >
-               <img src={(isEditing ? editImage : (isOwnProfile ? session?.user?.image : profile?.user?.image)) || `https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024`} alt="User Profile" className="w-full h-full object-cover" />
+               <img src={(isEditing ? editImage : (isOwnProfile ? session?.user?.image : profile?.user?.image)) || ((isOwnProfile ? session?.user : profile?.user)?.role === 'company' ? `https://ui-avatars.com/api/?name=%F0%9F%92%BC&background=e2e8f0&color=94a3b8&size=1024` : 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024')} alt="User Profile" className="w-full h-full object-cover" />
                {isEditing && <input {...getAvatarInputProps()} />}
                {isEditing && (
                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
@@ -663,8 +677,8 @@ function ProfilePage() {
               <div className="sm:pb-2 mt-4 sm:mt-0 flex gap-2 w-full sm:w-auto">
                 <button 
                   onClick={() => {
-                    if (connectionData?.isFollowing || connectionData?.isFollowPending) unfollowMutation.mutate({ followerId: loggedInUserId, followingId: userId });
-                    else followMutation.mutate({ followerId: loggedInUserId, followingId: userId });
+                    if (connectionData?.isFollowing || connectionData?.isFollowPending) unfollowMutation.mutate({ followerId: loggedInUserId || '', followingId: userId || '' });
+                    else followMutation.mutate({ followerId: loggedInUserId || '', followingId: userId || '' });
                   }}
                   disabled={followMutation.isLoading || unfollowMutation.isLoading}
                   className={`flex-1 sm:flex-none px-6 py-2 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm transition-all duration-200 ${connectionData?.isFollowing ? 'bg-secondary text-secondary-foreground hover:bg-destructive hover:text-destructive-foreground' : connectionData?.isFollowPending ? 'bg-orange-500/10 text-orange-600 hover:bg-orange-500/20' : 'bg-primary text-primary-foreground hover:opacity-90'}`}
@@ -680,7 +694,7 @@ function ProfilePage() {
                 
                 <button 
                   onClick={() => {
-                    if (!connectionData?.connectionStatus) connectMutation.mutate({ requesterId: loggedInUserId, addresseeId: userId });
+                    if (!connectionData?.connectionStatus) connectMutation.mutate({ requesterId: loggedInUserId || '', addresseeId: userId || '' });
                   }}
                   disabled={!!connectionData?.connectionStatus || connectMutation.isLoading}
                   className={`flex-1 sm:flex-none px-6 py-2 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm transition-all duration-200 ${connectionData?.connectionStatus === 'ACCEPTED' ? 'bg-teal-500/10 text-teal-600' : connectionData?.connectionStatus === 'PENDING' ? 'bg-orange-500/10 text-orange-600' : 'bg-card border border-border text-foreground hover:bg-muted'}`}
