@@ -823,9 +823,11 @@ function ProfilePage() {
           <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
             <h3 className="font-bold text-foreground mb-4">Linkler</h3>
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
-                <Mail className="w-4 h-4" /> {isOwnProfile ? session.user?.email : profile?.user?.email}
-              </div>
+              {isOwnProfile && session?.user?.email && (
+                <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
+                  <Mail className="w-4 h-4" /> {session.user.email}
+                </div>
+              )}
               {isEditing ? (
                  <div className="space-y-2">
                    {editLinks.map((link, idx) => (
@@ -853,8 +855,8 @@ function ProfilePage() {
                  </div>
               ) : (
                 <div className="space-y-2">
-                  {((isOwnProfile ? links : profile?.links) || []).length > 0 ? (
-                    (isOwnProfile ? links : profile?.links)?.map((link: string, idx: number) => (
+                  {(profile?.links && profile.links.length > 0) ? (
+                    profile.links.map((link: string, idx: number) => (
                       <a key={idx} href={link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline text-sm font-medium break-all">
                         <Globe className="w-4 h-4 shrink-0" /> <span className="truncate">{link.replace(/^https?:\/\//, '')}</span>
                       </a>
