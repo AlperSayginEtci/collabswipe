@@ -388,10 +388,11 @@ function ProfilePage() {
     if (!userId) return;
     
     // Auth sistemindeki oturumu güncelleyelim (Böylece JWT / Cookie içindeki resim de güncellenir)
-    if (editName !== session?.user?.name || editImage !== session?.user?.image) {
+    if (editName !== session?.user?.name || editImage !== session?.user?.image || editSurname !== (session?.user as any)?.surname) {
       await authClient.updateUser({
         name: editName,
         image: editImage,
+        surname: editSurname,
       } as any);
     }
 
@@ -636,8 +637,10 @@ function ProfilePage() {
               {isEditing ? (
                 <>
                   <div className="flex gap-2 mb-2">
-                    <input type="text" value={editName} onChange={e => setEditName(e.target.value)} placeholder="Ad" className="bg-background border border-border rounded px-3 py-1.5 font-black text-xl w-32" />
-                    <input type="text" value={editSurname} onChange={e => setEditSurname(e.target.value)} placeholder="Soyad" className="bg-background border border-border rounded px-3 py-1.5 font-black text-xl w-32" />
+                    <input type="text" value={editName} onChange={e => setEditName(e.target.value)} placeholder={isCompany ? "Şirket Adı" : "Ad"} className="bg-background border border-border rounded px-3 py-1.5 font-black text-xl w-32" />
+                    {!isCompany && (
+                      <input type="text" value={editSurname} onChange={e => setEditSurname(e.target.value)} placeholder="Soyad" className="bg-background border border-border rounded px-3 py-1.5 font-black text-xl w-32" />
+                    )}
                   </div>
                   <div className="mb-2 flex items-center gap-2 mt-3">
                     <input 
@@ -655,7 +658,7 @@ function ProfilePage() {
               ) : (
                 <>
                   <h1 className="text-2xl sm:text-3xl font-black text-foreground">
-                    {isOwnProfile ? session?.user?.name : profile?.user?.name} {isOwnProfile ? (session?.user as any)?.surname : profile?.user?.surname}
+                    {profile?.user?.name} {!isCompany && profile?.user?.surname}
                   </h1>
                 </>
               )}
@@ -743,9 +746,9 @@ function ProfilePage() {
 
                     setEditLinks(profile?.links || []);
                     setEditBanner(profile?.banner || '');
-                    setEditName(session?.user?.name || '');
-                    setEditSurname((session?.user as any)?.surname || '');
-                    setEditImage(session?.user?.image || '');
+                    setEditName(profile?.user?.name || session?.user?.name || '');
+                    setEditSurname(profile?.user?.surname || (session?.user as any)?.surname || '');
+                    setEditImage(profile?.user?.image || session?.user?.image || '');
                     setIsEditing(true);
                   }} className="w-full sm:w-auto bg-primary text-primary-foreground px-6 py-2.5 rounded-lg font-bold hover:opacity-90 flex items-center justify-center gap-2 shadow-sm">
                     <Edit2 className="w-4 h-4" /> Profili Düzenle
