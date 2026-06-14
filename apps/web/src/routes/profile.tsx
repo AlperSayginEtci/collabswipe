@@ -425,10 +425,19 @@ function ProfilePage() {
 
   const handleAddSkill = (skillName: string) => {
     if (!profile?.id || !skillName.trim()) return;
-    addSkill.mutate({ profileId: profile.id, skillName: skillName.trim() });
+    addSkill.mutate({ profileId: profile.id, skillName: skillName.trim() }, {
+      onSuccess: () => setSkillSearch('')
+    });
   };
 
+  const POPULAR_SKILLS = ["React", "Node.js", "TypeScript", "Python", "UI/UX Tasarımı", "Figma", "Pazarlama", "Proje Yönetimi", "Yapay Zeka (AI)", "SQL", "İletişim", "Liderlik"];
+
   const filteredSkills = allSkills?.filter(s => s.skillName.toLowerCase().includes(skillSearch.toLowerCase()) && !profile?.skills.find((ps: any) => ps.skill.skillName === s.skillName)) || [];
+  
+  let suggestedSkills: string[] = [];
+  if (!skillSearch) {
+    suggestedSkills = POPULAR_SKILLS.filter(ps => !profile?.skills.find((s: any) => s.skill.skillName === ps));
+  }
 
   const resetExpForm = () => {
     setEditingExpId(null);
@@ -832,35 +841,56 @@ function ProfilePage() {
                   type="text" 
                   value={skillSearch} 
                   onChange={e => setSkillSearch(e.target.value)} 
-                  placeholder="Yetenek ara..." 
+                  onFocus={() => { if(!skillSearch) setSkillSearch(' '); setSkillSearch('') }} // Trigger re-render if needed
+                  placeholder="Yetenek ara veya yeni yetenek yazıp Enter'a bas..." 
                   className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
                   onKeyDown={e => {
                     if (e.key === 'Enter' && skillSearch.trim()) {
-                      const exactMatch = filteredSkills.find(s => s.skillName.toLowerCase() === skillSearch.toLowerCase().trim());
-                      if (exactMatch) {
-                        handleAddSkill(exactMatch.skillName);
-                      }
+                      handleAddSkill(skillSearch.trim());
                     }
                   }}
                 />
-                {skillSearch && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
-                    {filteredSkills.map(s => (
-                      <button 
-                        key={s.skillId} 
-                        onClick={() => handleAddSkill(s.skillName)}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-secondary"
-                      >
-                        {s.skillName}
-                      </button>
-                    ))}
-                    {filteredSkills.length === 0 && (
-                      <div className="w-full text-left px-3 py-2 text-sm text-muted-foreground">
-                        "{skillSearch}" bulunamadı. Lütfen listedeki yeteneklerden seçin.
+                <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-20 max-h-48 overflow-y-auto">
+                  {!skillSearch ? (
+                    <>
+                      <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider bg-secondary/50">
+                        Önerilen Yetenekler
                       </div>
-                    )}
-                  </div>
-                )}
+                      {suggestedSkills.map(s => (
+                        <button 
+                          key={s} 
+                          onClick={() => handleAddSkill(s)}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-secondary flex justify-between items-center"
+                        >
+                          {s} <span className="text-xs text-primary bg-primary/10 px-2 py-0.5 rounded-full">+ Ekle</span>
+                        </button>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {filteredSkills.map(s => (
+                        <button 
+                          key={s.skillId} 
+                          onClick={() => handleAddSkill(s.skillName)}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-secondary"
+                        >
+                          {s.skillName}
+                        </button>
+                      ))}
+                      
+                      {/* Allow custom skill adding */}
+                      {skillSearch.trim() && !filteredSkills.find(s => s.skillName.toLowerCase() === skillSearch.toLowerCase().trim()) && (
+                        <button 
+                          onClick={() => handleAddSkill(skillSearch.trim())}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-secondary text-primary font-medium border-t border-border flex items-center gap-2"
+                        >
+                          <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full text-xs">+ Yeni Ekle</span>
+                          "{skillSearch.trim()}"
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             )}
           </div>
