@@ -13,10 +13,12 @@
     "@collabswipe/auth": "workspace:*",
     "@trpc/server": "^10.45.2",
     "better-auth": "^1.5.5",
+    "cloudinary": "^2.5.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "multer": "^2.1.1",
+    "multer-storage-cloudinary": "^4.0.0",
     "ws": "^8.20.1"
   },
   "devDependencies": {
