@@ -53,7 +53,11 @@ export function RegisterWizard({ onComplete, onCancel }: RegisterWizardProps) {
   const handleNext = () => {
     setError('');
     // Validations
-    if (step === 1 && !email) return setError('Lütfen e-posta giriniz.');
+    if (step === 1) {
+      if (!email) return setError('Lütfen e-posta giriniz.');
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) return setError('Lütfen geçerli bir e-posta adresi giriniz.');
+    }
     if (step === 2 && password.length < 8) return setError('Şifre en az 8 karakter olmalıdır.');
     if (step === 3 && !isCompany && (!name || !surname)) return setError('Ad ve soyad zorunludur.');
     if (step === 3 && isCompany && !name) return setError('Şirket adı zorunludur.');
