@@ -300,7 +300,7 @@ function HomeFeed() {
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState('');
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const safeMediaPreviewUrl = toSafeImageUrl(mediaPreviewUrl);
-  let SERVER_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  let SERVER_URL = import.meta.env.PROD ? window.location.origin : (import.meta.env.VITE_API_URL || 'http://localhost:3001');
   if (SERVER_URL.endsWith('/')) SERVER_URL = SERVER_URL.slice(0, -1);
 
   const handleUploadFile = async (file: File) => {
