@@ -52,6 +52,59 @@ function ProfilePage() {
   // Skills
   const [skillSearch, setSkillSearch] = useState('');
   
+  // Image Compression Utility
+  const compressImage = async (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      // 1MB altındaysa sıkıştırma yapma
+      if (file.size < 1024 * 1024) return resolve(file);
+
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1500;
+          const MAX_HEIGHT = 1500;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const newFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(newFile);
+            } else {
+              resolve(file);
+            }
+          }, 'image/jpeg', 0.85); // %85 kalite
+        };
+        img.onerror = () => resolve(file);
+      };
+      reader.onerror = () => resolve(file);
+    });
+  };
+
   // Image Upload Logic
   const validateImage = (file: File, type: 'avatar' | 'banner'): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -109,9 +162,11 @@ function ProfilePage() {
     multiple: false,
     onDrop: async (acceptedFiles) => {
       if (acceptedFiles?.[0]) {
-        const isValid = await validateImage(acceptedFiles[0], 'banner');
+        toast.success("Fotoğraf hazırlanıyor...");
+        const compressedFile = await compressImage(acceptedFiles[0]);
+        const isValid = await validateImage(compressedFile, 'banner');
         if (!isValid) return;
-        const url = await uploadImage(acceptedFiles[0]);
+        const url = await uploadImage(compressedFile);
         if (url) setEditBanner(url);
       }
     }
@@ -122,9 +177,11 @@ function ProfilePage() {
     multiple: false,
     onDrop: async (acceptedFiles) => {
       if (acceptedFiles?.[0]) {
-        const isValid = await validateImage(acceptedFiles[0], 'avatar');
+        toast.success("Fotoğraf hazırlanıyor...");
+        const compressedFile = await compressImage(acceptedFiles[0]);
+        const isValid = await validateImage(compressedFile, 'avatar');
         if (!isValid) return;
-        const url = await uploadImage(acceptedFiles[0]);
+        const url = await uploadImage(compressedFile);
         if (url) setEditImage(url);
       }
     }
