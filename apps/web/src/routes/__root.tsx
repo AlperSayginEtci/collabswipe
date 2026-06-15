@@ -32,8 +32,15 @@ function RootLayout() {
   });
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    
+    // Yere 400px yaklasildiginda event firlat
+    if (scrollHeight - scrollTop - clientHeight < 400) {
+      window.dispatchEvent(new Event('reachBottom'));
+    }
+
     if (location.pathname === '/') {
-      setShowScrollTop(e.currentTarget.scrollTop > 300);
+      setShowScrollTop(scrollTop > 300);
     } else {
       setShowScrollTop(false);
     }
