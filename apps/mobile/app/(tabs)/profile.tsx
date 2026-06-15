@@ -120,6 +120,16 @@ export default function ProfileScreen() {
   }, [profile, user, isEditing, isOwnProfile]);
 
   // Mutations
+  const isAdmin = user?.email === 'collabswipe@collabswipe.com';
+
+  const deleteUserMut = trpc.admin.deleteUser.useMutation({
+    onSuccess: () => {
+      Alert.alert('Başarılı', 'Kullanıcı başarıyla silindi.');
+      router.back();
+    },
+    onError: (err) => Alert.alert('Hata', err.message),
+  });
+
   const updateProfileMutation = trpc.profile.update.useMutation({
     onSuccess: () => {
       utils.profile.getByUserId.invalidate({ userId: userId || '' });
@@ -500,6 +510,21 @@ export default function ProfileScreen() {
             </View>
           ))}
         </View>
+
+        {!isOwnProfile && isAdmin && (
+          <TouchableOpacity 
+            style={[styles.logoutButton, { marginTop: 24, backgroundColor: 'rgba(255, 0, 0, 0.1)', borderColor: 'rgba(255,0,0,0.3)', borderWidth: 1 }]} 
+            onPress={() => {
+              Alert.alert('Emin misiniz?', 'Bu profili ve tüm verilerini kalıcı olarak silmek istediğinize emin misiniz?', [
+                { text: 'İptal', style: 'cancel' },
+                { text: 'Sil', style: 'destructive', onPress: () => deleteUserMut.mutate({ userId: userId || '' }) }
+              ]);
+            }}
+          >
+            <MaterialCommunityIcons name="delete" size={20} color="#FF0000" />
+            <Text style={[styles.logoutButtonText, { color: '#FF0000' }]}>Profili Tamamen Sil</Text>
+          </TouchableOpacity>
+        )}
 
         {isOwnProfile && (
           <>

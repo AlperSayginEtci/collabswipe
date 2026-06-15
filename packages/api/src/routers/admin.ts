@@ -268,4 +268,16 @@ export const adminRouter = createTRPCRouter({
         data: { status: input.status },
       })
     ),
+
+  // Kullanıcıyı tamamen sil (ve CASCADE ile tüm verilerini temizle)
+  deleteUser: adminProcedure
+    .input(z.object({ userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // Prisma Schema'da birçok tablo User'a onDelete: Cascade ile bağlı.
+      // Sadece bu komut, kullanıcının tüm profillerini, gönderilerini, yorumlarını vs. silmeye yetecektir.
+      await ctx.prisma.user.delete({
+        where: { id: input.userId },
+      });
+      return { success: true };
+    }),
 })

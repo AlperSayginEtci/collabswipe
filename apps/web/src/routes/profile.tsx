@@ -259,6 +259,16 @@ function ProfilePage() {
     { enabled: !isOwnProfile && !!loggedInUserId && !!userId }
   );
 
+  const isAdmin = (session?.user as any)?.email === 'collabswipe@collabswipe.com';
+
+  const deleteUserMut = trpc.admin.deleteUser.useMutation({
+    onSuccess: () => {
+      toast.success('Kullanıcı başarıyla silindi.');
+      navigate({ to: '/discover' });
+    },
+    onError: (err) => toast.error('Hata: ' + err.message)
+  });
+
   const followMutation = trpc.connection.follow.useMutation({
     onSuccess: () => {
       utils.connection.status.invalidate();
@@ -796,13 +806,28 @@ function ProfilePage() {
                   className={`flex-1 sm:flex-none px-6 py-2 rounded-lg font-bold flex items-center justify-center gap-2 shadow-sm transition-all duration-200 ${connectionData?.connectionStatus === 'ACCEPTED' ? 'bg-teal-500/10 text-teal-600' : connectionData?.connectionStatus === 'PENDING' ? 'bg-orange-500/10 text-orange-600' : 'bg-card border border-border text-foreground hover:bg-muted'}`}
                 >
                   {connectionData?.connectionStatus === 'ACCEPTED' ? (
-                    <><UserCheck className="w-4 h-4" /> Bağlantı</>
+                    <><Users className="w-4 h-4" /> Bağlantı Kuruldu</>
                   ) : connectionData?.connectionStatus === 'PENDING' ? (
-                    <><ClockIcon className="w-4 h-4" /> İstek Gönderildi</>
+                    <><ClockIcon className="w-4 h-4" /> Bağlantı İsteği Gönderildi</>
                   ) : (
                     <><UserPlus className="w-4 h-4" /> Bağlantı Kur</>
                   )}
                 </button>
+
+                {isAdmin && (
+                  <button 
+                    onClick={() => {
+                      if (window.confirm("Bu profili ve tüm gönderilerini kalıcı olarak silmek istediğinize emin misiniz?")) {
+                        deleteUserMut.mutate({ userId: userId || '' });
+                      }
+                    }}
+                    disabled={deleteUserMut.isLoading}
+                    className="flex-1 sm:flex-none px-4 py-2 bg-destructive/10 text-destructive border border-destructive/20 rounded-lg font-bold hover:bg-destructive/20 transition-all flex items-center justify-center shadow-sm disabled:opacity-50"
+                  >
+                    <Trash2 className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">{deleteUserMut.isLoading ? 'Siliniyor...' : 'Profili Tamamen Sil'}</span>
+                  </button>
+                )}
 
                 <button 
                   onClick={() => {
