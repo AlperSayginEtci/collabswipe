@@ -21,21 +21,12 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false,
-      "package": "com.collabswipe.app"
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      "expo-router"
-    ],
-    "scheme": "collabswipe",
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "5af91610-833f-49ea-8e63-387eb0fab1e1"
-      }
-    }
+    "plugins": ["expo-router"],
+    "scheme": "collabswipe"
   }
 }
