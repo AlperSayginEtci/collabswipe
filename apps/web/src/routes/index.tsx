@@ -433,18 +433,25 @@ function HomeFeed() {
     return items;
   };
 
-  const loadMoreRef = React.useRef<HTMLDivElement>(null);
+  const observer = React.useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      if (isFetchingNextPage) return;
+      if (observer.current) observer.current.disconnect();
 
-  React.useEffect(() => {
-    if (!loadMoreRef.current) return;
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    }, { threshold: 0.1 });
-    observer.observe(loadMoreRef.current);
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasNextPage) {
+            fetchNextPage();
+          }
+        },
+        { threshold: 0.1 }
+      );
+
+      if (node) observer.current.observe(node);
+    },
+    [isFetchingNextPage, hasNextPage, fetchNextPage]
+  );
 
   const { data: suggestions } = trpc.connection.getSuggestions.useQuery(
     { currentUserId: currentUserId || '' },
