@@ -244,7 +244,9 @@ function ProfilePage() {
     }
   );
 
-  const isCompany = isOwnProfile ? (session?.user as any)?.role === 'company' : (profile?.user as any)?.role === 'company';
+  const isCompany = isOwnProfile 
+    ? ((session?.user as any)?.role === 'company' || session?.user?.email === 'collabswipe@collabswipe.com') 
+    : ((profile?.user as any)?.role === 'company' || profile?.user?.email === 'collabswipe@collabswipe.com');
 
   const { data: allSkills } = trpc.profile.getAllSkills.useQuery();
   const { data: myJobs } = trpc.job.getMyPostings.useQuery(undefined, {
@@ -1161,43 +1163,7 @@ function ProfilePage() {
               )}
             </div>
           </div>
-            </>
-          ) : (
-            <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-bold text-foreground text-xl flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-primary" /> Aktif İş İlanları
-                </h3>
-              </div>
-              <div className="space-y-4">
-                {myJobs && myJobs.length > 0 ? (
-                  myJobs.map((job) => (
-                    <div key={job.id} className="p-4 border border-border rounded-xl hover:border-primary/50 transition-colors bg-background/50">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-bold text-foreground text-lg">{job.title}</h4>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                            <span className="bg-secondary text-secondary-foreground px-2 py-0.5 rounded text-xs font-bold">{job.type === 'CORPORATE' ? 'Tam Zamanlı' : 'Freelance'}</span>
-                            <span>•</span>
-                            <span>{job._count.applications} Başvuru</span>
-                            {job.status === 'CLOSED' && (
-                              <>
-                                <span>•</span>
-                                <span className="text-destructive font-bold bg-destructive/10 px-2 py-0.5 rounded text-xs">Kapalı</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-muted-foreground text-sm italic">Henüz bir iş ilanı yayınlanmamış.</p>
-                )}
-              </div>
-            </div>
-          )}
-          
+
           {/* CERTIFICATIONS */}
           {!isCompany && (
             <div className="bg-card rounded-2xl shadow-sm border border-border p-6">

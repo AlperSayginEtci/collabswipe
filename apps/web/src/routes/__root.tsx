@@ -165,14 +165,14 @@ function RootLayout() {
           </div>
           <Link to="/likes" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
             <div className="relative">
-              {((session?.user as any)?.role === 'company') ? <Inbox className="w-5 h-5" /> : <Heart className="w-5 h-5" />}
+              {(((session?.user as any)?.role === 'company') || session?.user?.email === 'collabswipe@collabswipe.com') ? <Inbox className="w-5 h-5" /> : <Heart className="w-5 h-5" />}
               {likesCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1 min-w-[14px] h-[14px] rounded-full flex items-center justify-center">
                   {likesCount > 99 ? '99+' : likesCount}
                 </span>
               )}
             </div>
-            {((session?.user as any)?.role === 'company') ? 'Başvuranlar' : 'Beğeniler'}
+            {(((session?.user as any)?.role === 'company') || session?.user?.email === 'collabswipe@collabswipe.com') ? 'Başvuranlar' : 'Beğeniler'}
           </Link>
           <Link to="/matches" className="[&.active]:bg-secondary [&.active]:text-foreground flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-secondary/50 hover:text-foreground font-medium transition-colors">
             <MessageSquare className="w-5 h-5" />
@@ -186,7 +186,7 @@ function RootLayout() {
             <LifeBuoy className="w-5 h-5" />
             Destek
           </Link>
-          {((session?.user as any)?.role === 'company') && (
+          {(((session?.user as any)?.role === 'company') || session?.user?.email === 'collabswipe@collabswipe.com') && (
             <Link to="/post-job" className="[&.active]:bg-primary/20 [&.active]:text-primary flex items-center gap-3 px-4 py-3 mt-4 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 font-bold transition-colors border border-primary/20">
               <PlusCircle className="w-5 h-5" />
               İlan Ver
@@ -272,17 +272,17 @@ function RootLayout() {
           <CardsIcon className="w-6 h-6" />
           <span className="text-[10px] font-medium">Keşfet</span>
         </Link>
-        <Link to="/likes" className="flex flex-col items-center p-2 text-muted-foreground [&.active]:text-foreground transition-colors relative">
-          <div className="relative">
-            {((session?.user as any)?.role === 'company') ? <Inbox className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
+          <Link to="/likes" className="[&.active]:text-primary flex flex-col items-center justify-center text-muted-foreground hover:text-foreground">
+            <div className="relative">
+              {(((session?.user as any)?.role === 'company') || session?.user?.email === 'collabswipe@collabswipe.com') ? <Inbox className="w-6 h-6" /> : <Heart className="w-6 h-6" />}
             {likesCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold px-1 min-w-[14px] h-[14px] rounded-full flex items-center justify-center">
                 {likesCount > 99 ? '99+' : likesCount}
               </span>
-            )}
-          </div>
-          <span className="text-[10px] mt-1 font-medium">{((session?.user as any)?.role === 'company') ? 'Başvuranlar' : 'Beğeniler'}</span>
-        </Link>
+              )}
+            </div>
+            <span className="text-[10px] mt-1 font-medium">{(((session?.user as any)?.role === 'company') || session?.user?.email === 'collabswipe@collabswipe.com') ? 'Başvuranlar' : 'Beğeniler'}</span>
+          </Link>
         <Link to="/notifications" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground relative">
           <div className="relative">
             <Bell className="w-6 h-6" />
@@ -300,10 +300,9 @@ function RootLayout() {
           <UserIcon className="w-6 h-6" />
           <span className="text-[10px] font-medium">Profil</span>
         </Link>
-        {((session?.user as any)?.role === 'company') && (
-          <Link to="/post-job" className="[&.active]:text-primary flex flex-col items-center gap-1 text-primary">
-            <PlusCircle className="w-6 h-6" />
-            <span className="text-[10px] font-medium">İlan Ver</span>
+        {(((session?.user as any)?.role === 'company') || session?.user?.email === 'collabswipe@collabswipe.com') && (
+          <Link to="/post-job" className="absolute -top-6 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground p-4 rounded-full shadow-lg shadow-primary/25 border-4 border-background flex items-center justify-center hover:scale-105 active:scale-95 transition-transform">
+            <PlusCircle className="w-7 h-7" />
           </Link>
         )}
         {((session?.user as any)?.role === 'admin') && (

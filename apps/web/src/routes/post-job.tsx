@@ -51,7 +51,7 @@ function PostJobPage() {
     });
   };
 
-  if (session && (session?.user as any)?.role !== 'company') {
+  if (session && (session?.user as any)?.role !== 'company' && session?.user?.email !== 'collabswipe@collabswipe.com') {
     return (
       <div className="flex flex-col items-center justify-center p-8 h-full">
         <div className="bg-destructive/10 text-destructive p-6 rounded-2xl max-w-md text-center">
