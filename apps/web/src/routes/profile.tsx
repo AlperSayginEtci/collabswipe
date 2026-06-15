@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { createFileRoute } from '@tanstack/react-router';
-import { Mail, Briefcase, GraduationCap, LinkIcon, Edit2, Plus, X, Globe, Camera, Award, ExternalLink, UserPlus, UserCheck, Users, Check, Clock as ClockIcon, FileWarning, LogOut } from 'lucide-react';
+import { Mail, Briefcase, GraduationCap, LinkIcon, Edit2, Plus, X, Globe, Camera, Award, ExternalLink, UserPlus, UserCheck, Users, Check, Clock as ClockIcon, FileWarning, LogOut, Trash2 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useSession, authClient } from '@collabswipe/auth/client';
 import { trpc } from '@/lib/trpc';
