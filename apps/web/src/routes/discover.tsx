@@ -466,7 +466,7 @@ function DiscoverPage() {
         </div>
       ) : (
         <div className="flex flex-col items-center w-full">
-          <div className="w-full max-w-[380px] h-[600px] max-h-[65vh] relative flex flex-col justify-center md:mt-2 mx-auto">
+          <div className="w-full h-[72vh] min-h-[450px] md:h-[600px] md:max-h-[65vh] md:max-w-[380px] relative flex flex-col justify-center md:mt-2 mx-auto">
 
             {/* Stacked Cards */}
             {itemsToRender.map((item, index) => {
@@ -546,19 +546,21 @@ function DiscoverPage() {
                           : currentItem.title}
                       </h2>
                       {!isProfiles && (
-                        <h3 className="text-primary font-bold text-base drop-shadow-sm mb-1">
+                        <h3 className="text-white/90 font-bold text-base drop-shadow-md mb-1">
                           {`${currentItem.publisher?.name || 'Şirket'} ${currentItem.publisher?.surname || ''}`}
                         </h3>
                       )}
                       
-                      <div className="flex items-center gap-1.5 text-sm font-bold text-gray-200 mt-1 mb-3">
+                      <div className="flex items-center gap-1.5 text-sm font-bold text-white drop-shadow-md mt-1 mb-3">
                         {isProfiles ? (
                           <>
-                            <MapPin className="w-4 h-4 text-gray-300" /> {currentItem.profile?.location || 'Türkiye'}
+                            <MapPin className="w-4 h-4 text-white drop-shadow-md" /> {currentItem.profile?.location || 'Türkiye'}
                           </>
                         ) : (
                           <>
-                            <Briefcase className="w-4 h-4 text-gray-300" /> {currentItem.type}
+                            <MapPin className="w-4 h-4 text-white drop-shadow-md" /> {currentItem.locationType}
+                            <span className="text-white/80 mx-1">•</span>
+                            <Briefcase className="w-4 h-4 text-white drop-shadow-md" /> {currentItem.type}
                           </>
                         )}
                       </div>

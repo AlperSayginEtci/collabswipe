@@ -311,11 +311,11 @@ export default function SupportScreen() {
 
       {/* Create Ticket Modal */}
       <Modal visible={isModalOpen} animationType="slide">
-        <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF' }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#FFF', paddingTop: Platform.OS === 'android' ? 40 : 0 }}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Yeni Destek Talebi</Text>
             <TouchableOpacity onPress={() => setIsModalOpen(false)}>
-              <MaterialCommunityIcons name="close" size={26} color="#000" />
+              <MaterialCommunityIcons name="close" size={32} color="#000" style={{ padding: 4 }} />
             </TouchableOpacity>
           </View>
 

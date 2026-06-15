@@ -411,9 +411,40 @@ function HomeFeed() {
     { enabled: !!currentUserId }
   );
 
-  const { data: feedData, isLoading: isFeedLoading } = trpc.post.getFeed.useQuery({
-    currentUserId: currentUserId
+  const { 
+    data: feedData, 
+    isLoading: isFeedLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = trpc.post.getFeed.useInfiniteQuery({
+    currentUserId: currentUserId,
+    limit: 10
+  }, {
+    getNextPageParam: (lastPage) => lastPage.nextCursor
   });
+
+  const getSortedFeed = () => {
+    if (!feedData?.pages) return [];
+    const items = feedData.pages.flatMap(p => p.items);
+    if (sortBy === 'top') {
+      return items.sort((a: any, b: any) => (b._count?.likes || 0) - (a._count?.likes || 0));
+    }
+    return items;
+  };
+
+  const loadMoreRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!loadMoreRef.current) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    }, { threshold: 0.1 });
+    observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const { data: suggestions } = trpc.connection.getSuggestions.useQuery(
     { currentUserId: currentUserId || '' },
@@ -605,15 +636,7 @@ function HomeFeed() {
     setExpandedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
   };
 
-  // Sort feed items client-side
-  const getSortedFeed = () => {
-    if (!feedData?.items) return [];
-    const items = [...feedData.items];
-    if (sortBy === 'top') {
-      return items.sort((a: any, b: any) => (b._count?.likes || 0) - (a._count?.likes || 0));
-    }
-    return items;
-  };
+
 
   const sortedFeed = getSortedFeed();
 

@@ -107,9 +107,30 @@ export default function HomeFeedScreen() {
   };
 
   // Queries
-  const { data: feedData, isLoading: isFeedLoading, refetch } = trpc.post.getFeed.useQuery({
-    currentUserId: userId || undefined
+  const { 
+    data: feedData, 
+    isLoading: isFeedLoading, 
+    refetch: refetchFeed,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = trpc.post.getFeed.useInfiniteQuery({
+    currentUserId: userId || undefined,
+    limit: 10
+  }, {
+    getNextPageParam: (lastPage) => lastPage.nextCursor
   });
+
+  const flatFeedItems = feedData?.pages.flatMap(p => p.items) || [];
+
+  const { data: unreadCount = 0, refetch: refetchNotifications } = trpc.notification.getUnreadCount.useQuery(undefined, {
+    enabled: !!userId,
+  });
+
+  const refetchAll = () => {
+    refetchFeed();
+    refetchNotifications();
+  };
 
   // Mutations
   const createPost = trpc.post.create.useMutation({
@@ -585,12 +606,40 @@ export default function HomeFeedScreen() {
       >
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Ana Sayfa</Text>
+          <TouchableOpacity onPress={() => router.push('/notifications')} style={{ position: 'relative', padding: 4 }}>
+            <MaterialCommunityIcons name="bell-outline" size={26} color="#1A1A1A" />
+            {unreadCount > 0 && (
+              <View style={{
+                position: 'absolute', top: 0, right: 0, backgroundColor: '#EF4444', 
+                borderRadius: 10, minWidth: 18, height: 18, justifyContent: 'center', alignItems: 'center',
+                borderWidth: 2, borderColor: '#FFF'
+              }}>
+                <Text style={{ color: '#FFF', fontSize: 10, fontWeight: 'bold' }}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
         
         <FlatList
-          data={feedData?.items || []}
+          data={flatFeedItems}
           keyExtractor={(item) => item.id}
           renderItem={renderPost}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) {
+              fetchNextPage();
+            }
+          }}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                <ActivityIndicator size="small" color="#0F172A" />
+                <Text style={{ marginTop: 8, fontSize: 12, color: '#666' }}>Daha fazla yükleniyor...</Text>
+              </View>
+            ) : null
+          }
           ListHeaderComponent={
             <>
               <View style={styles.feedHeaderInfo}>
@@ -609,7 +658,7 @@ export default function HomeFeedScreen() {
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
           refreshing={isFeedLoading}
-          onRefresh={() => refetch()}
+          onRefresh={refetchAll}
           ListEmptyComponent={
             !isFeedLoading ? (
               <Text style={styles.emptyText}>Henüz gönderi yok. İlk paylaşan sen ol!</Text>
@@ -733,6 +782,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#FAFAFA',
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 14,
     backgroundColor: '#FFF',

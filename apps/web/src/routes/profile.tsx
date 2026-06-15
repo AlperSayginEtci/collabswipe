@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { createFileRoute } from '@tanstack/react-router';
-import { Mail, Briefcase, GraduationCap, LinkIcon, Edit2, Plus, X, Globe, Camera, Award, ExternalLink, UserPlus, UserCheck, Users, Check, Clock as ClockIcon, FileWarning } from 'lucide-react';
+import { Mail, Briefcase, GraduationCap, LinkIcon, Edit2, Plus, X, Globe, Camera, Award, ExternalLink, UserPlus, UserCheck, Users, Check, Clock as ClockIcon, FileWarning, LogOut } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useSession, authClient } from '@collabswipe/auth/client';
 import { trpc } from '@/lib/trpc';
@@ -26,6 +26,7 @@ const formatDate = (dateString: string | Date) => {
 function ProfilePage() {
   const search = Route.useSearch();
   const { data: session } = useSession();
+  const navigate = useNavigate();
   
   const loggedInUserId = session?.user?.id;
   const userId = search.userId || loggedInUserId;
@@ -245,8 +246,8 @@ function ProfilePage() {
   );
 
   const isCompany = isOwnProfile 
-    ? ((session?.user as any)?.role === 'company' || session?.user?.email === 'collabswipe@collabswipe.com') 
-    : ((profile?.user as any)?.role === 'company' || profile?.user?.email === 'collabswipe@collabswipe.com');
+    ? ((session?.user as any)?.role === 'company' || (session?.user as any)?.email === 'collabswipe@collabswipe.com') 
+    : ((profile?.user as any)?.role === 'company' || (profile?.user as any)?.email === 'collabswipe@collabswipe.com');
 
   const { data: allSkills } = trpc.profile.getAllSkills.useQuery();
   const { data: myJobs } = trpc.job.getMyPostings.useQuery(undefined, {
@@ -756,6 +757,14 @@ function ProfilePage() {
                     <Edit2 className="w-4 h-4" /> Profili Düzenle
                   </button>
                 )}
+                {!isEditing && (
+                  <button 
+                    onClick={() => authClient.signOut({ fetchOptions: { onSuccess: () => navigate({ to: '/login' }) } })}
+                    className="md:hidden w-full sm:w-auto bg-destructive/10 text-destructive px-6 py-2.5 rounded-lg font-bold hover:bg-destructive/20 flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    <LogOut className="w-4 h-4" /> Çıkış Yap
+                  </button>
+                )}
               </div>
             )}
 
@@ -1165,8 +1174,7 @@ function ProfilePage() {
           </div>
 
           {/* CERTIFICATIONS */}
-          {!isCompany && (
-            <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
+          <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-foreground text-xl flex items-center gap-2">
                 <Award className="w-5 h-5 text-primary" /> Sertifikalar
@@ -1261,6 +1269,38 @@ function ProfilePage() {
                 <p className="text-muted-foreground text-sm italic">Henüz bir sertifika eklenmemiş.</p>
               )}
             </div>
+            </div>
+            </>
+          ) : (
+            <div className="bg-card rounded-2xl shadow-sm border border-border p-6">
+              <h3 className="font-bold text-foreground text-xl flex items-center gap-2 mb-6">
+                <Briefcase className="w-5 h-5 text-primary" /> İlanlar
+              </h3>
+              {isOwnProfile ? (
+                myJobs && myJobs.length > 0 ? (
+                  <div className="space-y-4">
+                    {myJobs.map((job: any) => (
+                      <div key={job.id} className="border border-border rounded-lg p-4 bg-background">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-bold text-lg">{job.title}</h4>
+                          <span className={`text-xs px-2 py-1 rounded font-medium ${job.status === 'OPEN' ? 'bg-green-500/10 text-green-600' : 'bg-destructive/10 text-destructive'}`}>
+                            {job.status === 'OPEN' ? 'Aktif' : 'Kapalı'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-3">{job.description}</p>
+                        <div className="flex gap-2 text-xs text-muted-foreground">
+                          <span className="bg-secondary px-2 py-1 rounded font-medium">{job.type === 'FREELANCE' ? 'Freelance' : 'Kurumsal'}</span>
+                          <span className="bg-secondary px-2 py-1 rounded font-medium">{job.locationType}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-sm italic">Henüz ilan paylaşmadınız.</p>
+                )
+              ) : (
+                <p className="text-muted-foreground text-sm italic">Bu şirketin ilanları yakında görüntülenebilecek.</p>
+              )}
             </div>
           )}
           

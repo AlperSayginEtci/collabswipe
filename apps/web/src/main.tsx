@@ -8,6 +8,19 @@ import { routeTree } from './routeTree.gen'
 import { trpc } from '@/lib/trpc'
 import './index.css'
 
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', function(e) {
+    const target = e.target as HTMLElement;
+    if (target && target.tagName === 'IMG') {
+      const img = target as HTMLImageElement;
+      const fallbackUrl = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y&s=1024';
+      if (img.src !== fallbackUrl) {
+        img.src = fallbackUrl;
+      }
+    }
+  }, true);
+}
+
 const router = createRouter({ routeTree })
 
 declare module '@tanstack/react-router' {

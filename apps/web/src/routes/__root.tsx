@@ -24,6 +24,8 @@ function RootLayout() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
+  const [initialLoading, setInitialLoading] = useState(true);
+
   const { data: unreadCount } = trpc.notification.getUnreadCount.useQuery(undefined, {
     enabled: !!session,
     refetchInterval: 30000, // Her 30 saniyede bir kontrol et
@@ -56,11 +58,17 @@ function RootLayout() {
     : (pendingRequests?.length || 0);
 
   useEffect(() => {
+    if (!isPending) {
+      setInitialLoading(false);
+    }
+  }, [isPending]);
+
+  useEffect(() => {
     const publicPaths = ['/', '/login'];
-    if (!isPending && !session && !publicPaths.includes(location.pathname)) {
+    if (!initialLoading && !session && !publicPaths.includes(location.pathname)) {
       navigate({ to: '/login' });
     }
-  }, [session, isPending, location.pathname, navigate]);
+  }, [session, initialLoading, location.pathname, navigate]);
 
   useEffect(() => {
     if (location.pathname.startsWith('/discover')) {
@@ -68,7 +76,7 @@ function RootLayout() {
     }
   }, [location.pathname]);
 
-  if (isPending) {
+  if (initialLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-foreground font-sans">
         <div className="flex flex-col items-center gap-4">
@@ -228,9 +236,12 @@ function RootLayout() {
         {/* Mobile Header */}
         <header className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card flex-shrink-0">
           <h1 className="text-xl font-black text-primary">CollabSwipe</h1>
-          <button className="text-muted-foreground" onClick={() => signOut({ fetchOptions: { onSuccess: () => navigate({ to: '/login' }) } })}>
-            <LogOut className="w-6 h-6 text-destructive" />
-          </button>
+          <Link to="/notifications" className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-full transition-colors">
+            <Bell className="w-6 h-6" />
+            {(unreadCount ?? 0) > 0 && (
+              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-destructive rounded-full border-2 border-card"></span>
+            )}
+          </Link>
         </header>
 
         {/* Desktop Topbar */}
@@ -244,7 +255,7 @@ function RootLayout() {
         </div>
 
         {/* Scrollable Content — this is the ONLY scroll container */}
-        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 pb-24 md:pb-8 md:p-8">
           <div className="max-w-6xl mx-auto w-full">
             <Outlet />
           </div>
@@ -283,15 +294,7 @@ function RootLayout() {
             </div>
             <span className="text-[10px] mt-1 font-medium">{(((session?.user as any)?.role === 'company') || session?.user?.email === 'collabswipe@collabswipe.com') ? 'Başvuranlar' : 'Beğeniler'}</span>
           </Link>
-        <Link to="/notifications" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground relative">
-          <div className="relative">
-            <Bell className="w-6 h-6" />
-            {(unreadCount ?? 0) > 0 && (
-              <span className="absolute top-0 right-0 w-2 h-2 bg-destructive rounded-full border border-card"></span>
-            )}
-          </div>
-          <span className="text-[10px] font-medium">Bildirimler</span>
-        </Link>
+
         <Link to="/matches" className="[&.active]:text-primary flex flex-col items-center gap-1 text-muted-foreground">
           <MessageSquare className="w-6 h-6" />
           <span className="text-[10px] font-medium">Eşleşmeler</span>

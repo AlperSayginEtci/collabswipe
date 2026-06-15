@@ -301,10 +301,18 @@ export default function ProfileScreen() {
                   </TouchableOpacity>
                 </>
               ) : (
-                <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.actionBtn}>
-                  <MaterialCommunityIcons name="pencil" size={16} color="#FFF" />
-                  <Text style={styles.actionBtnText}>Profili Düzenle</Text>
-                </TouchableOpacity>
+                <>
+                  {user?.role === 'company' && (
+                    <TouchableOpacity onPress={() => router.push('/post-job')} style={[styles.actionBtn, { backgroundColor: '#4F46E5', marginRight: 8 }]}>
+                      <MaterialCommunityIcons name="briefcase-plus" size={16} color="#FFF" />
+                      <Text style={[styles.actionBtnText, { marginLeft: 4 }]}>Yeni İlan Ver</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity onPress={() => setIsEditing(true)} style={styles.actionBtn}>
+                    <MaterialCommunityIcons name="pencil" size={16} color="#FFF" />
+                    <Text style={styles.actionBtnText}>Profili Düzenle</Text>
+                  </TouchableOpacity>
+                </>
               )}
             </View>
           )}
@@ -325,7 +333,7 @@ export default function ProfileScreen() {
             </View>
           ) : (
             <>
-              <Text style={styles.userName}>{`${user?.name || ''} ${user?.surname || ''}`.trim()}</Text>
+              <Text style={styles.userName}>{`${targetUser?.name || ''} ${targetUser?.surname || ''}`.trim()}</Text>
               
               <View style={styles.statsRow}>
                 <TouchableOpacity onPress={() => router.push({ pathname: '/network', params: { userId: profile?.userId, tab: 'followers' } })}>
@@ -493,17 +501,21 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        {/* Support Button */}
-        <TouchableOpacity style={styles.supportButton} onPress={() => router.push('/support')}>
-          <MaterialCommunityIcons name="lifebuoy" size={20} color="#000000" />
-          <Text style={styles.supportButtonText}>Destek Al</Text>
-        </TouchableOpacity>
+        {isOwnProfile && (
+          <>
+            {/* Support Button */}
+            <TouchableOpacity style={styles.supportButton} onPress={() => router.push('/support')}>
+              <MaterialCommunityIcons name="lifebuoy" size={20} color="#000000" />
+              <Text style={styles.supportButtonText}>Destek Al</Text>
+            </TouchableOpacity>
 
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <MaterialCommunityIcons name="logout" size={20} color="#000000" />
-          <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
-        </TouchableOpacity>
+            {/* Logout Button */}
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <MaterialCommunityIcons name="logout" size={20} color="#000000" />
+              <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
+            </TouchableOpacity>
+          </>
+        )}
 
       </ScrollView>
 
