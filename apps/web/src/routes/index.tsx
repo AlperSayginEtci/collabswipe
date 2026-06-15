@@ -439,13 +439,19 @@ function HomeFeed() {
       if (isFetchingNextPage) return;
       if (observer.current) observer.current.disconnect();
 
+      const rootElement = node ? node.closest('.overflow-y-auto') : null;
+
       observer.current = new IntersectionObserver(
         (entries) => {
           if (entries[0].isIntersecting && hasNextPage) {
             fetchNextPage();
           }
         },
-        { threshold: 0.1 }
+        { 
+          root: rootElement,
+          rootMargin: '100px',
+          threshold: 0.1 
+        }
       );
 
       if (node) observer.current.observe(node);

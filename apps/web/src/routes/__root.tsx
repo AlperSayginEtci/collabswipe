@@ -255,7 +255,7 @@ function RootLayout() {
         </div>
 
         {/* Scrollable Content — this is the ONLY scroll container */}
-        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 pb-24 md:pb-8 md:p-8">
+        <div id="main-scroll-container" ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 pb-24 md:pb-8 md:p-8">
           <div className="max-w-6xl mx-auto w-full">
             <Outlet />
           </div>
