@@ -1138,11 +1138,11 @@ function HomeFeed() {
           )}
 
           {/* INFINITE SCROLL LOADER */}
-          <div className="h-24 w-full flex flex-col items-center justify-center mt-4 mb-8">
+          <div ref={loadMoreRef} className="h-24 w-full flex flex-col items-center justify-center mt-4 mb-8">
             {isFetchingNextPage ? (
               <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
             ) : hasNextPage ? (
-              <div className="w-6 h-6 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+              <div className="w-8 h-8 opacity-0" />
             ) : sortedFeed.length > 0 ? (
               <span className="text-muted-foreground font-semibold text-sm">Tüm gönderileri gördünüz 🎉</span>
             ) : null}
